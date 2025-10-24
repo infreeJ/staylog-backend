@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class RefreshToken {
 
     private Long id;

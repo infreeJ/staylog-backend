@@ -1,5 +1,6 @@
 package com.staylog.staylog.domain.auth.service.impl;
 
+import com.staylog.staylog.domain.auth.dto.EmailVerificationDto;
 import com.staylog.staylog.domain.auth.dto.request.LoginRequest;
 import com.staylog.staylog.domain.auth.dto.request.SignupRequest;
 import com.staylog.staylog.domain.auth.dto.response.LoginResponse;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
@@ -231,21 +233,31 @@ public class AuthServiceImpl implements AuthService {
      * @return 생성된 유저의 PK
      */
     @Override
+    @Transactional
     public long signupUser(SignupRequest signupRequest) {
-        // 아이디 중복 확인
-        UserDto result = userMapper.findByLoginId(signupRequest.getLoginId());
-
-        if(result != null) { // 중복 시 예외 처리
-            throw new DuplicateSignupException("이미 사용 중인 아이디입니다.");
+        // 1. 이메일 인증 여부 확인
+        EmailVerificationDto verification = authMapper.findVerificationByEmail(signupRequest.getEmail());
+        if (verification == null || !"Y".equals(verification.getIsVerified())) {
+            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
         }
 
-        // 비밀번호 암호화
-        String encoedPassword = passwordEncoder.encode(signupRequest.getPassword());
-        signupRequest.setPassword(encoedPassword);
+        // 2. 아이디, 이메일 중복 확인 (기존 로직)
+        if (userMapper.findByLoginId(signupRequest.getLoginId()) != null) {
+            throw new DuplicateSignupException("이미 사용 중인 아이디입니다.");
+        }
+        if (userMapper.findByEmail(signupRequest.getEmail()) != null) {
+            throw new DuplicateSignupException("이미 가입된 이메일입니다.");
+        }
 
-
+        // 3. 비밀번호 암호화 및 회원 생성 (기존 로직)
+        String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
+        signupRequest.setPassword(encodedPassword);
         authMapper.createUser(signupRequest);
-        return signupRequest.getUserId();
+
+        // 4. 회원가입 완료 후, 사용된 인증 정보 삭제
+        authMapper.deleteVerificationByEmail(signupRequest.getEmail());
+
+        return signupRequest.getUserId(); // createUser에서 PK를 받아온다는 가정
     }
 
 

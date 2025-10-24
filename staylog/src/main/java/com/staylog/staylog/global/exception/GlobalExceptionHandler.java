@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DuplicateSignupException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateLoginIdException(DuplicateSignupException de) {
-        ErrorResponse response = new ErrorResponse(HttpStatus.CONFLICT.value(), de.getMessage());
+            ErrorResponse response = new ErrorResponse(HttpStatus.CONFLICT.value(), de.getMessage());
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
