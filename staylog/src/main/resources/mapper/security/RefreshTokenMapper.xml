@@ -4,7 +4,7 @@
 
 <mapper namespace="com.staylog.staylog.global.security.mapper.RefreshTokenMapper">
 
-    <resultMap id="RefreshTokenResultMap" type="com.staylog.global.security.entity.RefreshToken">
+    <resultMap id="RefreshTokenResultMap" type="com.staylog.staylog.global.security.entity.RefreshToken" >
         <id property="id" column="ID"/>
         <result property="userId" column="USER_ID"/>
         <result property="token" column="TOKEN"/>
@@ -13,7 +13,7 @@
         <result property="updatedAt" column="UPDATED_AT"/>
     </resultMap>
 
-    <insert id="save" parameterType="com.staylog.global.security.entity.RefreshToken">
+    <insert id="save" parameterType="com.staylog.staylog.global.security.entity.RefreshToken">
         INSERT INTO REFRESH_TOKENS (
             USER_ID,
             TOKEN,
@@ -55,7 +55,7 @@
         FETCH FIRST 1 ROWS ONLY
     </select>
 
-    <update id="updateToken" parameterType="com.staylog.global.security.entity.RefreshToken">
+    <update id="updateToken" parameterType="com.staylog.staylog.global.security.entity.RefreshToken">
         UPDATE REFRESH_TOKENS
         SET
             TOKEN = #{token},

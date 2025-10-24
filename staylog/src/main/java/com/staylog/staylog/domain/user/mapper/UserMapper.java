@@ -4,7 +4,6 @@ import com.staylog.staylog.domain.user.dto.UserDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**

@@ -30,7 +30,6 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-    private final MailService mailService;
 
     @PostMapping("/auth/login")
     public ResponseEntity<SuccessResponse<LoginResponse>> login(@RequestBody @Valid LoginRequest loginRequest,
@@ -64,21 +63,6 @@ public class AuthController {
     }
 
 
-    @PostMapping("/auth/mail-send")
-    public ResponseEntity<Map<String, String>> sendVerificationMail(@RequestBody MailSendRequest requestDto) {
-        mailService.sendVerificationMail(requestDto.getEmail());
-        return ResponseEntity.ok(Map.of("message", "인증 메일이 성공적으로 발송되었습니다."));
-    }
-
-    @PostMapping("/auth/mail-check")
-    public ResponseEntity<Map<String, String>> checkVerificationMail(@RequestBody MailCheckRequest requestDto) {
-        boolean isVerified = mailService.verifyMail(requestDto.getEmail(), requestDto.getCode());
-        if (isVerified) {
-            return ResponseEntity.ok(Map.of("message", "이메일 인증에 성공했습니다."));
-        } else {
-            return ResponseEntity.badRequest().body(Map.of("message", "인증번호가 유효하지 않습니다."));
-        }
-    }
 
     @PostMapping("/user")
     public ResponseEntity<Map<String, Object>> signup(@RequestBody SignupRequest signupRequest) {
