@@ -14,5 +14,11 @@
         VALUES(#{userId}, #{loginId}, #{password}, #{nickname}, #{name}, #{email}, #{phone}, #{role})
     </insert>
 
-
+    <!-- 마지막 로그인 시간 업데이트 -->
+    <update id="updateLastLogin">
+        UPDATE users
+        SET last_login = #{lastLogin},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+    </update>
 </mapper>

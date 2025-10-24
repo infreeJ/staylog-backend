@@ -45,30 +45,33 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
+    public ResponseEntity<SuccessResponse<Void>> logout(
             HttpServletRequest request,
             HttpServletResponse response) {
 
         authService.logout(request, response);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(SuccessResponse.of("로그아웃 성공", null));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(
+    public ResponseEntity<SuccessResponse<TokenResponse>> refresh(
             HttpServletRequest request,
             HttpServletResponse response) {
 
         TokenResponse tokenResponse = authService.refreshAccessToken(request,response);
-        return ResponseEntity.ok(tokenResponse);
+        return ResponseEntity.ok(SuccessResponse.of("토큰 재발급 성공", tokenResponse));
+
     }
-    
+
     @PostMapping("/user")
-    public ResponseEntity<Map<String, Object>> signup(@RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<SuccessResponse<Map<String, Object>>> signup(@RequestBody SignupRequest signupRequest) {
         long userId = authService.signupUser(signupRequest);
-        return ResponseEntity.ok(Map.of(
-                "message", "회원가입이 성공적으로 완료되었습니다.",
-                "userId", userId
-        ));
+//        return ResponseEntity.ok(Map.of(
+//                "message", "회원가입이 성공적으로 완료되었습니다.",
+//                "userId", userId));
+        return ResponseEntity.ok(SuccessResponse.of("회원가입이 성공적으로 완료되었습니다.",
+                Map.of("userId", userId)));
+
     }
 }
 

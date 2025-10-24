@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
@@ -41,7 +42,7 @@ public class JwtTokenProvider {
             @Value("${jwt.cookie.domain}") String domain,
             @Value("${jwt.cookie.path}") String path
     ) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret.trim()));
         this.accessTokenValidity = accessTokenValidity;
         this.refreshTokenValidity = refreshTokenValidity;
         this.issuer = issuer;
@@ -65,7 +66,7 @@ public class JwtTokenProvider {
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -80,7 +81,7 @@ public class JwtTokenProvider {
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
 
         // RefreshToken 엔티티 객체 생성 및 반환
