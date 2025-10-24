@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.ibatis.type.Alias;
 
+@Alias("signupRequest")
 @Setter
 @Getter
 @AllArgsConstructor
@@ -18,4 +20,5 @@ public class SignupRequest {
     private String name;
     private String email;
     private String phone;
+    private String role;
 }

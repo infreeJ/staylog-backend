@@ -2,9 +2,11 @@ package com.staylog.staylog.domain.user.dto;
 
 
 import lombok.*;
+import org.apache.ibatis.type.Alias;
 
 import java.time.LocalDateTime;
 
+@Alias("userDto")
 @Getter
 @Setter
 @Builder

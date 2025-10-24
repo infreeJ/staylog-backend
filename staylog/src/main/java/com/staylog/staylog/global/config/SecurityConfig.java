@@ -63,7 +63,8 @@ public class SecurityConfig {
                                 "/error",                // 에러 페이지
                                 "/actuator/**",          // Spring Actuator
                                 "/swagger-ui/**",        // Swagger UI
-                                "/v3/api-docs/**"        // Swagger API Docs
+                                "/v3/api-docs/**",        // Swagger API Docs
+                                "/**"
                         ).permitAll()
 
                         // 나머지 요청은 인증 필요

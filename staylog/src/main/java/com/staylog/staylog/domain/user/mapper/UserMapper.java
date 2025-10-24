@@ -4,7 +4,6 @@ import com.staylog.staylog.domain.user.dto.UserDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -33,7 +32,7 @@ public interface UserMapper {
      * @param email 이메일 주소
      * @return 사용자 정보 (Optional)
      */
-    Optional<UserDto> findByEmail(@Param("email") String email);
-    
+    UserDto findByEmail(@Param("email") String email);
+
 
 }
