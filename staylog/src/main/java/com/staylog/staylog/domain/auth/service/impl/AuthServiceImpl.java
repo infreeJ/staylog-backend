@@ -1,11 +1,14 @@
 package com.staylog.staylog.domain.auth.service.impl;
 
 import com.staylog.staylog.domain.auth.dto.request.LoginRequest;
+import com.staylog.staylog.domain.auth.dto.request.SignupRequest;
 import com.staylog.staylog.domain.auth.dto.response.LoginResponse;
 import com.staylog.staylog.domain.auth.dto.response.TokenResponse;
+import com.staylog.staylog.domain.auth.repository.AuthMapper;
 import com.staylog.staylog.domain.auth.service.AuthService;
 import com.staylog.staylog.domain.user.dto.UserDto;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
+import com.staylog.staylog.global.exception.custom.DuplicateSignupException;
 import com.staylog.staylog.global.security.entity.RefreshToken;
 import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import com.staylog.staylog.global.security.mapper.RefreshTokenMapper;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -35,6 +39,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenMapper refreshTokenMapper;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AuthMapper authMapper;
 
     @Value("${jwt.access-token-validity}")
     private long accessTokenValidity;
@@ -66,8 +71,8 @@ public class AuthServiceImpl implements AuthService {
         jwtTokenProvider.addRefreshTokenToCookie(response, refreshToken.getToken());
 
         // 유저 마지막 로그인 시간 업데이트
-        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-        userMapper.updateLastLogin(user.getUserId(), currentTime);
+        LocalDateTime currentTime = LocalDateTime.now();
+        authMapper.updateLastLogin(user.getUserId(), currentTime);
         
         user.setLastLogin(currentTime);
 
@@ -218,7 +223,33 @@ public class AuthServiceImpl implements AuthService {
         return tokenResponse;
     }
 
-     // 사용자 계정 상태 확인하기
+
+    /**
+     * 회원가입 로직
+     * @author 이준혁
+     * @param "signupRequest"
+     * @return 생성된 유저의 PK
+     */
+    @Override
+    public long signupUser(SignupRequest signupRequest) {
+        // 아이디 중복 확인
+        UserDto result = userMapper.findByLoginId(signupRequest.getLoginId());
+
+        if(result != null) { // 중복 시 예외 처리
+            throw new DuplicateSignupException("이미 사용 중인 아이디입니다.");
+        }
+
+        // 비밀번호 암호화
+        String encoedPassword = passwordEncoder.encode(signupRequest.getPassword());
+        signupRequest.setPassword(encoedPassword);
+
+
+        authMapper.createUser(signupRequest);
+        return signupRequest.getUserId();
+    }
+
+
+    // 사용자 계정 상태 확인하기
     private void validateUserStatus(UserDto user) {
         if ("INACTIVE".equals(user.getStatus())) {
             log.warn("로그인 실패: 비활성화된 계정 - userId={}", user.getUserId());
@@ -230,4 +261,6 @@ public class AuthServiceImpl implements AuthService {
             throw new DisabledException("탈퇴한 계정입니다.");
         }
     }
+
+
 }

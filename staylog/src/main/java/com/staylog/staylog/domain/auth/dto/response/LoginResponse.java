@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 /**
  * 로그인 응답 DTO
@@ -42,6 +43,6 @@ public class LoginResponse {
         private String profileImage;
         private String role;
         private String status;
-        private Timestamp lastLogin;
+        private LocalDateTime lastLogin;
     }
 }

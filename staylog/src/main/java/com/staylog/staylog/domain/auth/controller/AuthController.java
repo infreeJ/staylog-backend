@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.auth.controller;
 
 import com.staylog.staylog.domain.auth.dto.request.LoginRequest;
+import com.staylog.staylog.domain.auth.dto.request.SignupRequest;
 import com.staylog.staylog.domain.auth.dto.response.LoginResponse;
 import com.staylog.staylog.domain.auth.dto.response.TokenResponse;
 import com.staylog.staylog.domain.auth.service.AuthService;
@@ -54,4 +55,16 @@ public class AuthController {
         TokenResponse tokenResponse = authService.refreshAccessToken(request,response);
         return ResponseEntity.ok(tokenResponse);
     }
+
+
+    /**
+     * 회원가입 메서드
+     * @author 이준혁
+     * @return 생성된 유저의 PK
+     */    @PostMapping("/user")
+    public long UserSignup(SignupRequest signupRequest) {
+
+        return authService.signupUser(signupRequest);
+    }
+}
 }

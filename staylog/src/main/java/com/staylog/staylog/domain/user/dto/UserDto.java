@@ -10,23 +10,23 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class UserDto {
     private Long userId;
-    private String login_id;
+    private String loginId;
     private String password;
     private String nickname;
+    private String name;
     private String email;
     private String phone;
     private String profileImage;
-    private String birth_date;
+    private String birthDate;
     private String gender;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String role;
     private String status;
-    private LocalDateTime last_login;
-    private LocalDateTime withdrawn_at;
+    private LocalDateTime lastLogin;
+    private LocalDateTime withdrawnAt;
 
 
 }

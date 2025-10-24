@@ -3,4 +3,15 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.staylog.domain.auth.mapper.AuthMapper">
+
+    <!-- 회원가입 (아직 연결 안함) -->
+    <insert id="createUser" parameterType="userDto">
+        <selectKey keyProperty="userId" resultType="int" order="BEFORE">
+            SELECT seq_users_id.NEXTVAL
+            FROM DUAL
+        </selectKey>
+        INSERT INTO user(user_id, login_id, password, nickname, name, email, phone)
+        VALUES(#{userId}, #{loginId}, #{password}, #{nickname}, #{name}, #{email}, #{phone})
+    </insert>
+
 </mapper>
