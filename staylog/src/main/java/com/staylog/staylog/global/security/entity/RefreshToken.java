@@ -1,7 +1,13 @@
 package com.staylog.staylog.global.security.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
+@NoArgsConstructor
 public class RefreshToken {
 
     private Long id;
@@ -10,9 +16,6 @@ public class RefreshToken {
     private LocalDateTime expiresAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    public RefreshToken() {
-    }
 
     public RefreshToken(Long userId, String token, LocalDateTime expiresAt) {
         this.userId = userId;

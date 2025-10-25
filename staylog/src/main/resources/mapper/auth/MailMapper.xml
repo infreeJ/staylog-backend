@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.staylog.staylog.domain.auth.mapper.EmailMapper">
+
+    <!-- 이메일 인증 여부 검증 -->
+    <select id="findVerificationByEmail" parameterType="String" resultType="emailVerificationDto">
+        SELECT email_id, email, verification_code, expires_at, is_verified
+        FROM email_verification
+        WHERE email = #{email}
+    </select>
+
+    <!-- 이메일 인증 데이터를 저장 또는 업데이트 -->
+    <insert id="saveOrUpdateVerification" parameterType="emailVerificationDto">
+        MERGE INTO EMAIL_VERIFICATION t
+        USING (SELECT #{email} AS email FROM dual) s
+        ON (t.email = s.email)
+        WHEN MATCHED THEN
+        UPDATE SET
+        t.verification_code = #{verificationCode},
+        t.expires_at = #{expiresAt},
+        t.is_verified = #{isVerified}
+        WHEN NOT MATCHED THEN
+        INSERT (email_id, email, verification_code, expires_at, is_verified)
+        VALUES (SEQ_EMAIL_VERIFICATION_ID.NEXTVAL, #{email}, #{verificationCode}, #{expiresAt}, #{isVerified})
+    </insert>
+
+    <!-- 인증 데이터 삭제 -->
+    <delete id="deleteVerificationByEmail" parameterType="String">
+        DELETE FROM email_verification
+        WHERE email = #{email}
+    </delete>
+
+</mapper>

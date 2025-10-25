@@ -2,5 +2,23 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.auth.mapper.AuthMapper">
+<mapper namespace="com.staylog.staylog.domain.auth.mapper.AuthMapper">
+
+    <!-- 회원가입 -->
+    <insert id="createUser" parameterType="signupRequest">
+        <selectKey keyProperty="userId" resultType="long" order="BEFORE">
+            SELECT seq_users_id.NEXTVAL
+            FROM DUAL
+        </selectKey>
+        INSERT INTO users(user_id, login_id, password, nickname, name, email, phone, role)
+        VALUES(#{userId}, #{loginId}, #{password}, #{nickname}, #{name}, #{email}, #{phone}, #{role})
+    </insert>
+
+    <!-- 마지막 로그인 시간 업데이트 -->
+    <update id="updateLastLogin">
+        UPDATE users
+        SET last_login = #{lastLogin},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+    </update>
 </mapper>

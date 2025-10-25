@@ -4,10 +4,13 @@ import com.staylog.staylog.global.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,41 +36,43 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+
     /**
      * Security Filter Chain 설정
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF 비활성화 (JWT 사용으로 stateless)
-            .csrf(AbstractHttpConfigurer::disable)
+                // CSRF 비활성화 (JWT 사용으로 stateless)
+                .csrf(AbstractHttpConfigurer::disable)
 
-            // CORS 설정 활성화
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // CORS 설정 활성화
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // 세션 관리: STATELESS (JWT 사용)
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+                // 세션 관리: STATELESS (JWT 사용)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
 
-            // 요청 인가 설정
-            .authorizeHttpRequests(auth -> auth
-                // 인증 없이 접근 가능한 엔드포인트 (회원가입, 로그인 등)
-                .requestMatchers(
-                    "/v1/auth/**",           // 인증 관련 (회원가입, 로그인)
-                    "/v1/test/**",           // 테스트 엔드포인트
-                    "/error",                // 에러 페이지
-                    "/actuator/**",          // Spring Actuator
-                    "/swagger-ui/**",        // Swagger UI
-                    "/v3/api-docs/**"        // Swagger API Docs
-                ).permitAll()
+                // 요청 인가 설정
+                .authorizeHttpRequests(auth -> auth
+                        // 인증 없이 접근 가능한 엔드포인트 (회원가입, 로그인 등)
+                        .requestMatchers(
+                                "/v1/auth/**",           // 인증 관련 (회원가입, 로그인)
+                                "/v1/test/**",           // 테스트 엔드포인트
+                                "/error",                // 에러 페이지
+                                "/actuator/**",          // Spring Actuator
+                                "/swagger-ui/**",        // Swagger UI
+                                "/v3/api-docs/**",        // Swagger API Docs
+                                "/**"
+                        ).permitAll()
 
-                // 나머지 요청은 인증 필요
-                .anyRequest().authenticated()
-            )
+                        // 나머지 요청은 인증 필요
+                        .anyRequest().authenticated()
+                )
 
-            // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 이전에 추가
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 이전에 추가
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -81,15 +86,15 @@ public class SecurityConfig {
 
         // 허용할 Origin (개발 환경)
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",      // React 개발 서버
-            "http://localhost:8080",      // 로컬 테스트
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:8080"
+                "http://localhost:3000",      // React 개발 서버
+                "http://localhost:8080",      // 로컬 테스트
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8080"
         ));
 
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList(
-            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
 
         // 허용할 헤더
@@ -103,8 +108,8 @@ public class SecurityConfig {
 
         // 노출할 헤더 (클라이언트가 접근할 수 있는 응답 헤더)
         configuration.setExposedHeaders(Arrays.asList(
-            "Authorization",
-            "Content-Type"
+                "Authorization",
+                "Content-Type"
         ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -121,4 +126,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
 }

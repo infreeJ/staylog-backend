@@ -2,81 +2,101 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.staylog.global.security.mapper.RefreshTokenMapper">
+<mapper namespace="com.staylog.staylog.global.security.mapper.RefreshTokenMapper">
 
-    <resultMap id="RefreshTokenResultMap" type="com.staylog.global.security.entity.RefreshToken">
-        <id property="id" column="ID"/>
-        <result property="userId" column="USER_ID"/>
-        <result property="token" column="TOKEN"/>
-        <result property="expiresAt" column="EXPIRES_AT"/>
-        <result property="createdAt" column="CREATED_AT"/>
-        <result property="updatedAt" column="UPDATED_AT"/>
+    <!-- ResultMap 정의: DB 컬럼과 RefreshToken 엔티티 매핑 -->
+    <resultMap id="RefreshTokenResultMap" type="com.staylog.staylog.global.security.entity.RefreshToken">
+        <id property="id" column="token_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="token" column="token"/>
+        <result property="expiresAt" column="expires_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-    <insert id="save" parameterType="com.staylog.global.security.entity.RefreshToken">
-        INSERT INTO REFRESH_TOKENS (
-            USER_ID,
-            TOKEN,
-            EXPIRES_AT,
-            CREATED_AT,
-            UPDATED_AT
+    <!-- RefreshToken DB에 저장 -->
+    <insert id="save" parameterType="com.staylog.staylog.global.security.entity.RefreshToken"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="token_id">
+        INSERT INTO refresh_token (
+        user_id,
+        token,
+        expires_at,
+        created_at,
+        is_revoked
         ) VALUES (
-            #{userId},
-            #{token},
-            #{expiresAt},
-            SYSDATE,
-            SYSDATE
+        #{userId},
+        #{token},
+        #{expiresAt},
+        CURRENT_TIMESTAMP,
+        'N'
         )
     </insert>
 
-    <select id="findByToken" resultMap="RefreshTokenResultMap">
+    <!-- 토큰 문자열로 RefreshToken 조회 -->
+    <select id="findByToken" parameterType="string" resultMap="RefreshTokenResultMap">
         SELECT
-            ID,
-            USER_ID,
-            TOKEN,
-            EXPIRES_AT,
-            CREATED_AT,
-            UPDATED_AT
-        FROM REFRESH_TOKENS
-        WHERE TOKEN = #{token}
+        token_id,
+        user_id,
+        token,
+        expires_at,
+        created_at,
+        updated_at
+        FROM refresh_token
+        WHERE token = #{token}
+        AND is_revoked = 'N'
+        AND expires_at > CURRENT_TIMESTAMP
     </select>
 
-    <select id="findByUserId" resultMap="RefreshTokenResultMap">
+    <!-- 사용자 ID로 RefreshToken 조회 (최신 1개) -->
+    <select id="findByUserId" parameterType="long" resultMap="RefreshTokenResultMap">
         SELECT
-            ID,
-            USER_ID,
-            TOKEN,
-            EXPIRES_AT,
-            CREATED_AT,
-            UPDATED_AT
-        FROM REFRESH_TOKENS
-        WHERE USER_ID = #{userId}
-        ORDER BY CREATED_AT DESC
+        token_id,
+        user_id,
+        token,
+        expires_at,
+        created_at,
+        updated_at
+        FROM refresh_token
+        WHERE user_id = #{userId}
+        AND is_revoked = 'N'
+        AND expires_at > CURRENT_TIMESTAMP
+        ORDER BY created_at DESC
         FETCH FIRST 1 ROWS ONLY
     </select>
 
-    <update id="updateToken" parameterType="com.staylog.global.security.entity.RefreshToken">
-        UPDATE REFRESH_TOKENS
-        SET
-            TOKEN = #{token},
-            EXPIRES_AT = #{expiresAt},
-            UPDATED_AT = SYSDATE
-        WHERE USER_ID = #{userId}
+    <!-- RefreshToken 업데이트 (재발급 시 사용) -->
+    <update id="updateToken" parameterType="com.staylog.staylog.global.security.entity.RefreshToken">
+        UPDATE refresh_token
+        SET token = #{token},
+        expires_at = #{expiresAt},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE token_id = #{id}
     </update>
 
-    <delete id="deleteByToken">
-        DELETE FROM REFRESH_TOKENS
-        WHERE TOKEN = #{token}
+    <!-- 토큰 문자열로 RefreshToken 삭제 (무효화) -->
+    <delete id="deleteByToken" parameterType="string">
+        UPDATE refresh_token
+        SET is_revoked = 'Y',
+        revoked_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE token = #{token}
     </delete>
 
-    <delete id="deleteByUserId">
-        DELETE FROM REFRESH_TOKENS
-        WHERE USER_ID = #{userId}
+    <!-- 사용자 ID로 RefreshToken 삭제 (로그아웃 시 사용) -->
+    <delete id="deleteByUserId" parameterType="long">
+        UPDATE refresh_token
+        SET is_revoked = 'Y',
+        revoked_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+        AND is_revoked = 'N'
     </delete>
 
+    <!-- 만료된 RefreshToken들 일괄 삭제 -->
     <delete id="deleteExpiredTokens">
-        DELETE FROM REFRESH_TOKENS
-        WHERE EXPIRES_AT &lt; SYSDATE
+        DELETE FROM refresh_token
+        WHERE expires_at &lt; CURRENT_TIMESTAMP
+        OR (is_revoked = 'Y' AND revoked_at &lt; CURRENT_TIMESTAMP - INTERVAL '30' DAY)
     </delete>
 
 </mapper>
