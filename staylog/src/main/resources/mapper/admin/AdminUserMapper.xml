@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.staylog.staylog.domain.admin.user.mapper.AdminUserMapper">
+    <!--유저 목록 조회-->
+    <select id="findUsers" resultType="com.staylog.staylog.domain.user.dto.UserDto">
+        select user_id, name, email, role, status, created_at, updated_at, last_login FROM users
+        <where>
+            <if test="role != null and role != ''">
+                AND role = #{role}
+            </if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="from != null">AND created_at &gt;= #{from}</if>
+            <if test="to != null">AND created_at &lt; #{to}</if>
+        </where>
+        ORDER BY user_id DESC LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <!--유저 상세 조회-->
+    <select id="getUserDetail" resultType="com.staylog.staylog.domain.user.dto.UserDto">
+        SELECT user_id,
+               login_id,
+               name,
+               email,
+               phone,
+               role,
+               status,
+               gender,
+               birth_date,
+               profile_image,
+               created_at,
+               updated_at,
+               last_login,
+               withdrawn_at
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+    <!--유저 권한 변경-->
+    <update id="updateUserRole">
+        UPDATE users
+        SET role = #{role},
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+    <!--회원 정보 수정-->
+    <update id="updateUserByAdmin">
+        UPDATE  users
+        <set>
+            <if test="req.name != null">name = #{req.name},</if>
+            <if test="req.email != null">email = #{req.email},</if>
+            <if test="req.role != null">role = #{req.role},</if>
+            <if test="req.status != null">status = #{req.status},</if>
+            updated_at = NOW()
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+    <!--페이지네이션용-->
+    <select id="countUsers" resultType="int">
+        SELECT COUNT(1)
+        FROM users
+        <where>
+            <if test="role != null and role != ''">
+                AND role = #{role}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="from != null">
+                AND created_at &gt;= #{from}
+            </if>
+            <if test="to != null">
+                AND created_at &lt; #{to}
+            </if>
+        </where>
+    </select>
+</mapper>
