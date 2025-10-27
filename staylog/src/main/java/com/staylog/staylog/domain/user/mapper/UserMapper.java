@@ -35,4 +35,10 @@ public interface UserMapper {
     UserDto findByEmail(@Param("email") String email);
 
 
+    /**
+     * nickname으로 사용자 조회 (회원가입 닉네임 중복확인에 사용)
+     * @param nickname 사용자 닉네임
+     * @return 사용자 정보
+     */
+    UserDto findByNickname(@Param("nickname") String nickname);
 }

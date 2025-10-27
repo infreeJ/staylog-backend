@@ -3,6 +3,7 @@ package com.staylog.staylog.global.exception;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.common.response.ErrorResponse;
 import com.staylog.staylog.global.common.util.MessageUtil;
+import com.staylog.staylog.global.exception.custom.DuplicateNicknameException;
 import com.staylog.staylog.global.exception.custom.DuplicateSignupException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +57,22 @@ public class GlobalExceptionHandler {
 
         ErrorResponse response = ErrorResponse.builder()
                 .errorCode(ErrorCode.DUPLICATE_EMAIL.getCode())
+                .message(message)
+                .status(HttpStatus.CONFLICT.value())
+                .path(request.getRequestURI())
+                .method(request.getMethod())
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DuplicateNicknameException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateLoginIdException(DuplicateNicknameException de,
+                                                                         HttpServletRequest request) {
+        String message = messageUtil.getMessage(ErrorCode.DUPLICATE_NICKNAME.getMessageKey());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode(ErrorCode.DUPLICATE_NICKNAME.getCode())
                 .message(message)
                 .status(HttpStatus.CONFLICT.value())
                 .path(request.getRequestURI())

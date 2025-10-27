@@ -33,6 +33,7 @@ public enum ErrorCode {
     ACCOUNT_DISABLED(HttpStatus.FORBIDDEN, "E2004", "error.user.disabled"),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "E2005", "error.user.password.mismatch"),
 
+
     // ==================== 이메일 인증 에러 (3xxx) ====================
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E3001", "error.mail.send.failed"),
     VERIFICATION_CODE_INVALID(HttpStatus.BAD_REQUEST, "E3002", "error.mail.verification.invalid"),

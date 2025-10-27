@@ -4,13 +4,17 @@ import com.staylog.staylog.domain.auth.dto.EmailVerificationDto;
 import com.staylog.staylog.domain.auth.dto.request.LoginRequest;
 import com.staylog.staylog.domain.auth.dto.request.SignupRequest;
 import com.staylog.staylog.domain.auth.dto.response.LoginResponse;
+import com.staylog.staylog.domain.auth.dto.response.NicknameCheckedResponse;
 import com.staylog.staylog.domain.auth.dto.response.TokenResponse;
 import com.staylog.staylog.domain.auth.mapper.AuthMapper;
 import com.staylog.staylog.domain.auth.mapper.EmailMapper;
 import com.staylog.staylog.domain.auth.service.AuthService;
 import com.staylog.staylog.domain.user.dto.UserDto;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
+import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.exception.custom.DuplicateNicknameException;
 import com.staylog.staylog.global.exception.custom.DuplicateSignupException;
+import com.staylog.staylog.global.exception.custom.NotFoundException;
 import com.staylog.staylog.global.security.entity.RefreshToken;
 import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import com.staylog.staylog.global.security.mapper.RefreshTokenMapper;
@@ -275,6 +279,27 @@ public class AuthServiceImpl implements AuthService {
             log.warn("로그인 실패: 탈퇴한 계정 - userId={}", user.getUserId());
             throw new DisabledException("탈퇴한 계정입니다.");
         }
+    }
+
+
+
+    /**
+     * 닉네임 중복 검사 메서드( 회원가입 용도)
+     * @author 이준혁
+     * @param nickname 유저 닉네임
+     * @return nickname, 중복 여부 boolean
+     */
+    @Override
+    public NicknameCheckedResponse nicknameDuplicateCheck(String nickname) {
+        UserDto userDto = userMapper.findByNickname(nickname);
+
+        boolean isDuplicate = (userDto != null);
+
+        if(isDuplicate) {
+            throw new DuplicateNicknameException(ErrorCode.DUPLICATE_NICKNAME, "중복된 닉네임입니다.");
+        }
+
+        return new NicknameCheckedResponse(nickname, isDuplicate);
     }
 
 

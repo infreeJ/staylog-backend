@@ -26,6 +26,13 @@
         WHERE email = #{email}
     </select>
 
+    <!-- nickname으로 유저 정보 조회 -->
+    <select id="findByNickname" parameterType="String" resultType="userDto">
+        SELECT *
+        FROM users
+        WHERE nickname = #{nickname}
+    </select>
+
 
 
 </mapper>
