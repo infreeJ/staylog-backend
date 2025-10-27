@@ -22,8 +22,8 @@ import java.time.LocalDateTime;
 public class CommentsDto {
 
     private Long comment_id;    // 댓글 고유번호 (PK)
-    private BoardType board_type; // 댓글 카테고리 (0: REVIEW, 1: JOURNAL)
-    private Long target_id;     // 댓글 대상 ID (journal_id 또는 review_id)
+    private String board_type; // 댓글 카테고리 (REVIEW, JOURNAL)
+    private Long board_id;     // 댓글 대상 ID (journal_id 또는 review_id)
     private Long user_id;       // 작성자 고유번호 (FK)
     private Long parent_id;     // 대댓글용 (부모 댓글 ID)
 

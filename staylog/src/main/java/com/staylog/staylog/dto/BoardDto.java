@@ -23,12 +23,12 @@ import java.time.LocalDateTime;
 public class BoardDto {
 
     private long board_id;          // 리뷰 고유번호 (PK)
-    private long stay_id;           // 숙소 고유번호 (FK)
-    private long booking_id;        // 예약 고유번호 (FK, UNIQUE)
-    private long user_id;           // 작성자 고유번호 (FK)
+    private long stay_id;           // 숙소 고유번호
+    private long booking_id;        // 예약 고유번호 (UNIQUE)
+    private long user_id;           // 작성자 고유번호
 
-    private Region region;          // enum - 지역
-    private BoardType board_type; // enum - 작성 게시판 카테고리 (0: REVIEW, 1: JOURNAL)
+    private long region_code_value; // 지역 코드 (common_code.code_id)
+    private long board_code_value;  // enum - 작성 게시판 카테고리 (0: REVIEW, 1: JOURNAL)
 
     private String title;           // 리뷰 제목
     private String content;         // 리뷰 내용
