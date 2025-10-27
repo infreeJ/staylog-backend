@@ -1,12 +1,15 @@
 package com.staylog.staylog.domain.auth.service;
 
+import java.time.LocalDateTime;
+
 public interface MailService {
 
     /**
      * 인증 메일을 발송하고, 인증 정보를 DB에 저장
      * @param email 인증을 받을 이메일 주소
+     * @return 인증 코드 만료 시간
      */
-    void sendVerificationMail(String email);
+    LocalDateTime sendVerificationMail(String email);
 
     /**
      * 이메일과 인증번호를 받아 유효성을 검증
