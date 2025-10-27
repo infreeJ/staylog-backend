@@ -3,18 +3,16 @@ package com.staylog.staylog.domain.auth.service.impl;
 import com.staylog.staylog.domain.auth.dto.EmailVerificationDto;
 import com.staylog.staylog.domain.auth.dto.request.LoginRequest;
 import com.staylog.staylog.domain.auth.dto.request.SignupRequest;
-import com.staylog.staylog.domain.auth.dto.response.LoginResponse;
-import com.staylog.staylog.domain.auth.dto.response.NicknameCheckedResponse;
-import com.staylog.staylog.domain.auth.dto.response.TokenResponse;
+import com.staylog.staylog.domain.auth.dto.response.*;
 import com.staylog.staylog.domain.auth.mapper.AuthMapper;
 import com.staylog.staylog.domain.auth.mapper.EmailMapper;
 import com.staylog.staylog.domain.auth.service.AuthService;
 import com.staylog.staylog.domain.user.dto.UserDto;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.exception.custom.DuplicateEmailException;
+import com.staylog.staylog.global.exception.custom.DuplicateLoginIdException;
 import com.staylog.staylog.global.exception.custom.DuplicateNicknameException;
-import com.staylog.staylog.global.exception.custom.DuplicateSignupException;
-import com.staylog.staylog.global.exception.custom.NotFoundException;
 import com.staylog.staylog.global.security.entity.RefreshToken;
 import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import com.staylog.staylog.global.security.mapper.RefreshTokenMapper;
@@ -82,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
         // 유저 마지막 로그인 시간 업데이트
         LocalDateTime currentTime = LocalDateTime.now();
         authMapper.updateLastLogin(user.getUserId(), currentTime);
-        
+
         user.setLastLogin(currentTime);
 
         // 로그인 응답
@@ -161,9 +159,9 @@ public class AuthServiceImpl implements AuthService {
     public TokenResponse refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
         log.info("AccessToken 갱신 시도");
 
-        // 쿠키에서 RefreshToken 추출하고 
+        // 쿠키에서 RefreshToken 추출하고
         String refreshTokenString = jwtTokenProvider.getRefreshTokenFromCookie(request);
-        
+
         // RefreshToken이 없으면
         if (refreshTokenString == null) {
             log.warn("AccessToken 갱신 실패: RefreshToken이 없습니다.");
@@ -250,10 +248,10 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. 아이디, 이메일 중복 확인
         if (userMapper.findByLoginId(signupRequest.getLoginId()) != null) {
-            throw new DuplicateSignupException("이미 사용 중인 아이디입니다.");
+            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_LOGINID, "이미 사용 중인 아이디입니다.");
         }
         if (userMapper.findByEmail(signupRequest.getEmail()) != null) {
-            throw new DuplicateSignupException("이미 가입된 이메일입니다.");
+            throw new DuplicateEmailException(ErrorCode.DUPLICATE_EMAIL, "이미 가입된 이메일입니다.");
         }
 
         // 3. 비밀번호 암호화 및 회원 생성
@@ -298,9 +296,30 @@ public class AuthServiceImpl implements AuthService {
         if(isDuplicate) {
             throw new DuplicateNicknameException(ErrorCode.DUPLICATE_NICKNAME, "중복된 닉네임입니다.");
         }
-
         return new NicknameCheckedResponse(nickname, isDuplicate);
     }
 
+    public LoginIdCheckedResponse loginIdDuplicateCheck(String loginId) {
+        UserDto userDto = userMapper.findByLoginId(loginId);
+
+        boolean isDuplicate = (userDto != null);
+
+        if(isDuplicate) {
+            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_LOGINID, "중복된 아이디입니다.");
+        }
+        return new LoginIdCheckedResponse(loginId, isDuplicate);
+    }
+
+
+    public EmailCheckedResponse emailDuplicateCheck(String email) {
+        UserDto userDto = userMapper.findByEmail(email);
+
+        boolean isDuplicate = (userDto != null);
+
+        if(isDuplicate) {
+            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_EMAIL, "중복된 이메일입니다.");
+        }
+        return new EmailCheckedResponse(email, isDuplicate);
+    }
 
 }

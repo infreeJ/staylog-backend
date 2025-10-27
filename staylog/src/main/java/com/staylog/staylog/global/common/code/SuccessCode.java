@@ -33,6 +33,8 @@ public enum SuccessCode {
     USER_PROFILE_UPDATED(200, "S2001", "success.user.profile.updated"),
     PASSWORD_CHANGED(200, "S2002", "success.user.password.changed"),
     USER_NICKNAME_CHECKED(200, "S2003", "success.user.nickname.checked"),
+    USER_LOGINID_CHECKED(200, "S2004", "success.user.loginId.checked"),
+    USER_EMAIL_CHECKED(200, "S2005", "success.user.email.checked"),
 
     // ==================== 숙소 관련 성공 (4xxx) ====================
     ACCOMMODATION_CREATED(201, "S4001", "success.accommodation.created"),

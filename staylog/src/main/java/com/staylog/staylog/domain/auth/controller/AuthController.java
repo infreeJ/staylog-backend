@@ -2,10 +2,8 @@ package com.staylog.staylog.domain.auth.controller;
 
 import com.staylog.staylog.domain.auth.dto.request.LoginRequest;
 import com.staylog.staylog.domain.auth.dto.request.SignupRequest;
-import com.staylog.staylog.domain.auth.dto.response.LoginResponse;
-import com.staylog.staylog.domain.auth.dto.response.TokenResponse;
+import com.staylog.staylog.domain.auth.dto.response.*;
 import com.staylog.staylog.domain.auth.service.AuthService;
-import com.staylog.staylog.domain.auth.dto.response.NicknameCheckedResponse;
 import com.staylog.staylog.domain.user.service.UserService;
 import com.staylog.staylog.global.common.code.SuccessCode;
 import com.staylog.staylog.global.common.response.SuccessResponse;
@@ -93,10 +91,28 @@ public class AuthController {
 
 
 
+    @Operation(summary = "닉네임 중복 확인", description = "회원가입 시 닉네임 중복 확인 API입니다. \n * 중복 = 409 \n * 사용 가능한 닉네임 = 200")
     @GetMapping("/user/nickname/{nickname}/duplicate")
-    public ResponseEntity<SuccessResponse<NicknameCheckedResponse>> findByNickname(@PathVariable String nickname) {
+    public ResponseEntity<SuccessResponse<NicknameCheckedResponse>> nicknameDuplicateCheck(@PathVariable String nickname) {
         NicknameCheckedResponse data = authService.nicknameDuplicateCheck(nickname);
         String message = messageUtil.getMessage(SuccessCode.USER_NICKNAME_CHECKED.getMessageKey());
+        return ResponseEntity.ok(SuccessResponse.of(message, data));
+    }
+
+    @Operation(summary = "아이디 중복 확인", description = "회원가입 시 아이디 중복 확인 API입니다. \n * 중복 = 409 \n * 사용 가능한 아이디 = 200")
+    @GetMapping("/user/loginId/{loginId}/duplicate")
+    public ResponseEntity<SuccessResponse<LoginIdCheckedResponse>> loginIdDuplicateCheck(@PathVariable String loginId) {
+        LoginIdCheckedResponse data = authService.loginIdDuplicateCheck(loginId);
+        String message = messageUtil.getMessage(SuccessCode.USER_LOGINID_CHECKED.getMessageKey());
+        return ResponseEntity.ok(SuccessResponse.of(message, data));
+    }
+
+
+    @Operation(summary = "이메일 중복 확인", description = "회원가입 시 이메일 중복 확인 API입니다. \n * 중복 = 409 \n * 사용 가능한 이메일 = 200")
+    @GetMapping("/user/email/{email}/duplicate")
+    public ResponseEntity<SuccessResponse<EmailCheckedResponse>> emailDuplicateCheck(@PathVariable String email) {
+        EmailCheckedResponse data = authService.emailDuplicateCheck(email);
+        String message = messageUtil.getMessage(SuccessCode.USER_EMAIL_CHECKED.getMessageKey());
         return ResponseEntity.ok(SuccessResponse.of(message, data));
     }
 }

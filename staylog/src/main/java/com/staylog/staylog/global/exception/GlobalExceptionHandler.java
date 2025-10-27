@@ -3,8 +3,9 @@ package com.staylog.staylog.global.exception;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.common.response.ErrorResponse;
 import com.staylog.staylog.global.common.util.MessageUtil;
+import com.staylog.staylog.global.exception.custom.DuplicateLoginIdException;
 import com.staylog.staylog.global.exception.custom.DuplicateNicknameException;
-import com.staylog.staylog.global.exception.custom.DuplicateSignupException;
+import com.staylog.staylog.global.exception.custom.DuplicateEmailException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +51,24 @@ public class GlobalExceptionHandler {
      * @auther 이준혁
      * modify 임채호
      */
-    @ExceptionHandler(DuplicateSignupException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateLoginIdException(DuplicateSignupException de,
+    @ExceptionHandler(DuplicateLoginIdException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateLoginIdException(DuplicateLoginIdException de,
+                                                                         HttpServletRequest request) {
+        String message = messageUtil.getMessage(ErrorCode.DUPLICATE_LOGINID.getMessageKey());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode(ErrorCode.DUPLICATE_LOGINID.getCode())
+                .message(message)
+                .status(HttpStatus.CONFLICT.value())
+                .path(request.getRequestURI())
+                .method(request.getMethod())
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmailException(DuplicateEmailException de,
                                                                          HttpServletRequest request) {
         String message = messageUtil.getMessage(ErrorCode.DUPLICATE_EMAIL.getMessageKey());
 
@@ -62,12 +79,11 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .method(request.getMethod())
                 .build();
-
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(DuplicateNicknameException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateLoginIdException(DuplicateNicknameException de,
+    public ResponseEntity<ErrorResponse> handleDuplicateNicknameException(DuplicateNicknameException de,
                                                                          HttpServletRequest request) {
         String message = messageUtil.getMessage(ErrorCode.DUPLICATE_NICKNAME.getMessageKey());
 
@@ -78,7 +94,6 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .method(request.getMethod())
                 .build();
-
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 

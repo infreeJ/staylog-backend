@@ -32,6 +32,7 @@ public enum ErrorCode {
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "E2003", "error.user.duplicate.nickname"),
     ACCOUNT_DISABLED(HttpStatus.FORBIDDEN, "E2004", "error.user.disabled"),
     PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "E2005", "error.user.password.mismatch"),
+    DUPLICATE_LOGINID(HttpStatus.CONFLICT, "E2006", "error.user.duplicate.loginId"),
 
 
     // ==================== 이메일 인증 에러 (3xxx) ====================
