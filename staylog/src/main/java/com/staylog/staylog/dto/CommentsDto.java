@@ -1,6 +1,5 @@
 package com.staylog.staylog.dto;
 
-import com.staylog.staylog.enums.BoardType;
 
 import lombok.Getter;
 import lombok.Setter;

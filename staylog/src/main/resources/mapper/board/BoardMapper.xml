@@ -2,65 +2,88 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.auth.mapper.BoardMapper">
+<mapper namespace="com.staylog.staylog.domain.auth.mapper.BoardMapper">
 
 
 
-<!--  게시글 목록 조회  -->
-
-    <select id="selectAll" resultType="CommentsDto">
-
-
+    
+    <!-- 해당 카테고리 게시판 목록 조회 (삭제된 게시글 제외) -->
+    <select id="selectAll" parameterType="string" resultType="BoardDto">
+        SELECT board_id, accommodation_id, booking_id user_id, region_type, board_type,
+            title, likes_count, rating, views_count, created_at, updated_at, deleted
+        FROM board
+        WHERE board_type = #{board_type}
+            AND deleted = 'N'
+        ORDER BY created_at DESC
     </select>
+        
+    <!-- 게시글 수정 -->
+    <update id="update" parameterType="boardDto">
+        UPDATE board
+        SET title = #{title},
+            content = #{content},
+            rating = #{rating},
+            updated_at = SYSDATE
+        WHERE board_id = #{board_id}
 
+    </update>
+    
+    <!-- 게시글 삭제 (논리 삭제) -->
+    <update id="delete" parameterType="boardDto">
+        UPDATE board
+        SET deleted = 'Y',
+            updated_at = SYSDATE
+        WHERE board_id = #{board_id}
+    </update>
+    
+    <!-- 게시글 등록 -->
+    <insert id="insert" parameterType="boardDto">
+        <selectKey keyProperty="board_id" resultType="long" order="BEFORE">
+            SELECT seq_board_id.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO board
+        (board_id, accommodation_id, booking_id, user_id, region_type, board_type,
+            title, content, rating)
+        VALUES (
+            #{board_id}, #{accommodation_id}, #{booking_id}, #{user_id}, #{region_type}, #{board_type},
+            #{title}, #{content}, #{rating})
 
-<!--  게시글 수정  -->
-
-
-<!--  게시글 삭제  -->
-
-
-<!--  게시글 등록  -->
-
+    </insert>
 
 
 
 <!-- 시퀀스 생성 board
-    ![CDATA[<
 
    CREATE SEQUENCE seq_board_id
         START WITH 1
         INCREMENT BY 1;
 
-    ]]>
 -->
 
 
 <!-- 테이블 생성 board
-    ![CDATA[<
 
     CREATE TABLE board (
-        board_id          NUMBER PRIMARY KEY,                      -- 게시글 고유번호 (PK)
-        accommocdation_id  NUMBER NOT NULL,                        -- 숙소 고유번호 (FK)
-        booking_id         NUMBER UNIQUE,                          -- 예약 고유번호 (FK, 한 예약당 1개의 게시글만 가능)
-        user_id            NUMBER NOT NULL,                        -- 작성자(회원) 고유번호 (FK)
+        board_id           NUMBER PRIMARY KEY,                     // 게시글 고유번호 (PK)
+        accommodation_id   NUMBER NOT NULL,                        // 숙소 고유번호 (FK)
+        booking_id         NUMBER UNIQUE,                          // 예약 고유번호 (FK, 한 예약당 1개의 게시글만 가능)
+        user_id            NUMBER NOT NULL,                        // 작성자(회원) 고유번호 (FK)
 
-        region             VARCHAR2(20) NOT NULL,                  -- 지역 (예: SEOUL, JEJU 등)
-        board_type         VARCHAR2(20) NOT NULL,                  -- 게시판 구분 (REVIEW / JOURNAL 등)
+        region_type        VARCHAR2(20) NOT NULL,                  // 지역 (예: SEOUL, JEJU 등)
+        board_type         VARCHAR2(20) NOT NULL,                  // 게시판 구분 (REVIEW / JOURNAL 등)
 
-        title              VARCHAR2(255) NOT NULL,                 -- 게시글 제목
-        content            CLOB NOT NULL,                          -- 게시글 본문 (긴 텍스트 저장)
-        likes_count        NUMBER DEFAULT 0,                       -- 좋아요 수 (기본값 0)
-        rating             NUMBER CHECK (rating BETWEEN 1 AND 5),  -- 별점 (1~5점 사이만 허용)
-        views_count        NUMBER DEFAULT 0,                       -- 조회수 (기본값 0)
+        title              VARCHAR2(255) NOT NULL,                 // 게시글 제목
+        content            CLOB NOT NULL,                          // 게시글 본문 (긴 텍스트 저장)
+        likes_count        NUMBER DEFAULT 0,                       // 좋아요 수 (기본값 0)
+        rating             NUMBER CHECK (rating BETWEEN 1 AND 5),  // 별점 (1~5점 사이만 허용)
+        views_count        NUMBER DEFAULT 0,                       // 조회수 (기본값 0)
 
-        created_at         TIMESTAMP DEFAULT SYSTIMESTAMP,         -- 작성일 (기본값: 현재 시각)
-        updated_at         TIMESTAMP DEFAULT SYSTIMESTAMP,         -- 수정일 (기본값: 현재 시각)
-        deleted            CHAR(1) DEFAULT 'N' CHECK (deleted IN ('Y','N'))  -- 삭제 여부 ('Y': 삭제됨 / 'N': 정상)
+        created_at         TIMESTAMP DEFAULT SYSTIMESTAMP,         // 작성일 (기본값: 현재 시각)
+        updated_at         TIMESTAMP DEFAULT SYSTIMESTAMP,         // 수정일 (기본값: 현재 시각)
+        deleted            CHAR(1) DEFAULT 'N' CHECK (deleted IN ('Y','N'))  // 삭제 여부 ('Y': 삭제됨 / 'N': 정상)
 
     );
 
-    ]]>
 -->
 
 

@@ -5,65 +5,57 @@
 <mapper namespace="com.staylog.domain.auth.mapper.LikesMapper">
 
 
-<!--  해당 게시글 좋아요 수 조회  -->
-
+    <!--  해당 게시글 좋아요 수 조회  -->
     <select id="countByTargetId" parameterType="long" resultType="int">
         SELECT count(*) AS likes_count
         FROM likes
-        WHERE target_id = #{target_id}
+        WHERE board_id = #{board_id}
 
     </select>
 
-<!--  해당 게시글 좋아요 목록 조회  -->
-
-    <select id="getByTargetId" parameterType="long" resultType="LikesDto">
-        SELECT like_id, board_type, user_id, target_id
+    <!--  해당 게시글 좋아요 목록 조회  -->
+    <select id="getByBoardId" parameterType="long" resultType="likesDto">
+        SELECT like_id, user_id, board_id
         FROM likes
-        WHERE target_id = #{target_id}
+        WHERE board_id = #{board_id}
         ORDER BY like_id DESC
     </select>
 
 
-<!--  좋아요 취소  -->
-
+    <!--  좋아요 취소  -->
     <delete id="delete" parameterType="long">
         DELETE FROM likes
         WHERE like_id = #{like_id}
     </delete>
 
 
-<!--  좋아요 등록  -->
-
+    <!--  좋아요 등록  -->
     <insert id="insert" parameterType="likesDto">
         <selectKey keyProperty="like_id" resultType="long" order="BEFORE">
             SELECT seq_likes_id.NEXTVAL FROM dual
         </selectKey>
 
         INSERT INTO likes
-        (like_id, board_type, user_id, target_id)
+        (like_id, user_id, board_id)
         VALUES (
             #{like_id},
-            #{board_type},
             #{user_id},
-            #{target_id}
+            #{board_id}
         )
     </insert>
 
 
 
-<!-- 시퀀스 생성 likes
-    ![CDATA[<
+    <!-- 시퀀스 생성 likes
 
     CREATE SEQUENCE seq_likes_id
         START WITH 1
         INCREMENT BY 1;
 
-    ]]>
--->
+    -->
 
 
 <!-- 테이블 생성 likes
-    ![CDATA[<
 
     CREATE TABLE likes (
 
@@ -75,7 +67,6 @@
 
     );
 
-    ]]>
 -->
 
 </mapper>
