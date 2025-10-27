@@ -1,0 +1,78 @@
+package com.staylog.staylog.global.common.code;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+/**
+ * 에러 코드 정의
+ * 모든 비즈니스 에러 코드를 중앙 집중식으로 관리
+ *
+ * @author 임채호
+ */
+@Getter
+@RequiredArgsConstructor
+public enum ErrorCode {
+
+    // ==================== 공통 에러 (0xxx) ====================
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "E0001", "error.internal"),
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "E0002", "error.invalid.input"),
+    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "E0003", "error.method.not.allowed"),
+
+    // ==================== 인증/인가 에러 (1xxx) ====================
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "E1001", "error.unauthorized"),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "E1002", "error.invalid.credentials"),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "E1003", "error.token.expired"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "E1004", "error.token.invalid"),
+    FORBIDDEN(HttpStatus.FORBIDDEN, "E1005", "error.forbidden"),
+
+    // ==================== 회원 관련 에러 (2xxx) ====================
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "E2001", "error.user.not.found"),
+    DUPLICATE_EMAIL(HttpStatus.CONFLICT, "E2002", "error.user.duplicate.email"),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "E2003", "error.user.duplicate.nickname"),
+    ACCOUNT_DISABLED(HttpStatus.FORBIDDEN, "E2004", "error.user.disabled"),
+    PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "E2005", "error.user.password.mismatch"),
+
+    // ==================== 이메일 인증 에러 (3xxx) ====================
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E3001", "error.mail.send.failed"),
+    VERIFICATION_CODE_INVALID(HttpStatus.BAD_REQUEST, "E3002", "error.mail.verification.invalid"),
+    VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "E3003", "error.mail.verification.expired"),
+    EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "E3004", "error.mail.not.verified"),
+    EMAIL_ALREADY_VERIFIED(HttpStatus.BAD_REQUEST, "E3005", "error.mail.already.verified"),
+
+    // ==================== 숙소 관련 에러 (4xxx) ====================
+    ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, "E4001", "error.accommodation.not.found"),
+    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "E4002", "error.room.not.found"),
+    ROOM_NOT_AVAILABLE(HttpStatus.CONFLICT, "E4003", "error.room.not.available"),
+
+    // ==================== 예약 관련 에러 (5xxx) ====================
+    BOOKING_NOT_FOUND(HttpStatus.NOT_FOUND, "E5001", "error.booking.not.found"),
+    BOOKING_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "E5002", "error.booking.already.cancelled"),
+    BOOKING_CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "E5003", "error.booking.cannot.cancel"),
+    INVALID_BOOKING_DATE(HttpStatus.BAD_REQUEST, "E5004", "error.booking.invalid.date"),
+
+    // ==================== 결제 관련 에러 (6xxx) ====================
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E6001", "error.payment.not.found"),
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "E6002", "error.payment.failed"),
+    PAYMENT_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "E6003", "error.payment.already.completed"),
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "E6004", "error.payment.amount.mismatch"),
+    REFUND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E6005", "error.payment.refund.failed"),
+
+    // ==================== 리뷰 관련 에러 (7xxx) ====================
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "E7001", "error.review.not.found"),
+    REVIEW_ALREADY_EXISTS(HttpStatus.CONFLICT, "E7002", "error.review.already.exists"),
+    REVIEW_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "E7003", "error.review.not.authorized"),
+
+    // ==================== 저널 관련 에러 (8xxx) ====================
+    JOURNAL_NOT_FOUND(HttpStatus.NOT_FOUND, "E8001", "error.journal.not.found"),
+    JOURNAL_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "E8002", "error.journal.not.authorized"),
+
+    // ==================== 파일 관련 에러 (9xxx) ====================
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E9001", "error.file.upload.failed"),
+    FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "E9002", "error.file.size.exceeded"),
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "E9003", "error.file.invalid.type");
+
+    private final HttpStatus status;
+    private final String code;
+    private final String messageKey;
+}
