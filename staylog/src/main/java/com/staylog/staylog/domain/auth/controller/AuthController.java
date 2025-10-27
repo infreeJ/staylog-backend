@@ -25,7 +25,7 @@ import java.util.Map;
 
 @Tag(name = "AuthController", description = "인증/인가 API")
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/v1")
 @Slf4j
 @AllArgsConstructor
 public class AuthController {
@@ -60,7 +60,7 @@ public class AuthController {
     }
 
     @Operation(summary = "로그아웃", description = "사용자 로그아웃")
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout")
     public ResponseEntity<SuccessResponse<Void>> logout(
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -71,7 +71,7 @@ public class AuthController {
     }
 
     @Operation(summary = "토큰 재발급", description = "RefreshToken을 이용해서 만료된 AccessToken을 재발급합니다.")
-    @PostMapping("/refresh")
+    @PostMapping("/auth/refresh")
     public ResponseEntity<SuccessResponse<TokenResponse>> refresh(
             HttpServletRequest request,
             HttpServletResponse response) {
