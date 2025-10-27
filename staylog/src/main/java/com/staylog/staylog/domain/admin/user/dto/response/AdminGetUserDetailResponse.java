@@ -20,4 +20,6 @@ public class AdminGetUserDetailResponse {
     private int totalPageCount;
     // 유저 상세 조회 용 (단일 유저만)
     private UserDto user;
+
+
 }

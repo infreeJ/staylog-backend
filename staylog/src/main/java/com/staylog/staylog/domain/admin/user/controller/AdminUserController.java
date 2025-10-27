@@ -4,6 +4,7 @@ import com.staylog.staylog.domain.admin.user.dto.request.AdminGetUserDetailReque
 import com.staylog.staylog.domain.admin.user.dto.request.AdminUpdateRoleRequest;
 import com.staylog.staylog.domain.admin.user.dto.request.AdminUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.user.dto.response.AdminGetUserDetailResponse;
+import com.staylog.staylog.domain.admin.user.dto.response.AdminUpdateRoleResponse;
 import com.staylog.staylog.domain.admin.user.service.AdminUserService;
 import com.staylog.staylog.domain.user.dto.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,9 +51,9 @@ public class AdminUserController {
      */
     @Operation(summary = "유저 권한 변경", description = "user, vip, admin 권한 변경")
     @PatchMapping("/admin/users/{userId}/role")
-    public ResponseEntity<Void> updateUserRole(@PathVariable Long userId, @RequestBody AdminUpdateRoleRequest req) {
-        adminUserService.updateUserRole(userId, req.getRole());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<AdminUpdateRoleResponse> updateUserRole(@PathVariable Long userId, @RequestBody AdminUpdateRoleRequest req) {
+        AdminUpdateRoleResponse res =  adminUserService.updateUserRole(userId, req.getRole());
+        return ResponseEntity.ok(res);
     }
     /**
      * 유저 상태 변경 (status)
@@ -61,6 +62,6 @@ public class AdminUserController {
     @PatchMapping("/admin/users/{userId}/status")
     public ResponseEntity<Void> updateUserStatus(@PathVariable Long userId, @RequestBody AdminUpdateStatusRequest req) {
         adminUserService.updateUserStatus(userId, req.getStatus());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }
