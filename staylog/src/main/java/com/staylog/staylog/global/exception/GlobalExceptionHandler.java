@@ -6,6 +6,7 @@ import com.staylog.staylog.global.common.util.MessageUtil;
 import com.staylog.staylog.global.exception.custom.DuplicateLoginIdException;
 import com.staylog.staylog.global.exception.custom.DuplicateNicknameException;
 import com.staylog.staylog.global.exception.custom.DuplicateEmailException;
+import com.staylog.staylog.global.exception.custom.UnverifiedEmailException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +96,21 @@ public class GlobalExceptionHandler {
                 .method(request.getMethod())
                 .build();
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UnverifiedEmailException.class)
+    public ResponseEntity<ErrorResponse> handleUnverifiedEmailException(UnverifiedEmailException ue,
+                                                                          HttpServletRequest request) {
+        String message = messageUtil.getMessage(ErrorCode.EMAIL_NOT_VERIFIED.getMessageKey());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode(ErrorCode.EMAIL_NOT_VERIFIED.getCode())
+                .message(message)
+                .status(HttpStatus.FORBIDDEN.value())
+                .path(request.getRequestURI())
+                .method(request.getMethod())
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

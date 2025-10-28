@@ -81,6 +81,13 @@ public class AuthController {
     }
 
 
+    /**
+     * 사용자 회원가입 컨트롤러 메서드
+     * 성공 시 200, 실패 시 400 응답
+     * @author 이준혁
+     * @param signupRequest 회원가입 입력폼 데이터
+     * @return userId 생성된 유저의 PK (마이페이지 이동 목적)
+     */
     @Operation(summary = "사용자 회원가입", description = "인증이 완료된 이메일을 이용해서 회원가입합니다. \n * userId는 제외하고 데이터를 기입해야합니다. \n * role은 대문자로 'USER' 입력하세요.")
     @PostMapping("/user")
     public ResponseEntity<SuccessResponse<Map<String, Object>>> signup(@RequestBody SignupRequest signupRequest) {
@@ -90,7 +97,13 @@ public class AuthController {
     }
 
 
-
+    /**
+     * 닉네임 중복 확인 컨트롤러
+     * 성공 시 200, 중복 시 409 응답
+     * @author 이준혁
+     * @param nickname 닉네임
+     * @return NicknameCheckedResponse 닉네임, 중복 여부 boolean
+     */
     @Operation(summary = "닉네임 중복 확인", description = "회원가입 시 닉네임 중복 확인 API입니다. \n * 중복 = 409 \n * 사용 가능한 닉네임 = 200")
     @GetMapping("/user/nickname/{nickname}/duplicate")
     public ResponseEntity<SuccessResponse<NicknameCheckedResponse>> nicknameDuplicateCheck(@PathVariable String nickname) {
@@ -99,6 +112,13 @@ public class AuthController {
         return ResponseEntity.ok(SuccessResponse.of(message, data));
     }
 
+    /**
+     * 아이디 중복 확인 컨트롤러
+     * 성공 시 200, 중복 시 409 응답
+     * @author 이준혁
+     * @param loginId 아이디
+     * @return LoginIdCheckedResponse 아이디, 중복 여부 boolean
+     */
     @Operation(summary = "아이디 중복 확인", description = "회원가입 시 아이디 중복 확인 API입니다. \n * 중복 = 409 \n * 사용 가능한 아이디 = 200")
     @GetMapping("/user/loginId/{loginId}/duplicate")
     public ResponseEntity<SuccessResponse<LoginIdCheckedResponse>> loginIdDuplicateCheck(@PathVariable String loginId) {
@@ -107,13 +127,5 @@ public class AuthController {
         return ResponseEntity.ok(SuccessResponse.of(message, data));
     }
 
-
-//    @Operation(summary = "이메일 중복 확인", description = "회원가입 시 이메일 중복 확인 API입니다. \n * 중복 = 409 \n * 사용 가능한 이메일 = 200")
-//    @GetMapping("/user/email/{email}/duplicate")
-//    public ResponseEntity<SuccessResponse<EmailCheckedResponse>> emailDuplicateCheck(@PathVariable String email) {
-//        EmailCheckedResponse data = authService.emailDuplicateCheck(email);
-//        String message = messageUtil.getMessage(SuccessCode.USER_EMAIL_CHECKED.getMessageKey());
-//        return ResponseEntity.ok(SuccessResponse.of(message, data));
-//    }
 }
 

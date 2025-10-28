@@ -32,28 +32,39 @@ public class MailController {
     private final MailService mailService;
     private final MessageUtil messageUtil;
 
+    /**
+     * 인증 메일 전송 컨트롤러
+     * @author 이준혁
+     * @param mailSendRequest 이메일을 담을 Dto
+     * @return 이메일, 만료시간 반환
+     */
     @Operation(summary = "인증 메일 전송", description = "인증 메일을 사용자에게 전송합니다. \n * 인증 코드는 10분 동안 유효합니다.")
     @PostMapping("/mail-send")
-    public ResponseEntity<SuccessResponse<MailSendResponse>> sendVerificationMail(@RequestBody MailSendRequest requestDto) {
-        LocalDateTime expiresAt = mailService.sendVerificationMail(requestDto.getEmail());
+    public ResponseEntity<SuccessResponse<MailSendResponse>> sendVerificationMail(@RequestBody MailSendRequest mailSendRequest) {
+        LocalDateTime expiresAt = mailService.sendVerificationMail(mailSendRequest.getEmail());
 
-        MailSendResponse data = MailSendResponse.of(requestDto.getEmail(), expiresAt);
+        MailSendResponse data = MailSendResponse.of(mailSendRequest.getEmail(), expiresAt);
         String message = messageUtil.getMessage(SuccessCode.MAIL_SENT.getMessageKey());
 
         return ResponseEntity.ok(SuccessResponse.of(message, data));
     }
-    
-    
+
+    /**
+     * 인증 코드 검증 컨트롤러
+     * @author 이준혁
+     * @param mailCheckRequest 이메일과 인증코드를 담을 Dto
+     * @return 이메일 반환
+     */
     @Operation(summary = "인증 코드 검증", description = "사용자가 입력한 인증 코드를 검증합니다.")
     @PostMapping("/mail-check")
-    public ResponseEntity<SuccessResponse<MailCheckResponse>> checkVerificationMail(@RequestBody MailCheckRequest requestDto) {
-        boolean isVerified = mailService.verifyMail(requestDto.getEmail(), requestDto.getCode());
+    public ResponseEntity<SuccessResponse<MailCheckResponse>> checkVerificationMail(@RequestBody MailCheckRequest mailCheckRequest) {
+        boolean isVerified = mailService.verifyMail(mailCheckRequest.getEmail(), mailCheckRequest.getCode());
 
         if (!isVerified) {
             throw new BusinessException(ErrorCode.VERIFICATION_CODE_INVALID);
         }
 
-        MailCheckResponse data = MailCheckResponse.success(requestDto.getEmail());
+        MailCheckResponse data = MailCheckResponse.success(mailCheckRequest.getEmail());
         String message = messageUtil.getMessage(SuccessCode.MAIL_VERIFIED.getMessageKey());
 
         return ResponseEntity.ok(SuccessResponse.of(message, data));

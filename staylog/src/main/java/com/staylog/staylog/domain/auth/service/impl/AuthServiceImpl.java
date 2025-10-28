@@ -13,6 +13,7 @@ import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.exception.custom.DuplicateEmailException;
 import com.staylog.staylog.global.exception.custom.DuplicateLoginIdException;
 import com.staylog.staylog.global.exception.custom.DuplicateNicknameException;
+import com.staylog.staylog.global.exception.custom.UnverifiedEmailException;
 import com.staylog.staylog.global.security.entity.RefreshToken;
 import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import com.staylog.staylog.global.security.mapper.RefreshTokenMapper;
@@ -234,32 +235,40 @@ public class AuthServiceImpl implements AuthService {
     /**
      * 회원가입 비즈니스 로직
      * @author 이준혁
-     * @param signupRequest
+     * @param signupRequest 입력폼 데이터 Dto
      * @return 생성된 유저의 PK
      */
     @Override
     @Transactional
     public long signupUser(SignupRequest signupRequest) {
-        // 1. 이메일 인증 여부 확인
-        EmailVerificationDto verification = emailMapper.findVerificationByEmail(signupRequest.getEmail());
-        if (verification == null || !"Y".equals(verification.getIsVerified())) {
-            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
-        }
 
-        // 2. 아이디, 이메일 중복 확인
-        if (userMapper.findByLoginId(signupRequest.getLoginId()) != null) {
-            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_LOGINID, "이미 사용 중인 아이디입니다.");
-        }
+        // 이메일 중복 확인
         if (userMapper.findByEmail(signupRequest.getEmail()) != null) {
             throw new DuplicateEmailException(ErrorCode.DUPLICATE_EMAIL, "이미 가입된 이메일입니다.");
         }
 
-        // 3. 비밀번호 암호화 및 회원 생성
+        // 아이디 중복 확인
+        if (userMapper.findByLoginId(signupRequest.getLoginId()) != null) {
+            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_LOGINID, "이미 사용 중인 아이디입니다.");
+        }
+
+        // 닉네임 중복 확인
+        if(userMapper.findByNickname(signupRequest.getNickname()) != null) {
+            throw  new DuplicateNicknameException(ErrorCode.DUPLICATE_NICKNAME, "이미 사용 중인 닉네임입니다.");
+        }
+
+        // 이메일 인증 여부 확인
+        EmailVerificationDto verification = emailMapper.findVerificationByEmail(signupRequest.getEmail());
+        if (verification == null || !"Y".equals(verification.getIsVerified())) {
+            throw new UnverifiedEmailException(ErrorCode.EMAIL_NOT_VERIFIED, "이메일 인증이 완료되지 않았습니다.");
+        }
+
+        // 비밀번호 암호화 및 유저 생성
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
         signupRequest.setPassword(encodedPassword);
         authMapper.createUser(signupRequest);
 
-        // 4. 회원가입 완료 후 사용된 인증 정보 삭제
+        // 회원가입 완료 후 email_verification 테이블에서 사용된 인증 정보 삭제
         emailMapper.deleteVerificationByEmail(signupRequest.getEmail());
 
         return signupRequest.getUserId(); // createUser에서 PK를 받아온다
@@ -282,7 +291,8 @@ public class AuthServiceImpl implements AuthService {
 
 
     /**
-     * 닉네임 중복 검사 메서드( 회원가입 용도)
+     * 닉네임 중복 검사 메서드(회원가입 용도)
+     * 중복 시 409 응답
      * @author 이준혁
      * @param nickname 유저 닉네임
      * @return nickname, 중복 여부 boolean
@@ -299,7 +309,8 @@ public class AuthServiceImpl implements AuthService {
 
 
     /**
-     * 아이디 중복 검사 메서드( 회원가입 용도)
+     * 아이디 중복 검사 메서드(회원가입 용도)
+     * 중복 시 409 응답
      * @author 이준혁
      * @param loginId 유저 아이디
      * @return loginId, 중복 여부 boolean

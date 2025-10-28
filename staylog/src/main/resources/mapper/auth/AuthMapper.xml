@@ -10,8 +10,8 @@
             SELECT seq_users_id.NEXTVAL
             FROM DUAL
         </selectKey>
-        INSERT INTO users(user_id, login_id, password, nickname, name, email, phone, role)
-        VALUES(#{userId}, #{loginId}, #{password}, #{nickname}, #{name}, #{email}, #{phone}, #{role})
+        INSERT INTO users(user_id, login_id, password, nickname, name, email, phone)
+        VALUES(#{userId}, #{loginId}, #{password}, #{nickname}, #{name}, #{email}, #{phone})
     </insert>
 
     <!-- 마지막 로그인 시간 업데이트 -->
