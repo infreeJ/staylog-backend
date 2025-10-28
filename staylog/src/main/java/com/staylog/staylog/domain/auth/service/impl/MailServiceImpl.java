@@ -69,6 +69,7 @@ public class MailServiceImpl implements MailService {
             MimeMessage message = createMail(email, code);
             javaMailSender.send(message);
             log.info("인증 메일 발송 완료: {}", email);
+            log.info("인증 코드 번호: {}", code);
             return expiresAt;
         } catch (Exception e) {
             log.error("메일 발송 중 오류 발생: {}", email, e);
