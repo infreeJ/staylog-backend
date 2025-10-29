@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.staylog.staylog.domain.board.mapper.JournalMapper">
+
+
+
+    <!--  해당 게시글 댓글 목록 조회 (삭제된 댓글은 표시X)  -->
+    <select id="selectAll" resultType="commentsDto">
+        SELECT comment_id, board_id, user_id, parent_id, content, created_at, updated_at, deleted
+        FROM comments
+        WHERE board_id = #{board_id}
+            AND deleted = 'N'
+        ORDER BY created_at DESCs
+    </select>
+
+
+    <!--  댓글 수정  -->
+    <update id="update" parameterType="commentsDto">
+        UPDATE comments
+        SET content = #{content},
+        updated_at = SYSDATE
+        WHERE comment_id = #{comment_id}
+    </update>
+    
+    
+    <!--  댓글 삭제  -->
+    <delete id="delete" parameterType="commentsDto">
+        UPDATE comments
+        SET updated_at = SYSDATE,
+        deleted = 'Y'
+        WHERE comment_id = #{comment_id}
+    </delete>
+    
+    <!--  댓글 등록  -->
+    <insert id="insert" parameterType="commentsDto">
+        INSERT INTO comments
+        (comment_id, board_type, board_id, user_id, parent_id, content, created_at, deleted)
+        VALUES (
+            #{comment_id}, #{board_type}, #{board_id},
+            #{user_id}, #{parent_id}, #{content}, SYSDATE, 'N'
+        )
+    </insert>
+
+
+
+
+
+<!-- 시퀀스 생성 comments
+
+    CREATE SEQUENCE seq_comments_id
+        START WITH 1
+        INCREMENT BY 1;
+
+-->
+
+
+<!-- 테이블 생성 comments
+
+    CREATE TABLE comments (
+
+        comment_id  NUMBER PRIMARY KEY,
+        board_type	VARCHAR2(20)	NOT NULL,
+        board_id	NUMBER	NOT NULL,
+        user_id		NUMBER	NOT NULL,
+        parent_id	NUMBER,
+        content		CLOB	NOT NULL,
+        created_at	TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
+        updated_at	TIMESTAMP DEFAULT SYSTIMESTAMP,
+        deleted		CHAR(1) DEFAULT 'N' NOT NULL CHECK (deleted IN ('Y', 'N'))
+
+    );
+
+-->
+
+
+</mapper>
+
