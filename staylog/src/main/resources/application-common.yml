@@ -51,8 +51,10 @@ server:
 # com.staylog.staylog. 하위 패키지에서 모든 @Alias 가 붙은 클래스를 찾아서 사용할 준비를 한다
 mybatis:
   mapper-locations:
-  - classpath:mapper/*.xml
+  - classpath:mapper/**/*.xml
   type-aliases-package: com.staylog.staylog.**
+  configuration:
+    map-underscore-to-camel-case: true
 
 
 # =====================================
