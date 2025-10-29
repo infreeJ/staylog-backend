@@ -26,6 +26,11 @@ public class RoomDetailResponse {
 	
 	private String typeCode;
 	private String typeName;
+
+	//체크인, 체크아웃 시간만
+    private String checkInTime;
+    private String checkOutTime;
+
 	
 	
 

@@ -1,5 +1,8 @@
 package com.staylog.staylog.domain.accommodation.service.impl;
 
+import java.sql.Date;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +29,12 @@ public class RoomServiceImpl implements RoomService{
 		}
 		
 		return dto;
+	}
+
+	@Override
+	public List<String> blockedDate(Long roomId, Date fromDate, Date toDate) {
+		
+		return roomMapper.SelectBlockedDates(roomId, fromDate, toDate);
 	}
 
 	
