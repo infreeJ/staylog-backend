@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
  * @author 천승현
  */
 @Tag(name = "AdminAccommodationController", description = "관리자 숙소 관리 API")
-@RequestMapping("/api")
+@RequestMapping("/v1")
 @RestController
 @RequiredArgsConstructor
 public class AdminAccommodationController {
