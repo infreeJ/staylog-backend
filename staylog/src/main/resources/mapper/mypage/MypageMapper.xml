@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.staylog.staylog.domain.mypage.mapper.MypageMapper">
+
+    <!-- 1. 회원 정보 조회 -->
+    <select id="selectMemberInfo"
+            parameterType="long"
+            resultType="MemberInfoResponse">
+        SELECT
+            user_id,
+            login_id,
+            email,
+            role,
+            name,
+            nickname,
+            phone,
+            gender,
+            birth_date,
+            profile_image,
+            created_at,
+            updated_at
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 2. 회원 정보 수정 -->
+    <update id="updateMemberInfo"
+            parameterType="UpdateMemberInfoRequest">
+        UPDATE users
+        SET name = #{name},
+            nickname = #{nickname},
+            phone = #{phone},
+            gender = #{gender},
+            birth_date = #{birthDate},
+            updated_at = SYSDATE
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 3. 회원 탈퇴 -->
+<!--     <update id="deleteMemberInfo" parameterType="long">
+        UPDATE users
+        SET deleted_yn = 'Y',
+            status = 'WITHDRAWN',
+            deleted_at = SYSDATE
+        WHERE user_id = #{userId}
+    </update> -->
+
+
+</mapper>
+
