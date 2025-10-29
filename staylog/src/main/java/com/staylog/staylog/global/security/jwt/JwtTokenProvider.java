@@ -54,12 +54,14 @@ public class JwtTokenProvider {
     }
 
     // AccessToken 생성 (userId, email, role 포함, 30분 유효)
-    public String generateAccessToken(Long userId, String email, String role) {
+    public String generateAccessToken(Long userId, String email, String role, String nickname, String loginId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + accessTokenValidity);
 
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
+                .claim("loginId", loginId)
+                .claim("nickname", nickname)
                 .claim("email", email)
                 .claim("role", role)
                 .claim("type", "ACCESS")

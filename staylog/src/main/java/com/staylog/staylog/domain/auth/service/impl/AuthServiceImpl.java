@@ -62,7 +62,9 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(
                 user.getUserId(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getNickname(),
+                user.getLoginId()
         );
 
         // RefreshToken 발급받기
@@ -218,7 +220,9 @@ public class AuthServiceImpl implements AuthService {
         String newAccessToken = jwtTokenProvider.generateAccessToken(
                 user.getUserId(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                user.getNickname(),
+                user.getLoginId()
         );
 
         // 응답 생성
