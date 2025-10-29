@@ -10,10 +10,7 @@ import com.staylog.staylog.domain.auth.service.AuthService;
 import com.staylog.staylog.domain.user.dto.UserDto;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
-import com.staylog.staylog.global.exception.custom.DuplicateEmailException;
-import com.staylog.staylog.global.exception.custom.DuplicateLoginIdException;
-import com.staylog.staylog.global.exception.custom.DuplicateNicknameException;
-import com.staylog.staylog.global.exception.custom.UnverifiedEmailException;
+import com.staylog.staylog.global.exception.BusinessException;
 import com.staylog.staylog.global.security.entity.RefreshToken;
 import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import com.staylog.staylog.global.security.mapper.RefreshTokenMapper;
@@ -23,8 +20,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -139,7 +134,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (user == null) {
             log.warn("로그인 실패: 사용자를 찾을 수 없음 - loginId={}", loginId);
-            throw new BadCredentialsException("사용자를 찾을 수 없습니다.");
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         // 계정 상태 확인 (활성/비활성/탈퇴)
@@ -148,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
         // 비밀번호 검증
         if (!passwordEncoder.matches(password, user.getPassword())) {
             log.warn("로그인 실패: 비밀번호 불일치 - loginId={}", loginId);
-            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         return user;
@@ -170,7 +165,7 @@ public class AuthServiceImpl implements AuthService {
         // RefreshToken이 없으면
         if (refreshTokenString == null) {
             log.warn("AccessToken 갱신 실패: RefreshToken이 없습니다.");
-            throw new BadCredentialsException("RefreshToken이 없습니다.");
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
 
         // RefreshToken 유효성 검증 (인증서 확인하기)
@@ -190,7 +185,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (refreshTokenOpt.isEmpty()) {
             log.warn("AccessToken 갱신 실패: DB에 RefreshToken이 없습니다.");
-            throw new BadCredentialsException("유효하지 않은 RefreshToken입니다.");
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
         }
 
         RefreshToken refreshToken = refreshTokenOpt.get();
@@ -208,7 +203,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (userOpt.isEmpty()) {
             log.warn("AccessToken 갱신 실패: 사용자를 찾을 수 없음 - userId={}", userId);
-            throw new BadCredentialsException("사용자를 찾을 수 없습니다.");
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
         UserDto user = userOpt.get();
@@ -250,23 +245,23 @@ public class AuthServiceImpl implements AuthService {
 
         // 이메일 중복 확인
         if (userMapper.findByEmail(signupRequest.getEmail()) != null) {
-            throw new DuplicateEmailException(ErrorCode.DUPLICATE_EMAIL, "이미 가입된 이메일입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         // 아이디 중복 확인
         if (userMapper.findByLoginId(signupRequest.getLoginId()) != null) {
-            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_LOGINID, "이미 사용 중인 아이디입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_LOGINID);
         }
 
         // 닉네임 중복 확인
         if(userMapper.findByNickname(signupRequest.getNickname()) != null) {
-            throw  new DuplicateNicknameException(ErrorCode.DUPLICATE_NICKNAME, "이미 사용 중인 닉네임입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
         // 이메일 인증 여부 확인
         EmailVerificationDto verification = emailMapper.findVerificationByEmail(signupRequest.getEmail());
         if (verification == null || !"Y".equals(verification.getIsVerified())) {
-            throw new UnverifiedEmailException(ErrorCode.EMAIL_NOT_VERIFIED, "이메일 인증이 완료되지 않았습니다.");
+            throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
 
         // 비밀번호 암호화 및 유저 생성
@@ -285,12 +280,12 @@ public class AuthServiceImpl implements AuthService {
     private void validateUserStatus(UserDto user) {
         if ("INACTIVE".equals(user.getStatus())) {
             log.warn("로그인 실패: 비활성화된 계정 - userId={}", user.getUserId());
-            throw new DisabledException("비활성화된 계정입니다.");
+            throw new BusinessException(ErrorCode.ACCOUNT_DISABLED);
         }
 
         if ("WITHDRAWN".equals(user.getStatus())) {
             log.warn("로그인 실패: 탈퇴한 계정 - userId={}", user.getUserId());
-            throw new DisabledException("탈퇴한 계정입니다.");
+            throw new BusinessException(ErrorCode.ACCOUNT_DISABLED);
         }
     }
 
@@ -308,7 +303,7 @@ public class AuthServiceImpl implements AuthService {
         UserDto userDto = userMapper.findByNickname(nickname);
         boolean isDuplicate = (userDto != null);
         if(isDuplicate) {
-            throw new DuplicateNicknameException(ErrorCode.DUPLICATE_NICKNAME, "중복된 닉네임입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
         }
         return new NicknameCheckedResponse(nickname, isDuplicate);
     }
@@ -325,7 +320,7 @@ public class AuthServiceImpl implements AuthService {
         UserDto userDto = userMapper.findByLoginId(loginId);
         boolean isDuplicate = (userDto != null);
         if(isDuplicate) {
-            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_LOGINID, "중복된 아이디입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_LOGINID);
         }
         return new LoginIdCheckedResponse(loginId, isDuplicate);
     }
