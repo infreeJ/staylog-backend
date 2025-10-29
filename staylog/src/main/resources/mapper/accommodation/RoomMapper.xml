@@ -2,5 +2,42 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.accommodation.mapper.RoomMapper">
+<mapper namespace="com.staylog.staylog.domain.accommodation.mapper.RoomMapper">
+
+	
+	<select id="selectRoomDetailById" parameterType="long" resultType="com.staylog.staylog.domain.accommodation.dto.response.RoomDetailResponse">
+		SELECT
+		r.room_id AS roomId, r.accommodation_id AS accommodationId, r.name, r.rm_type AS type,
+		r.price, r.max_adult AS maxAdult , r.max_children AS maxChildren, r.max_infant AS maxInfant,
+		TO_CHAR(ac.check_in_time,  'HH24:MI') AS checkInTime,
+        TO_CHAR(ac.check_out_time, 'HH24:MI') AS checkOutTime,
+		r.area, r.single_bed AS singleBed,
+		r.double_bed AS doubleBed, r.queen_bed AS queenBed,
+		r.king_bed AS kingBed
+		FROM ROOM r
+		JOIN ACCOMMODATION ac ON ac.accommodation_id = r.accommodation_id
+		LEFT JOIN COMMON_CODE cc ON r.rm_type = cc.code_id 
+		WHERE r.room_id = #{roomId}
+		 
+	</select>
+	
+	<select id="SelectBlockedDates" parameterType="map">
+		WITH days AS (
+		  SELECT (:fromDate + LEVEL - 1) d
+		  FROM dual
+		  CONNECT BY LEVEL <![CDATA[<=]]>(#{toDate} - #{fromDate }+ 1)
+		)
+		SELECT TO_CHAR(d, 'YYYY-MM-DD') AS blocked_date
+		FROM days a
+		WHERE EXISTS (
+		  SELECT 1
+		  FROM RESERVATION r
+		  WHERE r.room_id = #{roomId}
+		    AND r.status IN ('RES_PENDING','RES_CONFIRMED')
+		    AND r.check_in <![CDATA[<=]]> a.d
+		    AND r.check_out >  a.d
+		)
+		ORDER BY d
+		
+	</select>
 </mapper>

@@ -1,6 +1,58 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.accommodation.mapper.AccommodationMapper">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.staylog.staylog.domain.accommodation.mapper.AccommodationMapper">
+	<!-- 숙소 상제 페이지 조회 
+		 TODO: 숙소 이미지 관련 코드 추후 추가 필요 
+	-->
+	<select id="selectAcDetail" parameterType="long" resultType="AccommodationDetailResponse">
+		SELECT
+			ac.accommodation_id AS accommodationId,
+			ac.name, ac.description,
+			ac.address, ac.latitude, ac.longitude,
+			ac.created_at AS createdAt, 
+			ac.updated_at AS updatedAt, 
+			ac.check_in_time AS checkInTime, 
+			ac.check_out_time AS checkOutTime,
+			cc_type.code_name_en AS typeNameEn, 
+			cc_type.code_name AS typeName,
+			cc_region.code_name_en AS regionNameEn, 
+			cc_region.code_name AS regionName			
+		FROM ACCOMMODATION ac
+		JOIN COMMON_CODE cc_type ON ac.ac_type = cc_type.code_id
+		JOIN COMMON_CODE cc_region ON ac.region = cc_region.code_id
+		WHERE ac.accommodation_id = #{accommodationId}
+	</select>
+	
+	<!-- 
+ 		숙소의 객실 리스트 조회
+        TODO: 객실 이미지 관련 코드 추후 추가 필요 
+    -->
+	 <select id="selectRoomList" parameterType="long" resultType="RoomListResponse">
+		SELECT rm.room_id AS roomId, 
+			rm.name, rm.price,
+	 		(rm.max_adult + rm.max_children) AS maxGuest,
+	 		cc_type.code_name_en AS rmTypeNameEn, 
+			cc_type.code_name AS rmTypeName
+		FROM room rm
+		JOIN COMMON_CODE cc_type ON rm.rm_type = cc_type.code_id
+		WHERE accommodation_id = #{accommodationId}
+		ORDER BY rm.price ASC
+	 </select>
+	
+	<!-- 
+ 		숙소의 객실 리스트 조회
+        TODO: 리뷰 이미지 관련 코드 추후 추가 필요 
+    -->
+	<select id="selectAcReviewList" parameterType="long" resultType="ReviewResponse">
+		SELECT u.nickname,
+			u.profile_image AS profileImage,
+			b.board_id AS boardId,
+			b.rating, b.content,
+			b.created_at AS createdAt,
+			COUNT(*) OVER(PARTITION BY b.accommodation_id) AS reviewCount
+		FROM board b
+		JOIN users u ON b.user_id = u.user_id
+		WHERE board_type = 'BOARD_REVIEW' AND b.accommodation_id = #{accommodationId}
+		ORDER BY b.created_at DESC
+	</select>
 </mapper>
