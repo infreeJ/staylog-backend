@@ -1,21 +1,21 @@
 server:
-  port: 9090
+  port: ${SERVER_PORT:9000}
 # =====================================
 # Oracle Database Connection Settings
 # =====================================
 spring:
   datasource:
-    driver-class-name: oracle.jdbc.OracleDriver
-    url: jdbc:oracle:thin:@54.180.94.201:1521:xe
-    username: team404f
-    password: 4041234
+    driver-class-name: ${DB_DRIVER}
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PW}
 # =====================================
 # Email 인증
 # 이메일, 시크릿 키
 # =====================================
   mail: 
-    username: kasious84@gmail.com
-    password: ryfb pybk hxmr xvpq
+    username: ${MAIL_USER}
+    password: ${MAIL_PW}
 
 
 # =====================================
@@ -23,4 +23,4 @@ spring:
 # JWT secret key
 # =====================================
 jwt:
-  secret: eW91ci1zdXBlci1zZWNyZXQta2V5LTEyMzQ1Njc4OTAhQCMkJV4mKigpXystPVtde318OzosLjw+Pw==
+  secret: ${JWT_SECRET}

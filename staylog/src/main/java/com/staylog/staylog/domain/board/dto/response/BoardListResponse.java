@@ -1,7 +1,7 @@
 package com.staylog.staylog.domain.board.dto.response;
 
 import com.staylog.staylog.domain.board.dto.BoardDto;
-import com.staylog.staylog.global.common.response.PageResponse;\
+import com.staylog.staylog.global.common.response.PageResponse;
 
 import lombok.*;
 

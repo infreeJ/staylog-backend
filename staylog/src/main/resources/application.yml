@@ -3,7 +3,7 @@ spring:
     name: staylog
   profiles:
     active:
-      - local
+      - dev
     group:
       local:
         - common
