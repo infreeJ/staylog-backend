@@ -117,7 +117,6 @@ jobs:
               --network "${{ env.NETWORK_NAME }}" \
               -p "${{ env.APP_PORT }}:${{ env.APP_PORT }}" \
               -e ORACLE_URL=jdbc:oracle:thin:@${{ env.ORACLE_CONTAINER_NAME }}:1521:xe \
-              
               -e SPRING_PROFILES_ACTIVE="${{ env.SPRING_PROFILES_ACTIVE }}" \
               -e SERVER_PORT="${{ env.SERVER_PORT }}" \
               -e DB_DRIVER="${{ env.DB_DRIVER }}" \
@@ -127,7 +126,6 @@ jobs:
               -e MAIL_USER="${{ env.MAIL_USER }}" \
               -e MAIL_PW="${{ env.MAIL_PW }}" \
               -e JWT_SECRET="${{ env.JWT_SECRET }}" \
-
               "${{ env.IMAGE_NAME }}:latest"
 
 
