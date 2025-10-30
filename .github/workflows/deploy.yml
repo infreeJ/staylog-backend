@@ -40,13 +40,13 @@ jobs:
 
       # ---- Maven 빌드 ----
       - name: Build with Maven
-        run: cd staylog-backend && mvn -B -DskipTests clean package
+        run: cd staylog && mvn -B -DskipTests clean package
 
 
       # ---- Docker 이미지 빌드 (latest만) ----
       - name: Build Docker image
         run: |
-          cd staylog-backend && docker build -t ${IMAGE_NAME}:latest .
+          cd staylog && docker build -t ${IMAGE_NAME}:latest .
 
 
       - name: Save image as tar.gz (latest 고정 파일명)
