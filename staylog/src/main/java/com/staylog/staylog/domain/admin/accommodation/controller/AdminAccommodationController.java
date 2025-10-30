@@ -15,6 +15,9 @@ import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommoda
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationSearchRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.response.AdminAccommodationDetailResponse;
 import com.staylog.staylog.domain.admin.accommodation.service.AdminAccommodationService;
+import com.staylog.staylog.global.common.code.SuccessCode;
+import com.staylog.staylog.global.common.response.SuccessResponse;
+import com.staylog.staylog.global.common.util.MessageUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,12 +31,13 @@ import lombok.RequiredArgsConstructor;
  * @author 천승현
  */
 @Tag(name = "AdminAccommodationController", description = "관리자 숙소 관리 API")
-@RequestMapping("/v1")
+@RequestMapping("/api")
 @RestController
 @RequiredArgsConstructor
 public class AdminAccommodationController {
     
     private final AdminAccommodationService accomService;
+    private final MessageUtil messageUtil;
 
     /**
      * 숙소 목록 조회 (검색 필터 포함)
@@ -46,10 +50,13 @@ public class AdminAccommodationController {
         description = "검색 조건에 맞는 숙소 목록을 조회합니다. 모든 파라미터는 선택사항입니다."
     )
     @GetMapping("/admin/accommodations")
-    public ResponseEntity<List<AdminAccommodationDetailResponse>> list(
+    public ResponseEntity<SuccessResponse<List<AdminAccommodationDetailResponse>>> list(
             @Parameter(description = "숙소 검색 조건") AdminAccommodationSearchRequest searchRequest) {
         List<AdminAccommodationDetailResponse> list = accomService.getList(searchRequest);
-        return ResponseEntity.ok(list);
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        SuccessResponse<List<AdminAccommodationDetailResponse>> success = SuccessResponse.of(code, message, list);
+        return ResponseEntity.ok(success);
     }
 
     /**
@@ -63,11 +70,14 @@ public class AdminAccommodationController {
         description = "특정 숙소의 상세 정보를 조회합니다."
     )
     @GetMapping("/admin/accommodations/{accommodationId}")
-    public ResponseEntity<AdminAccommodationDetailResponse> detail(
+    public ResponseEntity<SuccessResponse<AdminAccommodationDetailResponse>> detail(
             @Parameter(description = "숙소 ID") 
             @PathVariable Long accommodationId) {
         AdminAccommodationDetailResponse response = accomService.getAccommodation(accommodationId);
-        return ResponseEntity.ok(response);
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        SuccessResponse<AdminAccommodationDetailResponse> success = SuccessResponse.of(code, message, response);
+        return ResponseEntity.ok(success);
     }
 
     /**
@@ -81,11 +91,13 @@ public class AdminAccommodationController {
         description = "숙소를 논리 삭제합니다. (deleted_yn = 'Y')"
     )
     @PatchMapping("/admin/accommodations/{accommodationId}/delete")
-    public ResponseEntity<Void> deleteAccommodation(
+    public ResponseEntity<SuccessResponse<Void>> deleteAccommodation(
             @Parameter(description = "삭제할 숙소 ID") 
             @PathVariable Long accommodationId) {
         accomService.deleteAccommodation(accommodationId);
-        return ResponseEntity.noContent().build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 
     /**
@@ -99,7 +111,7 @@ public class AdminAccommodationController {
         description = "기존 숙소의 정보를 수정합니다."
     )
     @PatchMapping("/admin/accommodations/{accommodationId}")
-    public ResponseEntity<Void> updateAccommodation(
+    public ResponseEntity<SuccessResponse<Void>> updateAccommodation(
             @Parameter(description = "수정할 숙소 ID") 
             @PathVariable Long accommodationId,
             @Parameter(description = "수정할 숙소 정보") 
@@ -107,7 +119,9 @@ public class AdminAccommodationController {
         // accommodationId를 request 에 설정
     	request.setAccommodationId(accommodationId);
         accomService.updateAccommodation(request);
-        return ResponseEntity.noContent().build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 
     /**
@@ -122,10 +136,12 @@ public class AdminAccommodationController {
         description = "새로운 숙소를 등록합니다. ID는 자동 생성됩니다."
     )
     @PostMapping("/admin/accommodations")
-    public ResponseEntity<Void> addAccommodation(
+    public ResponseEntity<SuccessResponse<Void>> addAccommodation(
             @Parameter(description = "등록할 숙소 정보") 
             @RequestBody AdminAccommodationRequest request) {
         accomService.addAccommodation(request);
-        return ResponseEntity.status(201).build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 }

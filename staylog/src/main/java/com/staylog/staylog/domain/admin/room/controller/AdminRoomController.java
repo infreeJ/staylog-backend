@@ -15,6 +15,9 @@ import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomSearchRequest;
 import com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse;
 import com.staylog.staylog.domain.admin.room.service.AdminRoomService;
+import com.staylog.staylog.global.common.code.SuccessCode;
+import com.staylog.staylog.global.common.response.SuccessResponse;
+import com.staylog.staylog.global.common.util.MessageUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -34,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminRoomController {
 
 	private final AdminRoomService roomService;
+	private final MessageUtil messageUtil;
 
 	/**
 	 * 특정 숙소의 객실 목록 조회 (검색 필터 포함)
@@ -47,7 +51,7 @@ public class AdminRoomController {
 		description = "특정 숙소에 속한 객실 목록을 조회합니다."
 	)
 	@GetMapping("/admin/accommodations/{accommodationId}/rooms")
-	public ResponseEntity<List<AdminRoomDetailResponse>> list(
+	public ResponseEntity<SuccessResponse<List<AdminRoomDetailResponse>>> list(
 			@Parameter(description = "숙소 ID") 
 			@PathVariable Long accommodationId,
 			@Parameter(description = "객실 검색 조건") 
@@ -55,7 +59,10 @@ public class AdminRoomController {
 		// accommodationId를 searchRequest에 설정
 		searchRequest.setAccommodationId(accommodationId);
 		List<AdminRoomDetailResponse> list = roomService.getRoomList(searchRequest);
-		return ResponseEntity.ok(list);
+		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        SuccessResponse<List<AdminRoomDetailResponse>> success = SuccessResponse.of(code, message, list);
+		return ResponseEntity.ok(success);
 	}
 
 	/**
@@ -70,13 +77,16 @@ public class AdminRoomController {
 		description = "특정 숙소의 특정 객실 상세 정보를 조회합니다."
 	)
 	@GetMapping("/admin/accommodations/{accommodationId}/rooms/{roomId}")
-	public ResponseEntity<AdminRoomDetailResponse> detail(
+	public ResponseEntity<SuccessResponse<AdminRoomDetailResponse>> detail(
 			@Parameter(description = "숙소 ID") 
 			@PathVariable Long accommodationId,
 			@Parameter(description = "객실 ID") 
 			@PathVariable Long roomId) {
 		AdminRoomDetailResponse response = roomService.getRoomDetail(roomId);
-		return ResponseEntity.ok(response);
+		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        SuccessResponse<AdminRoomDetailResponse> success = SuccessResponse.of(code, message, response);
+		return ResponseEntity.ok(success);
 	}
 
 	/**
@@ -91,13 +101,15 @@ public class AdminRoomController {
 		description = "객실을 논리 삭제합니다. (deleted_yn = 'Y')"
 	)
 	@PatchMapping("/admin/accommodations/{accommodationId}/rooms/{roomId}/delete")
-	public ResponseEntity<Void> deleteRoom(
+	public ResponseEntity<SuccessResponse<Void>> deleteRoom(
 			@Parameter(description = "숙소 ID") 
 			@PathVariable Long accommodationId,
 			@Parameter(description = "삭제할 객실 ID") 
 			@PathVariable Long roomId) {
 		roomService.deleteRoom(roomId);
-		return ResponseEntity.noContent().build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
 	}
 
 	/**
@@ -112,7 +124,7 @@ public class AdminRoomController {
 		description = "기존 객실의 정보를 수정합니다."
 	)
 	@PatchMapping("/admin/accommodations/{accommodationId}/rooms/{roomId}")
-	public ResponseEntity<Void> updateRoom(
+	public ResponseEntity<SuccessResponse<Void>> updateRoom(
 			@Parameter(description = "숙소 ID") 
 			@PathVariable Long accommodationId,
 			@Parameter(description = "수정할 객실 ID") 
@@ -123,7 +135,9 @@ public class AdminRoomController {
 		request.setRoomId(roomId);
 		request.setAccommodationId(accommodationId);
 		roomService.updateRoom(request);
-		return ResponseEntity.noContent().build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
 	}
 
 	/**
@@ -139,7 +153,7 @@ public class AdminRoomController {
 		description = "특정 숙소에 새로운 객실을 등록합니다. ID는 자동 생성됩니다."
 	)
 	@PostMapping("/admin/accommodations/{accommodationId}/rooms")
-	public ResponseEntity<Void> addRoom(
+	public ResponseEntity<SuccessResponse<Void>> addRoom(
 			@Parameter(description = "숙소 ID") 
 			@PathVariable Long accommodationId,
 			@Parameter(description = "등록할 객실 정보") 
@@ -147,6 +161,8 @@ public class AdminRoomController {
 		// accommodationId를 request에 설정
 		request.setAccommodationId(accommodationId);
 		roomService.addRoom(request);
-		return ResponseEntity.status(201).build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
 	}
 }
