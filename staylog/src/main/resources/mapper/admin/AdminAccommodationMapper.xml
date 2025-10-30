@@ -77,10 +77,18 @@
 	    WHERE accommodation_id = #{accommodationId}
 	</update>
 	
-	<!-- 숙소 논리 삭제(상태전환) -->
+	<!-- 숙소 논리 삭제 -->
 	<update id="deleteAccommodation" parameterType="long">
 	    UPDATE accommodation
 	    SET deleted_yn = 'Y',
+	        updated_at = SYSDATE
+	    WHERE accommodation_id = #{accommodationId}
+	</update>
+		
+	<!-- 숙소 논리 복원 -->
+	<update id="restoreAccommodation" parameterType="long">
+	    UPDATE accommodation
+	    SET deleted_yn = 'N',
 	        updated_at = SYSDATE
 	    WHERE accommodation_id = #{accommodationId}
 	</update>

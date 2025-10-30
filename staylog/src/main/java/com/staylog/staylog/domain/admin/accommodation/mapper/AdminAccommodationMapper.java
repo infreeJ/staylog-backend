@@ -33,11 +33,18 @@ public interface AdminAccommodationMapper {
     int updateAccommodation(AdminAccommodationRequest request);
 
     /**
-     * 숙소 논리 삭제(상태전환)
+     * 숙소 논리 삭제
      * @param accommodationId 숙소 ID
      * @return 삭제된 행 수
      */
     int deleteAccommodation(@Param("accommodationId") Long accommodationId);
+    
+    /**
+     * 숙소 논리 복원
+     * @param accommodationId 숙소 ID
+     * @return 복원된 행 수
+     */
+    int restoreAccommodation(@Param("accommodationId") Long accommodationId);
 
     /**
      * 숙소 등록

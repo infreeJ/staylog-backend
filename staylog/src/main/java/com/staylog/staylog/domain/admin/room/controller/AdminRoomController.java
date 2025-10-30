@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 관리자 객실 관리 컨트롤러
- * 객실 등록, 수정, 삭제, 조회 기능을 제공합니다.
+ * 객실 등록, 수정, 삭제, 복원, 조회 기능을 제공합니다.
  *
  * @author 천승현
  */
@@ -90,7 +90,7 @@ public class AdminRoomController {
 	}
 
 	/**
-	 * 객실 논리 삭제 (상태 전환)
+	 * 객실 논리 삭제
 	 * deleted_yn을 'Y'로 변경하여 논리적으로 삭제 처리합니다.
 	 * 
 	 * @param accommodationId 숙소 ID
@@ -107,6 +107,29 @@ public class AdminRoomController {
 			@Parameter(description = "삭제할 객실 ID") 
 			@PathVariable Long roomId) {
 		roomService.deleteRoom(roomId);
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
+	}
+	
+	/**
+	 * 객실 논리 복원
+	 * deleted_yn을 'N'로 변경하여 논리적으로 복원 처리합니다.
+	 * 
+	 * @param accommodationId 숙소 ID
+	 * @param roomId 복원할 객실 ID
+	 */
+	@Operation(
+		summary = "객실 복원", 
+		description = "객실을 논리 복원합니다. (deleted_yn = 'N')"
+	)
+	@PatchMapping("/admin/accommodations/{accommodationId}/rooms/{roomId}/restore")
+	public ResponseEntity<SuccessResponse<Void>> restoreRoom(
+			@Parameter(description = "숙소 ID") 
+			@PathVariable Long accommodationId,
+			@Parameter(description = "삭제할 객실 ID") 
+			@PathVariable Long roomId) {
+		roomService.restoreRoom(roomId);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));
