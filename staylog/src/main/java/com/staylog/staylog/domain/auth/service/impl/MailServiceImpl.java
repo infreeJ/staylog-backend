@@ -6,7 +6,6 @@ import com.staylog.staylog.domain.auth.service.MailService;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.exception.BusinessException;
-import com.staylog.staylog.global.exception.custom.DuplicateLoginIdException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +44,7 @@ public class MailServiceImpl implements MailService {
 
         // users 테이블에서 이메일 중복 확인
         if(userMapper.findByEmail(email) != null) {
-            throw new DuplicateLoginIdException(ErrorCode.DUPLICATE_EMAIL, "이미 가입된 이메일입니다.");
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         // 이메일 테이블의 데이터가 있는지 확인

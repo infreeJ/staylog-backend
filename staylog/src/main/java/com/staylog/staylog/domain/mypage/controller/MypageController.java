@@ -38,7 +38,8 @@ public class MypageController {
     public ResponseEntity<SuccessResponse<MemberInfoResponse>> getMember(@RequestParam Long userId) {
         MemberInfoResponse data = mypageService.getMemberInfo(userId);
         String msg = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        return ResponseEntity.ok(SuccessResponse.of(msg, data));
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code,msg, data));
     }
 
     /** 회원정보 수정 */
@@ -47,7 +48,8 @@ public class MypageController {
     public ResponseEntity<SuccessResponse<Void>> updateMember(@RequestBody @Valid UpdateMemberInfoRequest req) {
         mypageService.updateMemberInfo(req);
         String msg = messageUtil.getMessage(SuccessCode.UPDATED.getMessageKey());
-        return ResponseEntity.ok(SuccessResponse.of(msg, null));
+        String code = SuccessCode.UPDATED.name();
+        return ResponseEntity.ok(SuccessResponse.of(code,msg, null));
     }
 
     /** 회원 탈퇴(미정) */
