@@ -22,7 +22,17 @@ jobs:
       NETWORK_NAME: staylog-net
       TAR_DIR: ./artifacts
       OUT_DIR_EC2: /home/ec2-user/spring
-
+      # Secrets → 컨테이너에 주입할 환경변수
+      SPRING_PROFILES_ACTIVE: local
+      SERVER_PORT: ${{ secrets.BACK_SERVER_PORT }}
+      DB_DRIVER: ${{ secrets.DB_DRIVER }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PW: ${{ secrets.DB_PW }}
+      MAIL_USER: ${{ secrets.MAIL_USER }}
+      MAIL_PW: ${{ secrets.MAIL_PW }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      
 
     steps:
       - name: Checkout
