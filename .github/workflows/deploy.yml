@@ -1,0 +1,136 @@
+name: Build Docker Image & Deploy to EC2 (No Registry)
+
+
+on:
+  push:
+    branches: [ deploy_test ]
+
+
+concurrency:
+  group: deploy-staylog
+  cancel-in-progress: true
+
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: staylog-spring-image            # 이미지 이름
+      CONTAINER_NAME: staylog-spring       # 컨테이너 이름
+      ORACLE_CONTAINER_NAME: staylog-oracle
+      APP_PORT: 9000                         # EC2에서 사용할 포트
+      NETWORK_NAME: staylog-net
+      TAR_DIR: ./artifacts
+      OUT_DIR_EC2: /home/ec2-user/spring
+      # GitHub Secrets → 컨테이너에 주입할 환경변수
+      SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+      SERVER_PORT: ${{ secrets.BACK_SERVER_PORT }}
+      DB_DRIVER: ${{ secrets.DB_DRIVER }}
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PW: ${{ secrets.DB_PW }}
+      MAIL_USER: ${{ secrets.MAIL_USER }}
+      MAIL_PW: ${{ secrets.MAIL_PW }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # ---- JDK & Maven 캐시 ----
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+
+      # ---- Maven 빌드 ----
+      - name: Build with Maven
+        run: cd staylog && mvn -B -DskipTests clean package
+
+
+      # ---- Docker 이미지 빌드 (latest만) ----
+      - name: Build Docker image
+        run: |
+          cd staylog && docker build -t ${IMAGE_NAME}:latest .
+
+
+      - name: Save image as tar.gz (latest 고정 파일명)
+        run: |
+          mkdir -p "${TAR_DIR}"
+          TAR_FILE="${TAR_DIR}/${IMAGE_NAME}-latest.tar"
+          docker save -o "${TAR_FILE}" "${IMAGE_NAME}:latest"
+          gzip -f "${TAR_FILE}"
+          ls -lh "${TAR_FILE}.gz"
+
+
+      - name: Make tar readable for scp
+        run: |
+          chmod 755 artifacts
+          chmod 644 artifacts/*.tar.gz
+          ls -l artifacts
+
+
+      # ---- EC2로 이미지 복사 ----
+      - name: Copy image to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "artifacts/*.tar.gz"
+          target: "${{ env.OUT_DIR_EC2 }}"
+          overwrite: true
+          strip_components: 1
+
+
+      # ---- EC2에서 컨테이너 재기동 ----
+      - name: Deploy container on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd "${{ env.OUT_DIR_EC2 }}"
+
+
+            GZ_FILE="${{ env.IMAGE_NAME }}-latest.tar.gz"
+            TAR_FILE="${{ env.IMAGE_NAME }}-latest.tar"
+
+
+            echo "[1/4] Load image (:latest)"
+            gunzip -f "${GZ_FILE}"
+            docker stop "${{ env.CONTAINER_NAME }}" 2>/dev/null || true
+            docker rm   "${{ env.CONTAINER_NAME }}" 2>/dev/null || true
+            docker rmi  "${{ env.IMAGE_NAME }}:latest" 2>/dev/null || true
+            docker load -i "${TAR_FILE}"
+
+
+            echo "[2/4] Run new container (:latest)"
+            docker run -d --name "${{ env.CONTAINER_NAME }}" \
+              --network "${{ env.NETWORK_NAME }}" \
+              -p "${{ env.APP_PORT }}:${{ env.APP_PORT }}" \
+              -e SPRING_PROFILES_ACTIVE="${{ env.SPRING_PROFILES_ACTIVE }}" \
+              -e SERVER_PORT="${{ env.SERVER_PORT }}" \
+              -e DB_DRIVER="${{ env.DB_DRIVER }}" \
+              -e DB_URL="${{ env.DB_URL }}" \
+              -e DB_USER="${{ env.DB_USER }}" \
+              -e DB_PW="${{ env.DB_PW }}" \
+              -e MAIL_USER="${{ env.MAIL_USER }}" \
+              -e MAIL_PW="${{ env.MAIL_PW }}" \
+              -e JWT_SECRET="${{ env.JWT_SECRET }}" \
+              "${{ env.IMAGE_NAME }}:latest"
+
+
+            echo "[3/4] Clean up old tar files"
+            ls -t "${{ env.IMAGE_NAME }}"-latest.tar | awk 'NR>2 {print $1}' | xargs -r rm -f || true
+            docker image prune -f || true
+
+
+            echo "[4/4]  Deployed! ${{ env.IMAGE_NAME }}:latest"
