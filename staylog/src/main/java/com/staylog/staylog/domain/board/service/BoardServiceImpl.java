@@ -2,6 +2,7 @@ package com.staylog.staylog.domain.board.service;
 
 import com.staylog.staylog.domain.board.dto.BoardDto;
 import com.staylog.staylog.domain.board.dto.request.BoardListRequest;
+import com.staylog.staylog.domain.board.dto.request.BoardRequest;
 import com.staylog.staylog.domain.board.dto.response.BoardListResponse;
 import com.staylog.staylog.domain.board.mapper.BoardMapper;
 import com.staylog.staylog.global.common.dto.PageRequest;
@@ -20,51 +21,51 @@ public class BoardServiceImpl implements BoardService {
 
 
     @Override
-    public BoardListResponse getByBoardType(BoardListRequest request, PageRequest pageRequest) {
-
-        String boardType = request.getBoardType();
-
-        // 게시글 목록 조회 (검색조건) _추가예정
-        List<BoardDto> boardList = boardMapper.getByBoardType(request);
+    public BoardListResponse getByBoardType(BoardListRequest boardListRequest, PageRequest pageRequest) {
 
 
-        // 검색 쿼리 문자열 조합
+        return boardMapper.getByBoardType(boardListRequest);
 
-        // 전체 게시글 수 조회
-        int totalCount = boardMapper.countByBoardType(request);
+    }
 
-        // 페이지 계산
-        PageResponse pageResponse = new PageResponse();
-        pageResponse.calculate(pageRequest, totalCount);
+    @Override
+    public void insert(BoardRequest boardRequest) {
 
-
-        // 응답 DTO (builder)
-        return BoardListResponse.builder()
-                .boardList(boardList)
-                .boardType(request.getBoardType())
-                .keyword(request.getKeyword())
-                .search(request.getSearch())
-                .query(request.getSearch())
-                .pageResponse(pageResponse)
+        // Request -> DTO
+        BoardDto boardDto = BoardDto.builder()
+                .boardId(boardRequest.getBookingId())
+                .accommodationId(boardRequest.getAccommodationId())
+                .bookingId(boardRequest.getBookingId())
+                .userId(boardRequest.getUserId())
+                .boardType(boardRequest.getBoardType())
+                .regionCode(boardRequest.getRegionCode())
+                .title(boardRequest.getTitle())
+                .content(boardRequest.getContent())
+                .rating(boardRequest.getRating())
                 .build();
-    }
 
 
-
-    @Override
-    public void insert(BoardDto boardDto) {
-
-
+        boardMapper.insert(boardDto);
 
     }
 
     @Override
-    public void update(BoardDto boardDto) {
+    public void update(BoardRequest boardRequest) {
 
+        // Request -> DTO
+        BoardDto boardDto = BoardDto.builder()
+                .boardId(boardRequest.getBookingId())
+
+                .title(boardRequest.getTitle())
+                .content(boardRequest.getContent())
+                .rating(boardRequest.getRating())
+                .build();
+
+        boardMapper.update(boardDto);
     }
 
     @Override
-    public void delete(BoardDto boardDto) {
+    public void delete(long boardId) {
 
     }
 }

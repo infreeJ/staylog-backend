@@ -7,9 +7,9 @@ import lombok.Data;
 public class BoardRequest {
 
     @NotBlank
-    private String BoardType;   // 게시판 카테고리
+    private String boardType;   // 게시판 카테고리
     @NotBlank
-    private String RegionType;  // 게시글 지역
+    private String regionCode;  // 게시글 지역
     @NotBlank
     private String title;       // 게시글 제목
     @NotBlank
