@@ -2,5 +2,84 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.search.mapper.SearchMapper">
+
+<mapper namespace="com.staylog.staylog.domain.search.mapper.SearchMapper">
+
+    <resultMap id="AccomWithImagesMap" type="com.staylog.staylog.domain.search.dto.response.AccomListResponse">
+        <id property="accommodationId" column="ACCOMMODATION_ID"/>
+        <result property="accommodationName" column="ACCOMMODATION_NAME"/>
+        <result property="regionName" column="REGION_NAME"/>
+        <result property="minCapacity" column="MIN_CAPACITY"/>
+        <result property="maxCapacity" column="MAX_CAPACITY"/>
+        <result property="basePrice" column="BASE_PRICE"/>
+        <result property="reservationCount" column="RES_COUNT"/>
+        <collection property="mainImg" ofType="String">
+            <result column="IMG_URL"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAccomList" resultMap="AccomWithImagesMap">
+        SELECT
+            A.ACCOMMODATION_ID,
+            A.NAME AS ACCOMMODATION_NAME,
+            C.CODE_NAME AS REGION_NAME,
+            MIN(R.MAX_ADULT + R.MAX_CHILDREN + R.MAX_INFANT) AS MIN_CAPACITY,
+            MAX(R.MAX_ADULT + R.MAX_CHILDREN + R.MAX_INFANT) AS MAX_CAPACITY,
+            MIN(R.PRICE) AS BASE_PRICE,
+            NVL(COUNT(DISTINCT RS.BOOKING_ID), 0) AS RES_COUNT,
+            I.FILE_SAVED_NAME AS IMG_URL,
+            A.CREATED_AT
+        FROM ACCOMMODATION A
+        JOIN ROOM R ON A.ACCOMMODATION_ID = R.ACCOMMODATION_ID AND R.DELETED_YN = 'N'
+        JOIN COMMON_CODE C ON A.REGION_CODE = C.CODE_ID AND C.USE_YN = 'Y'
+        LEFT JOIN IMAGE_FILE I ON I.TARGET_ID = A.ACCOMMODATION_ID
+            AND I.TARGET_TYPE = 'ACCOM'
+            AND I.IMAGE_TYPE = 'IMG_ORIGINAL'
+        LEFT JOIN RESERVATION RS ON RS.ROOM_ID = R.ROOM_ID
+            AND RS.STATUS IN ('CONFIRMED', 'PENDING')
+        <where>
+            A.DELETED_YN = 'N'
+            <if test="regionCodes != null and !regionCodes.isEmpty()">
+                AND A.REGION_CODE IN
+                <foreach item="code" collection="regionCodes" open="(" separator="," close=")">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="people != null">
+                AND (R.MAX_ADULT + R.MAX_CHILDREN + R.MAX_INFANT) >= #{people}
+            </if>
+            <if test="checkIn != null and checkOut != null">
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM RESERVATION X
+                    WHERE X.ROOM_ID = R.ROOM_ID
+                    AND X.STATUS IN ('CONFIRMED', 'PENDING')
+                    AND (X.CHECK_IN <![CDATA[<]]> #{checkOut} AND X.CHECK_OUT > #{checkIn})
+                )
+            </if>
+            <if test="lastAccomId != null">
+                AND A.ACCOMMODATION_ID > #{lastAccomId}
+            </if>
+        </where>
+        GROUP BY A.ACCOMMODATION_ID, A.NAME, C.CODE_NAME, I.FILE_SAVED_NAME, A.CREATED_AT
+        <choose>
+            <when test="order == 'lowPrice'">
+                ORDER BY BASE_PRICE ASC, A.ACCOMMODATION_ID ASC
+            </when>
+            <when test="order == 'highPrice'">
+                ORDER BY BASE_PRICE DESC, A.ACCOMMODATION_ID ASC
+            </when>
+            <when test="order == 'new'">
+                ORDER BY A.CREATED_AT DESC, A.ACCOMMODATION_ID ASC
+            </when>
+            <when test="order == 'popular'">
+                ORDER BY RES_COUNT DESC, A.ACCOMMODATION_ID ASC
+            </when>
+            <otherwise>
+                ORDER BY A.NAME ASC, A.ACCOMMODATION_ID ASC
+            </otherwise>
+        </choose>
+        FETCH FIRST 20 ROWS ONLY
+    </select>
+
 </mapper>

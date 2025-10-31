@@ -29,7 +29,6 @@ public class AuthController {
 
     private final AuthService authService;
     private final MessageUtil messageUtil;
-    private final UserService userService;
 
     /**
      * 로그인/ 로그아웃/ 리프레쉬 컨트롤러

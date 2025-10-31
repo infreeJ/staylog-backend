@@ -2,8 +2,7 @@ spring:
   application:
     name: staylog
   profiles:
-    active:
-      - dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
     group:
       local:
         - common

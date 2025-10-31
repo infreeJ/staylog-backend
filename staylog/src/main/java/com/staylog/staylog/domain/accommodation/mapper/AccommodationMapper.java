@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.staylog.staylog.domain.accommodation.dto.response.AccommodationDetailResponse;
+import com.staylog.staylog.domain.accommodation.dto.response.ReviewResponse;
 import com.staylog.staylog.domain.accommodation.dto.response.RoomListResponse;
 
 @Mapper
@@ -15,12 +16,19 @@ public interface AccommodationMapper {
 	 * @param accommodationId : 조회할 숙소의 고유번호 (PK) 
 	 * @return 숙소 상세 내용
 	 * */
-	AccommodationDetailResponse selectAcDetail(@Param("accommodationId") Long id);
+	AccommodationDetailResponse selectAcDetail(@Param("accommodationId") Long accommodationId);
 	
 	/**
-     * 숙소에 속한 객실 목록 조회
+     * 해당 숙소에 속한 객실 목록 조회
      * @param accommodationId : 조회할 숙소 고유번호
      * @return 객실 목록 리스트
      */
-    List<RoomListResponse> selectRoomList(@Param("accommodationId") Long id);
+    List<RoomListResponse> selectRoomList(@Param("accommodationId") Long accommodationId);
+    
+    /**
+     * 해당 숙소에 대한 리뷰 목록 조회
+     * @param accommodationId : 조회할 숙소의 고유번호
+     * @return 리뷰 목록 리스트
+     * */
+    List<ReviewResponse> selectReviewList(@Param("accommodationId") Long accommodationId);
 }
