@@ -44,8 +44,12 @@ public enum ErrorCode {
 
     // ==================== 숙소 관련 에러 (4xxx) ====================
     ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, "E4001", "error.accommodation.not.found"),
-    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "E4002", "error.room.not.found"),
-    ROOM_NOT_AVAILABLE(HttpStatus.CONFLICT, "E4003", "error.room.not.available"),
+    ACCOMMODATION_LIST_NOT_FOUND(HttpStatus.NOT_FOUND,"E4002", "error.accommodation.list.not.found"),
+    ACCOMMODATION_REVIEW_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "E4003", "error.accommodation.review.list.not.found"),
+    ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "E4004", "error.room.not.found"),
+    ROOM_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "E4005", "error.room.list.not.found"),
+    ROOM_NOT_AVAILABLE(HttpStatus.CONFLICT, "E4006", "error.room.not.available"),
+    DATE_NOT_FOUND(HttpStatus.BAD_REQUEST,"E4007","error.room.bookingDate.not.found"),
 
     // ==================== 예약 관련 에러 (5xxx) ====================
     BOOKING_NOT_FOUND(HttpStatus.NOT_FOUND, "E5001", "error.booking.not.found"),

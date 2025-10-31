@@ -9,6 +9,6 @@ public interface AccommodationService {
      * @param accommodationId 조회할 숙소의 기본키
      * @return 숙소 상세 응답 dto
      */
-    public AccommodationDetailResponse getAcDetail(Long id);
+    public AccommodationDetailResponse getAcDetail(Long accommodationId);
     
 }
