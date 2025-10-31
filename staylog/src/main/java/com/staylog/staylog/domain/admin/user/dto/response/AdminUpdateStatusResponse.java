@@ -5,16 +5,16 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * 권한 변경
+ *  유저 상태 변경
  */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminUpdateRoleResponse {
+public class AdminUpdateStatusResponse {
     private Long userId;
     private String userName;
-    private String userRole;
+    private String userStatus;
 
     private LocalDateTime updatedAt;
 }
