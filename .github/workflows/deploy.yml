@@ -22,7 +22,7 @@ jobs:
       NETWORK_NAME: staylog-net
       TAR_DIR: ./artifacts
       OUT_DIR_EC2: /home/ec2-user/spring
-      # GitHub Actions Secrets → 컨테이너에 주입할 환경변수
+      # GitHub Secrets → 컨테이너에 주입할 환경변수
       SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
       SERVER_PORT: ${{ secrets.BACK_SERVER_PORT }}
       DB_DRIVER: ${{ secrets.DB_DRIVER }}
