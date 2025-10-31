@@ -55,4 +55,30 @@
 		WHERE board_type = 'BOARD_REVIEW' AND b.accommodation_id = #{accommodationId}
 		ORDER BY b.created_at DESC
 	</select>
+	
+	
+	<!-- 정나영
+		숙소 등록 insert
+	 -->
+	<insert id="insertAccommodation" parameterType="com.staylog.staylog.domain.accommodation.dto.request.AccommodationCreateRequest">
+	  <selectKey keyProperty="accommodationId" resultType="long" order="BEFORE">
+	    SELECT SEQ_ACCOMMODATION_ID.NEXTVAL FROM DUAL
+	  </selectKey>
+	
+	  INSERT INTO ACCOMMODATION (
+	    accommodation_id,
+	    name, ac_type, description, region_code, address , latitude, longitude,
+	    created_at, check_in_time, check_out_time
+	  ) VALUES (
+	    #{accommodationId}, #{name}, #{acType}, #{description}, #{region}, #{address}, 
+	    #{latitude}, #{longitude}, SYSTIMESTAMP, 
+	    TO_DATE(#{checkInTime}, 'HH24:MI'),
+	    TO_DATE(#{checkOutTime}, 'HH24:MI')
+	  )
+	</insert>
+		 
+	 
+	 
+	 
+	 
 </mapper>

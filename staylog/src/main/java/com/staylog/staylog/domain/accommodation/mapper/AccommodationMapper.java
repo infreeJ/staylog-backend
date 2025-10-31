@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.staylog.staylog.domain.accommodation.dto.request.AccommodationCreateRequest;
 import com.staylog.staylog.domain.accommodation.dto.response.AccommodationDetailResponse;
 import com.staylog.staylog.domain.accommodation.dto.response.RoomListResponse;
 
@@ -23,4 +24,13 @@ public interface AccommodationMapper {
      * @return 객실 목록 리스트
      */
     List<RoomListResponse> selectRoomList(@Param("accommodationId") Long id);
+    
+
+    /*
+     * 정나영
+     * 숙소 등록 
+     * */
+    int insertAccommodation (AccommodationCreateRequest dto);
+ 
+    
 }

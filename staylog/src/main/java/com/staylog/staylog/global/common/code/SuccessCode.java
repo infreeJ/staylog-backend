@@ -57,7 +57,10 @@ public enum SuccessCode {
     // ==================== 저널 관련 성공 (8xxx) ====================
     JOURNAL_CREATED(201, "S8001", "success.journal.created"),
     JOURNAL_UPDATED(200, "S8002", "success.journal.updated"),
-    JOURNAL_DELETED(200, "S8003", "success.journal.deleted");
+    JOURNAL_DELETED(200, "S8003", "success.journal.deleted"),
+	
+	//===================== 객실 관련 성공 (9.xxx)=====================
+	ROOM_SUCCESS(200, "S9001", "success.room");
 
     private final int httpStatus;
     private final String code;
