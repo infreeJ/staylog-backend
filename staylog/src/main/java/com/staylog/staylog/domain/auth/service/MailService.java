@@ -18,4 +18,12 @@ public interface MailService {
      * @return 인증 성공 여부
      */
     boolean verifyMail(String email, String code);
+
+
+    /**
+     * 만료된 이메일 데이터 삭제
+     * @author 이준혁
+     * @return 성공 여부 1 또는 0
+     */
+    public int deleteExpiredEmail();
 }
