@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,6 +148,16 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return user;
+    }
+
+
+    /**
+     * 만료된 RefreshToken 삭제 스케줄러
+     */
+    @Override
+    @Scheduled(cron = "0 0 3 * * *") // 매일 새벽 3시
+    public void deleteExpiredTokens() {
+        refreshTokenMapper.deleteExpiredTokens();
     }
 
 

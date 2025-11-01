@@ -59,7 +59,7 @@ public class MailServiceImpl implements MailService {
             verificationDto.setEmail(email);
         }
         verificationDto.setVerificationCode(code);
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5); // 10분 뒤 만료
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(5); // 5분 뒤 만료
         verificationDto.setExpiresAt(expiresAt);
         verificationDto.setIsVerified("N"); // 미인증 상태
 
@@ -138,12 +138,10 @@ public class MailServiceImpl implements MailService {
     /**
      * 만료된 이메일 데이터 삭제
      * @author 이준혁
-     * @return 성공 여부 1 또는 0
      */
     @Override
-    @Scheduled(cron = "0 */2 * * * *")
-    public int deleteExpiredEmail() {
+    @Scheduled(cron = "0 0 4 * * *") // 매일 새벽 4시
+    public void deleteExpiredEmail() {
         emailMapper.deleteExpiredEmail(LocalDateTime.now());
-        return 0;
     }
 }
