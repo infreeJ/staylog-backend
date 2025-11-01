@@ -1,11 +1,12 @@
 package com.staylog.staylog.domain.image.service.impl;
 
+import java.awt.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.staylog.staylog.domain.image.dto.request.ImageLoadRequest;
-import com.staylog.staylog.domain.image.dto.request.ImageUploadRequest;
+import com.staylog.staylog.domain.image.dto.ImageDto;
 import com.staylog.staylog.domain.image.service.ImageService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,17 +20,18 @@ public class ImageServiceImpl implements ImageService{
 	
 	@Value("${file.image-location}")
 	private String filePath;
-	
+
 	@Override
-	public void saveImage(ImageUploadRequest uploadRes) {
+	public String[] saveImage(ImageDto imageDto) {
+		
+		return null;
+	}
+
+	@Override
+	public void updateImage() {
 		
 		
 	}
 
-	@Override
-	public void loadImage(ImageLoadRequest loadRes) {
-		
-		
-	}
 
 }

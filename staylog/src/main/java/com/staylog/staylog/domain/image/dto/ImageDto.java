@@ -3,13 +3,9 @@ package com.staylog.staylog.domain.image.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * 이미지 업/다운로드
- * @author 고윤제
- */
-@Getter
 @Setter
-public class ImageUploadDto {
+@Getter
+public class ImageDto {
 	private long imageId;
 	private String imageType;
 	private String targetType;

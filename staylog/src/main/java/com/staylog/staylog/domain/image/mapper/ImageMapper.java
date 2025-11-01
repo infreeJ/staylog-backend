@@ -1,5 +1,8 @@
 package com.staylog.staylog.domain.image.mapper;
 
-public class ImageMapper {
+import org.apache.ibatis.annotations.Mapper;
 
+@Mapper
+public class ImageMapper {
+	
 }

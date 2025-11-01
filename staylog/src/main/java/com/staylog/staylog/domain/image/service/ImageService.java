@@ -1,11 +1,10 @@
 package com.staylog.staylog.domain.image.service;
 
-import com.staylog.staylog.domain.image.dto.request.ImageLoadRequest;
-import com.staylog.staylog.domain.image.dto.request.ImageUploadRequest;
+import com.staylog.staylog.domain.image.dto.ImageDto;
 
 public interface ImageService {
 	
-	public void saveImage(ImageUploadRequest uploadRes);
-	public void loadImage(ImageLoadRequest loadRes);
+	public String[] saveImage(ImageDto imageDto);
+	public void updateImage();
 	
 }
