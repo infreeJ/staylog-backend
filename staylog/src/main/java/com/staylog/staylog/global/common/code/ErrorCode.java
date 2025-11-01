@@ -76,7 +76,11 @@ public enum ErrorCode {
     // ==================== 파일 관련 에러 (9xxx) ====================
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E9001", "error.file.upload.failed"),
     FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "E9002", "error.file.size.exceeded"),
-    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "E9003", "error.file.invalid.type");
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "E9003", "error.file.invalid.type"),
+
+    // ==================== 알림 관련 에러 (10xxx) ====================
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "E10001", "error.notification.not.found"),
+    NOTIFICATION_FAILED(HttpStatus.BAD_REQUEST, "E10002", "error.notification.failed");
 
     private final HttpStatus status;
     private final String code;
