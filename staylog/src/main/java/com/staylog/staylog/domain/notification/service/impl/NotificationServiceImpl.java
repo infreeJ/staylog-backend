@@ -22,6 +22,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     /**
      * 알림 데이터 저장
+     * 알림 별로 필요한 상세데이터는 해당하는 서비스 로직에서
+     * JSON 형식으로 notificationRequest.details 필드에 담아 가져온다.
      * @author 이준혁
      * @param notificationRequest 알림 정보
      */
@@ -56,8 +58,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     /**
      * 알림 삭제
-     * @param notiId 알림 PK
      * @author 이준혁
+     * @param notiId 알림 PK
      */
     @Override
     public void deleteNotification(long notiId) {
@@ -65,6 +67,21 @@ public class NotificationServiceImpl implements NotificationService {
 
         if(isSuccess == 0) {
             log.warn("알림 데이터 삭제 실패: 알림 정보를 찾을 수 없습니다. - notiId={}", notiId);
+            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+        }
+    }
+
+    /**
+     * 알림 읽음 처리
+     * @author 이준혁
+     * @param notiId 알림 PK
+     */
+    @Override
+    public void readNotification(long notiId) {
+        int isSuccess = notificationMapper.updateReadNotification(notiId);
+
+        if(isSuccess == 0) {
+            log.warn("알림 데이터 읽음 처리 실패: 알림 정보를 찾을 수 없습니다. - notiId={}", notiId);
             throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
         }
     }

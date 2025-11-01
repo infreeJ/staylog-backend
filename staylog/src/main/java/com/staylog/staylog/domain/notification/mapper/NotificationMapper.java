@@ -34,4 +34,12 @@ public interface NotificationMapper {
      * @return 성공 여부 1 또는 0
      */
     public int deleteByNotiId(long notiId);
+
+
+    /**
+     * 알림 읽음 처리
+     * @param notiId 알림 PK
+     * @return 성공 여부 1 또는 0
+     */
+    public int updateReadNotification(long notiId);
 }

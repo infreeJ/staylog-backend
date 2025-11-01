@@ -58,5 +58,21 @@ public class NotificationController {
     }
 
 
+    /**
+     * 알림 읽음 처리
+     * @author 이준혁
+     * @param notiId 알림 PK
+     */
+    @Operation(summary = "알림 읽음 처리", description = "알림의 읽음 상태를 Y로 변경합니다.")
+    @PatchMapping("/notification/read")
+    public ResponseEntity<SuccessResponse<Void>> readNotification(long notiId) {
+        notificationService.readNotification(notiId);
+
+        String message = messageUtil.getMessage(SuccessCode.NOTIFICATION_READ.getMessageKey());
+        String code = SuccessCode.NOTIFICATION_READ.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
+    }
+
+
 
 }

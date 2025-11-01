@@ -29,4 +29,11 @@
         WHERE noti_id = #{notiId}
     </delete>
 
+    <!-- 알림 읽음 처리 -->
+    <update id="readNotification" parameterType="long">
+        UPDATE notification
+        SET is_read = 'Y'
+        WHERE noti_id #{notiId}
+    </update>
+
 </mapper>

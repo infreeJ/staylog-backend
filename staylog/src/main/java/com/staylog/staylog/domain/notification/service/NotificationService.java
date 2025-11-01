@@ -31,4 +31,12 @@ public interface NotificationService {
      * @param notiId 알림 PK
      */
     public void deleteNotification(long notiId);
+
+
+    /**
+     * 알림 읽음 처리
+     * @author 이준혁
+     * @param notiId 알림 PK
+     */
+    public void readNotification(long notiId);
 }
