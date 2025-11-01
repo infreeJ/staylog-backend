@@ -50,12 +50,15 @@ public enum ErrorCode {
     ROOM_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "E4005", "error.room.list.not.found"),
     ROOM_NOT_AVAILABLE(HttpStatus.CONFLICT, "E4006", "error.room.not.available"),
     DATE_NOT_FOUND(HttpStatus.BAD_REQUEST,"E4007","error.room.bookingDate.not.found"),
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "E4008", "error.room.invalid.date.range"),
+    ADDR_NOT_FOUND(HttpStatus.BAD_REQUEST, "E4009", "error.accommodation.addr.not.found"),
 
     // ==================== 예약 관련 에러 (5xxx) ====================
     BOOKING_NOT_FOUND(HttpStatus.NOT_FOUND, "E5001", "error.booking.not.found"),
     BOOKING_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "E5002", "error.booking.already.cancelled"),
     BOOKING_CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "E5003", "error.booking.cannot.cancel"),
     INVALID_BOOKING_DATE(HttpStatus.BAD_REQUEST, "E5004", "error.booking.invalid.date"),
+    
 
     // ==================== 결제 관련 에러 (6xxx) ====================
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E6001", "error.payment.not.found"),

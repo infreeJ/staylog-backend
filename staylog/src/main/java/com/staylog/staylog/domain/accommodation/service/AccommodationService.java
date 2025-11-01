@@ -11,4 +11,6 @@ public interface AccommodationService {
      */
     public AccommodationDetailResponse getAcDetail(Long accommodationId);
     
+    
+    
 }

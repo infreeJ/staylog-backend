@@ -27,11 +27,18 @@ public interface AdminRoomMapper {
     AdminRoomDetailResponse selectRoomDetail(@Param("roomId") Long roomId);
 
     /**
-     * 객실 논리 삭제(상태전환)
+     * 객실 논리 삭제
      * @param roomId 객실 ID
      * @return 삭제된 행 수
      */
     int deleteRoom(@Param("roomId") Long roomId);
+    
+    /**
+     * 객실 논리 복원
+     * @param roomId 객실 ID
+     * @return 복원된 행 수
+     */
+    int restoreRoom(@Param("roomId") Long roomId);
 
     /**
      * 객실 수정

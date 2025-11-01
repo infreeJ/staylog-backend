@@ -41,12 +41,20 @@ public interface AdminAccommodationService {
 	void updateAccommodation(AdminAccommodationRequest request);
 	
 	/**
-	 * 숙소 삭제 (논리 삭제)
+	 * 숙소 삭제
 	 * 숙소를 삭제 상태로 변경합니다. (deleted_yn = 'Y')
 	 * 
 	 * @param accommodationId 삭제할 숙소 ID
 	 */
 	void deleteAccommodation(Long accommodationId);
+	
+	/**
+	 * 숙소 복원
+	 * 숙소를 복원 상태로 변경합니다. (deleted_yn = 'N')
+	 * 
+	 * @param accommodationId 복원할 숙소 ID
+	 */
+	void restoreAccommodation(Long accommodationId);
 	
 	/**
 	 * 숙소 등록

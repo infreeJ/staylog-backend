@@ -72,6 +72,9 @@ public enum SuccessCode {
     NOTIFICATION_CREATE(201, "S9001", "success.notification.created"),
     NOTIFICATION_LIST_FIND(200, "S9002", "success.notification.list.find"),
     NOTIFICATION_DELETE(200, "S9003", "success.notification.delete");
+	
+	//===================== 객실 관련 성공 (10xxx)=====================
+	ROOM_SUCCESS(200, "S10001", "success.room");
 
     private final int httpStatus;
     private final String code;

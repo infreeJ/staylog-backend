@@ -11,29 +11,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.staylog.staylog.domain.accommodation.controller.AccommodationController;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationSearchRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.response.AdminAccommodationDetailResponse;
 import com.staylog.staylog.domain.admin.accommodation.service.AdminAccommodationService;
+import com.staylog.staylog.global.common.code.SuccessCode;
+import com.staylog.staylog.global.common.response.SuccessResponse;
+import com.staylog.staylog.global.common.util.MessageUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 관리자 숙소 관리 컨트롤러
- * 숙소 등록, 수정, 삭제, 조회 기능을 제공합니다.
+ * 숙소 등록, 수정, 삭제, 복원, 조회 기능을 제공합니다.
  *
  * @author 천승현
  */
+@Slf4j
 @Tag(name = "AdminAccommodationController", description = "관리자 숙소 관리 API")
-@RequestMapping("/v1")
+@RequestMapping("/api")
 @RestController
 @RequiredArgsConstructor
 public class AdminAccommodationController {
     
     private final AdminAccommodationService accomService;
+    private final MessageUtil messageUtil;
 
     /**
      * 숙소 목록 조회 (검색 필터 포함)
@@ -46,10 +53,13 @@ public class AdminAccommodationController {
         description = "검색 조건에 맞는 숙소 목록을 조회합니다. 모든 파라미터는 선택사항입니다."
     )
     @GetMapping("/admin/accommodations")
-    public ResponseEntity<List<AdminAccommodationDetailResponse>> list(
+    public ResponseEntity<SuccessResponse<List<AdminAccommodationDetailResponse>>> list(
             @Parameter(description = "숙소 검색 조건") AdminAccommodationSearchRequest searchRequest) {
         List<AdminAccommodationDetailResponse> list = accomService.getList(searchRequest);
-        return ResponseEntity.ok(list);
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        SuccessResponse<List<AdminAccommodationDetailResponse>> success = SuccessResponse.of(code, message, list);
+        return ResponseEntity.ok(success);
     }
 
     /**
@@ -63,15 +73,18 @@ public class AdminAccommodationController {
         description = "특정 숙소의 상세 정보를 조회합니다."
     )
     @GetMapping("/admin/accommodations/{accommodationId}")
-    public ResponseEntity<AdminAccommodationDetailResponse> detail(
+    public ResponseEntity<SuccessResponse<AdminAccommodationDetailResponse>> detail(
             @Parameter(description = "숙소 ID") 
             @PathVariable Long accommodationId) {
         AdminAccommodationDetailResponse response = accomService.getAccommodation(accommodationId);
-        return ResponseEntity.ok(response);
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        SuccessResponse<AdminAccommodationDetailResponse> success = SuccessResponse.of(code, message, response);
+        return ResponseEntity.ok(success);
     }
 
     /**
-     * 숙소 논리 삭제 (상태 전환)
+     * 숙소 논리 삭제
      * deleted_yn을 'Y'로 변경하여 논리적으로 삭제 처리합니다.
      * 
      * @param accommodationId 삭제할 숙소 ID
@@ -81,11 +94,33 @@ public class AdminAccommodationController {
         description = "숙소를 논리 삭제합니다. (deleted_yn = 'Y')"
     )
     @PatchMapping("/admin/accommodations/{accommodationId}/delete")
-    public ResponseEntity<Void> deleteAccommodation(
+    public ResponseEntity<SuccessResponse<Void>> deleteAccommodation(
             @Parameter(description = "삭제할 숙소 ID") 
             @PathVariable Long accommodationId) {
         accomService.deleteAccommodation(accommodationId);
-        return ResponseEntity.noContent().build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
+    }
+    
+    /**
+     * 숙소 논리 복원
+     * deleted_yn을 'N'로 변경하여 논리적으로 복원 처리합니다.
+     * 
+     * @param accommodationId 복원할 숙소 ID
+     */
+    @Operation(
+        summary = "숙소 복원", 
+        description = "숙소를 논리 복원합니다. (deleted_yn = 'N')"
+    )
+    @PatchMapping("/admin/accommodations/{accommodationId}/restore")
+    public ResponseEntity<SuccessResponse<Void>> restoreAccommodation(
+            @Parameter(description = "복원할 숙소 ID") 
+            @PathVariable Long accommodationId) {
+        accomService.restoreAccommodation(accommodationId);
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 
     /**
@@ -99,7 +134,7 @@ public class AdminAccommodationController {
         description = "기존 숙소의 정보를 수정합니다."
     )
     @PatchMapping("/admin/accommodations/{accommodationId}")
-    public ResponseEntity<Void> updateAccommodation(
+    public ResponseEntity<SuccessResponse<Void>> updateAccommodation(
             @Parameter(description = "수정할 숙소 ID") 
             @PathVariable Long accommodationId,
             @Parameter(description = "수정할 숙소 정보") 
@@ -107,7 +142,9 @@ public class AdminAccommodationController {
         // accommodationId를 request 에 설정
     	request.setAccommodationId(accommodationId);
         accomService.updateAccommodation(request);
-        return ResponseEntity.noContent().build();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 
     /**
@@ -122,10 +159,14 @@ public class AdminAccommodationController {
         description = "새로운 숙소를 등록합니다. ID는 자동 생성됩니다."
     )
     @PostMapping("/admin/accommodations")
-    public ResponseEntity<Void> addAccommodation(
+    public ResponseEntity<SuccessResponse<Void>> addAccommodation(
             @Parameter(description = "등록할 숙소 정보") 
             @RequestBody AdminAccommodationRequest request) {
+    	
+    	log.info("숙소등록요청 : {}", request);
         accomService.addAccommodation(request);
-        return ResponseEntity.status(201).build();
+        String message = messageUtil.getMessage(SuccessCode.ACCOMMODATION_CREATED.getMessageKey());
+        String code = SuccessCode.ACCOMMODATION_CREATED.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 }

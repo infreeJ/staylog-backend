@@ -55,4 +55,5 @@
 		WHERE board_type = 'BOARD_REVIEW' AND b.accommodation_id = #{accommodationId}
 		ORDER BY b.created_at DESC
 	</select>
+
 </mapper>

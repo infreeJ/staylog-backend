@@ -21,6 +21,9 @@ public class AdminRoomDetailResponse {
 
     /** 숙소 ID */
     private Long accommodationId;
+    
+    /** 숙소 ID */
+    private String accommodationName;
 
     /** 객실 ID */
     private Long roomId;

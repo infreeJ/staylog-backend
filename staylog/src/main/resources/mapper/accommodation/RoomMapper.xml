@@ -22,22 +22,28 @@
 	</select>
 	
 	<select id="SelectBlockedDates" parameterType="map">
-		WITH days AS (
-		  SELECT (:fromDate + LEVEL - 1) d
-		  FROM dual
-		  CONNECT BY LEVEL <![CDATA[<=]]>(#{toDate} - #{fromDate }+ 1)
-		)
-		SELECT TO_CHAR(d, 'YYYY-MM-DD') AS blocked_date
-		FROM days a
-		WHERE EXISTS (
-		  SELECT 1
-		  FROM RESERVATION r
-		  WHERE r.room_id = #{roomId}
-		    AND r.status IN ('RES_PENDING','RES_CONFIRMED')
-		    AND r.check_in <![CDATA[<=]]> a.d
-		    AND r.check_out >  a.d
-		)
-		ORDER BY d
-		
+	  WITH days AS (
+	    SELECT TRUNC(#{fromDate}) + LEVEL - 1 AS d
+	    FROM dual
+	    CONNECT BY LEVEL <![CDATA[<=]]> (TRUNC(#{toDate}) - TRUNC(#{fromDate}) + 1)
+	  )
+	  SELECT TO_CHAR(a.d, 'YYYY-MM-DD') AS blocked_date
+	  FROM days a
+	  WHERE EXISTS (
+	    SELECT 1
+	    FROM RESERVATION r
+	    WHERE r.room_id = #{roomId}
+	      AND TRUNC(r.check_in)  <![CDATA[<=]]> a.d
+	      AND TRUNC(r.check_out) <![CDATA[>=]]> a.d 
+	  )
+	  ORDER BY a.d
+	</select>
+	
+	<!-- db에 roomId가 있다면 1또는 그 이상// 없다면 0 -->
+	<select id="existsRoom" parameterType="long" resultType="int">
+	    SELECT COUNT(1)
+        FROM ROOM
+        WHERE ROOM_ID = #{roomId}
+          AND NVL(DELETED_YN, 'N') = 'N'
 	</select>
 </mapper>

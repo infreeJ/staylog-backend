@@ -17,7 +17,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminAccommodationDetailResponse {
+public class AdminAccommodationListResponse {
     
     private Long accommodationId;
     
@@ -36,18 +36,5 @@ public class AdminAccommodationDetailResponse {
     /** 삭제 여부 (Y: 삭제됨, N: 활성) */
     private String deletedYn;
     
-    private String description;
-    private String address;
-    
-    /** 위도 (지도 표시용) */
-    private Double latitude;
-    /** 경도 (지도 표시용) */
-    private Double longitude;
-    
-
-    private String checkInTime;
-    private String checkOutTime;
-    
     private String createdAt;
-    private String updatedAt;
 }

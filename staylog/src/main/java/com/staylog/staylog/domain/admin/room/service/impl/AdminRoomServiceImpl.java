@@ -56,6 +56,17 @@ public class AdminRoomServiceImpl implements AdminRoomService {
 	public void deleteRoom(Long roomId) {
 		mapper.deleteRoom(roomId);
 	}
+	
+	/**
+	 * 객실 논리 복원
+	 * deleted_yn을 'N'로 변경하여 논리적으로 복원 처리합니다.
+	 * 
+	 * @param roomId 복원할 객실 ID
+	 */
+	@Override
+	public void restoreRoom(Long roomId) {
+		mapper.restoreRoom(roomId);
+	}
 
 	/**
 	 * 객실 정보 수정

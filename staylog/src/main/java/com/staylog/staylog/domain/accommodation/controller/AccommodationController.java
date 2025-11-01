@@ -12,9 +12,13 @@ import com.staylog.staylog.global.common.code.SuccessCode;
 import com.staylog.staylog.global.common.response.SuccessResponse;
 import com.staylog.staylog.global.common.util.MessageUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.staylog.staylog.global.common.util.MessageUtil;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "AccommodationController", description = "숙소 상세 API")
+@Slf4j
 @RequestMapping("/v1")
 @RestController
 @RequiredArgsConstructor
