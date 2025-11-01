@@ -13,9 +13,12 @@
         <result property="maxCapacity" column="MAX_CAPACITY"/>
         <result property="basePrice" column="BASE_PRICE"/>
         <result property="reservationCount" column="RES_COUNT"/>
+        <!-- 이미지 임시 비활성화 -->
+        <!--
         <collection property="mainImg" ofType="String">
             <result column="IMG_URL"/>
         </collection>
+        -->
     </resultMap>
 
     <select id="getAccomList" resultMap="AccomWithImagesMap">
@@ -29,14 +32,16 @@
         MAX(R.MAX_ADULT + R.MAX_CHILDREN + R.MAX_INFANT) AS MAX_CAPACITY,
         MIN(R.PRICE) AS BASE_PRICE,
         NVL(COUNT(DISTINCT RS.BOOKING_ID), 0) AS RES_COUNT,
-        I.FILE_SAVED_NAME AS IMG_URL,
+<!--        &#45;&#45; 이미지 임시 비활성화-->
+<!--        &#45;&#45; I.FILE_SAVED_NAME AS IMG_URL,-->
         A.CREATED_AT
         FROM ACCOMMODATION A
         JOIN ROOM R ON A.ACCOMMODATION_ID = R.ACCOMMODATION_ID AND R.DELETED_YN = 'N'
         JOIN COMMON_CODE C ON A.REGION_CODE = C.CODE_ID AND C.USE_YN = 'Y'
-        LEFT JOIN IMAGE_FILE I ON I.TARGET_ID = A.ACCOMMODATION_ID
-        AND I.TARGET_TYPE = 'ACCOM'
-        AND I.IMAGE_TYPE = 'IMG_ORIGINAL'
+<!--        &#45;&#45; 이미지 테이블 조인 임시 비활성화-->
+<!--        &#45;&#45; LEFT JOIN IMAGE_FILE I ON I.TARGET_ID = A.ACCOMMODATION_ID-->
+<!--        &#45;&#45; AND I.TARGET_TYPE = 'ACCOM'-->
+<!--        &#45;&#45; AND I.IMAGE_TYPE = 'IMG_ORIGINAL'-->
         LEFT JOIN RESERVATION RS ON RS.ROOM_ID = R.ROOM_ID
         AND RS.STATUS IN ('CONFIRMED', 'PENDING')
         <where>
@@ -63,7 +68,8 @@
                 AND A.ACCOMMODATION_ID > #{lastAccomId}
             </if>
         </where>
-        GROUP BY A.ACCOMMODATION_ID, A.NAME, C.CODE_NAME, I.FILE_SAVED_NAME, A.CREATED_AT
+        GROUP BY A.ACCOMMODATION_ID, A.NAME, C.CODE_NAME, A.CREATED_AT
+        -- 이미지 컬럼 제거로 인해 GROUP BY에서 I.FILE_SAVED_NAME 제외됨
         <choose>
             <when test="order == 'lowPrice'">
                 ORDER BY BASE_PRICE ASC, A.ACCOMMODATION_ID ASC
@@ -84,6 +90,5 @@
         )
         WHERE ROWNUM <![CDATA[<=]]> 20
     </select>
-
 
 </mapper>
