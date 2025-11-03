@@ -43,4 +43,11 @@ public interface NotificationMapper {
      * @return 성공 여부 1 또는 0
      */
     public int readNotification(ReadRequest readRequest);
+
+    /**
+     * 안읽은 알림 수 조회
+     * @param userId 사용자 PK
+     * @return 안읽은 알림 수
+     */
+    public int unreadCount(long userId);
 }

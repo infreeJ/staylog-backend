@@ -42,6 +42,18 @@ public interface NotificationService {
      */
     public void readNotification(ReadRequest readRequest);
 
-
+    /**
+     * 클라이언트 구독 메서드
+     * @param token AccessToken
+     * @return SseEmitter
+     * @author 이준혁
+     */
     public SseEmitter subscribe(String token);
+
+    /**
+     * 안읽은 알림 수 조회
+     * @param userId 사용자 PK
+     * @return 안읽은 알림 수
+     */
+    public int unreadCount(long userId);
 }

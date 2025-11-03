@@ -84,12 +84,28 @@ public class NotificationController {
      * @return SseEmitter
      */
     @Operation(summary = "클라이언트 SSE 채널 구독", description = "로그인한 사용자의 토큰을 검증하여 SSE 채널에 구독시킵니다.")
-    @GetMapping(value = "/v1/notification/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/notification/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@RequestParam String token) {
 
         return notificationService.subscribe(token);
     }
-    
+
+
+
+    /**
+     * 안읽은 알림 수 조회
+     * @param userId 사용자 PK
+     * @return 안읽은 알림 수
+     */
+    @Operation(summary = "안읽은 알림 수 조회", description = "유저의 알림 중 읽지 않은 알림의 개수를 조회합니다.")
+    @GetMapping("/notification/{userId}/unread-count")
+    public ResponseEntity<SuccessResponse<Integer>> unreadCount(@PathVariable long userId) {
+        Integer unreadCount = notificationService.unreadCount(userId);
+
+        String message = messageUtil.getMessage(SuccessCode.NOTIFICATION_UNREAD_COUNT.getMessageKey());
+        String code = SuccessCode.NOTIFICATION_UNREAD_COUNT.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, unreadCount));
+    }
 
 
 

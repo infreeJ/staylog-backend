@@ -206,7 +206,6 @@ public class NotificationServiceImpl implements NotificationService {
 
     /**
      * 클라이언트 구독 메서드
-     *
      * @param token AccessToken
      * @return SseEmitter
      * @author 이준혁
@@ -243,6 +242,16 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         return emitter;
+    }
+
+    /**
+     * 안읽은 알림 수 조회
+     * @param userId 사용자 PK
+     * @return 안읽은 알림 수
+     */
+    @Override
+    public int unreadCount(long userId) {
+        return notificationMapper.unreadCount(userId);
     }
 
 
