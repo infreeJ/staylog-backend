@@ -10,4 +10,6 @@ public interface ImageService {
 
     List<ImageDto> saveImages(List<MultipartFile> files, String targetType, Long targetId) throws IOException;
 
+    List<ImageDto> getImagesByTarget(String targetType, Long targetId); // 이미지 목록 조회 메서드 추가
+
 }

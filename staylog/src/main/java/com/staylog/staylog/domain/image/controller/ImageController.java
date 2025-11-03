@@ -49,4 +49,17 @@ public class ImageController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @Operation(summary = "Get Images by Target", description = "Retrieves a list of images associated with a specific target entity.")
+    @GetMapping("/images/{targetType}/{targetId}")
+    public ResponseEntity<SuccessResponse<List<ImageDto>>> getImagesByTarget(@PathVariable String targetType,
+                                                                             @PathVariable Long targetId) {
+        List<ImageDto> images = imageService.getImagesByTarget(targetType, targetId);
+
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey()); // 일반적인 성공 메시지 가정
+        String code = SuccessCode.SUCCESS.getCode();
+        SuccessResponse<List<ImageDto>> response = SuccessResponse.of(code, message, images);
+
+        return new ResponseEntity<>(response, HttpStatus.valueOf(SuccessCode.SUCCESS.getHttpStatus()));
+    }
 }

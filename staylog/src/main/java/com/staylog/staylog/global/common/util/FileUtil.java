@@ -21,13 +21,13 @@ public class FileUtil {
         String uuid = UUID.randomUUID().toString();
         String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
-        String savedPath = Paths.get(datePath, uuid + "_" + originalName).toString();
+        String savedPath = Paths.get(datePath, uuid + "_" + originalName).toString().replace("\\", "/"); // 시스템 기본 경로 구분자 대신 URL에 적합한 '/'를 사용하도록 변경
         File destinationFile = new File(uploadPath, savedPath);
 
         destinationFile.getParentFile().mkdirs();
         file.transferTo(destinationFile);
 
-        return new FileUploadDto(destinationFile.getName(), originalName, datePath);
+        return new FileUploadDto(destinationFile.getName(), originalName, savedPath); // savedPath는 YYYY/MM/DD/UUID_OriginalName // savedPath는 YYYY/MM/DD/UUID_OriginalName
     }
 
     public static void deleteFile(String filePath) {
