@@ -1,10 +1,16 @@
 package com.staylog.staylog.domain.image.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ImageDto {
 	private long imageId;
 	private String imageType;
@@ -14,6 +20,6 @@ public class ImageDto {
 	private String originalName;
 	private String fileSize;
 	private String mimeType;
-	private long display_order;
+	private long displayOrder;
 	private String uploadDate;
 }
