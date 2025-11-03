@@ -6,10 +6,7 @@ import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.request.NotificationSelectRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadAllRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadRequest;
-import com.staylog.staylog.domain.notification.dto.response.CommentNotiDetails;
-import com.staylog.staylog.domain.notification.dto.response.NotificationResponse;
-import com.staylog.staylog.domain.notification.dto.response.ReservationNotiDetails;
-import com.staylog.staylog.domain.notification.dto.response.ReviewNotiDetails;
+import com.staylog.staylog.domain.notification.dto.response.*;
 import com.staylog.staylog.domain.notification.mapper.NotificationMapper;
 import com.staylog.staylog.domain.notification.service.NotificationService;
 import com.staylog.staylog.domain.notification.service.SseService;
@@ -37,8 +34,8 @@ public class NotificationServiceImpl implements NotificationService {
      * 알림 데이터 저장 및 푸시
      * @param notificationRequest 알림 데이터 + JSON 형태의 String Type 데이터
      * @apiNote 알림 별로 필요한 상세데이터는 해당하는 서비스 로직에서
-     * JSON 형식으로 notificationRequest.details 필드에 담아 가져온다.
-     * notificationRequest를 사용해서 DB에 저장 후 String Type인 details 필드의 값을 사용해,
+     * JSON 형식으로 각 타입별 데이터에 맞게 notificationRequest.details 필드에 담아 가져온다.
+     * notificationRequest를 사용해서 DB에 저장 후 details 필드의 값을 사용해,
      * NotificationResponse를 구성하여 사용자에게 PUSH한다.
      * @author 이준혁
      */
@@ -52,14 +49,21 @@ public class NotificationServiceImpl implements NotificationService {
             // throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
         }
 
-        // JSON으로 변환
-        Object detailsObject = deserializeDetails(notificationRequest.getNotiType(), notificationRequest.getDetails());
+        // DetailsResponse 타입으로 역직렬화
+        DetailsResponse detailsObject;
+        try {
+            detailsObject = objectMapper.readValue(
+                    notificationRequest.getDetails(),
+                    DetailsResponse.class
+            );
+        } catch (Exception e) {
+            log.error("PUSH용 JSON 역직렬화 실패: {}", notificationRequest.getDetails(), e);
+            detailsObject = null; // (혹은 new DetailsResponse() 빈 객체)
+        }
 
         // NotificationResponse 구성
         NotificationResponse notificationResponse = NotificationResponse.builder()
                 .notiId(notificationRequest.getNotiId()) // selectKey로 가져온 PK
-                .userId(notificationRequest.getUserId())
-                .notiType(notificationRequest.getNotiType())
                 .targetId(notificationRequest.getTargetId())
                 .isRead("N")
                 .createdAt(LocalDateTime.now())
@@ -67,39 +71,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         // Sse 푸시 메서드 호출
-        sseService.sendNotification(notificationResponse.getUserId(), notificationResponse);
-    }
-
-
-    /**
-     * notiType에 따라 details의 JSON 문자열을 DTO 객체로 역직렬화하는 메서드
-     * @param notiType    알림 타입
-     * @param detailsJson 변환 전 데이터
-     * @author 이준혁
-     */
-    private Object deserializeDetails(String notiType, String detailsJson) {
-        try {
-            if (detailsJson == null || detailsJson.isEmpty()) {
-                return null;
-            }
-
-            // 타입이 추가될 경우 여기에서 추가
-            switch (notiType) {
-                case "NOTI_RES_CONFIRM":
-                case "NOTI_RES_CANCEL":
-                    return objectMapper.readValue(detailsJson, ReservationNotiDetails.class);
-                case "NOTI_REVIEW_CREATE":
-                    return objectMapper.readValue(detailsJson, ReviewNotiDetails.class);
-                case "NOTI_COMMENT_CREATE":
-                    return objectMapper.readValue(detailsJson, CommentNotiDetails.class);
-                default:
-                    log.warn("알 수 없는 notiType입니다. : {}", notiType);
-                    return null;
-            }
-        } catch (Exception e) {
-            log.error("JSON 역직렬화 실패: notiType={}, json={}", notiType, detailsJson, e);
-            return null;
-        }
+        sseService.sendNotification(notificationRequest.getUserId(), notificationResponse);
     }
 
 
@@ -122,15 +94,22 @@ public class NotificationServiceImpl implements NotificationService {
 
         // map으로 순환하며 프론트에서 바로 사용할 수 있는 JSON으로 가공
         return notiListFromDb.stream().map((notiData) -> {
-            
-            // details 컬럼의 String 문자열을 JSON으로 변환
-            Object detailsObject = deserializeDetails(notiData.getNotiType(), notiData.getDetails());
+
+            // DetailsResponse 타입으로 역직렬화
+            DetailsResponse detailsObject;
+            try {
+                detailsObject = objectMapper.readValue(
+                        notiData.getDetails(),
+                        DetailsResponse.class
+                );
+            } catch (Exception e) {
+                log.error("목록 조회용 JSON 역직렬화 실패: {}", notiData.getDetails(), e);
+                detailsObject = null; // (혹은 new DetailsResponse() 빈 객체)
+            }
             
             // 새로운 JSON 객체 조합
             return NotificationResponse.builder()
                     .notiId(notiData.getNotiId()) // selectKey로 가져온 PK
-                    .userId(notiData.getUserId())
-                    .notiType(notiData.getNotiType())
                     .targetId(notiData.getTargetId())
                     .isRead(notiData.getIsRead())
                     .createdAt(notiData.getCreatedAt())
