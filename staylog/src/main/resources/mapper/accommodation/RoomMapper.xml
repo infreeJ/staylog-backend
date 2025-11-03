@@ -13,7 +13,7 @@
         TO_CHAR(ac.check_out_time, 'HH24:MI') AS checkOutTime,
 		r.area, r.single_bed AS singleBed,
 		r.double_bed AS doubleBed, r.queen_bed AS queenBed,
-		r.king_bed AS kingBed
+		r.king_bed AS kingBed, r.description
 		FROM ROOM r
 		JOIN ACCOMMODATION ac ON ac.accommodation_id = r.accommodation_id
 		LEFT JOIN COMMON_CODE cc ON r.rm_type = cc.code_id 
