@@ -1,15 +1,14 @@
 package com.staylog.staylog.domain.admin.user.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 /**
  * 권한 변경
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminUpdateRoleResponse {

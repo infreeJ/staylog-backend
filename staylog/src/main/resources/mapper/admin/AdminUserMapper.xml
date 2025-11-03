@@ -5,7 +5,8 @@
 <mapper namespace="com.staylog.staylog.domain.admin.user.mapper.AdminUserMapper">
 
     <!-- 유저 목록 조회 -->
-    <select id="findUsers" resultType="com.staylog.staylog.domain.user.dto.UserDto">
+    <select id="findUsers" resultType="com.staylog.staylog.domain.admin.user.dto.AdminUserListDto"
+    parameterType="com.staylog.staylog.domain.admin.user.dto.request.AdminUserListRequest">
         SELECT user_id,
         login_id,
         name,
@@ -33,7 +34,7 @@
     </select>
 
     <!-- 유저 상세 조회 -->
-    <select id="getUserDetail" resultType="com.staylog.staylog.domain.user.dto.UserDto">
+    <select id="getUserDetail" parameterType="long" resultType="com.staylog.staylog.domain.admin.user.dto.AdminUserDetailDto">
         SELECT user_id,
                login_id,
                name,
@@ -61,7 +62,7 @@
     </update>
 
     <!-- 회원 상태 변경 -->
-    <update id="updateUserStatus">
+    <update id="updateUserStatus" >
         UPDATE users
         SET status = #{status},
             updated_at = SYSTIMESTAMP

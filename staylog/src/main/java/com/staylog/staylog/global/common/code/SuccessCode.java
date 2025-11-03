@@ -39,6 +39,8 @@ public enum SuccessCode {
     // ==================== 숙소 관련 성공 (4xxx) ====================
     ACCOMMODATION_CREATED(201, "S4001", "success.accommodation.created"),
     ACCOMMODATION_UPDATED(200, "S4002", "success.accommodation.updated"),
+    ACCOMMODATION_FOUND(200, "S4003", "success.accommodation.found"),
+    ACCOMMODATION_LIST_FOUND(200, "S4004", "success.accommodation.list.found"),
 
     // ==================== 예약 관련 성공 (5xxx) ====================
     BOOKING_CREATED(201, "S5001", "success.booking.created"),
@@ -48,6 +50,13 @@ public enum SuccessCode {
     PAYMENT_PREPARED(200, "S6001", "success.payment.prepared"),
     PAYMENT_COMPLETED(200, "S6002", "success.payment.completed"),
     REFUND_COMPLETED(200, "S6003", "success.payment.refunded"),
+
+    // ==================== 게시판 관련 성공 (8xxx) ====================
+    BOARD_LIST_FETCHED(200, "S8004", "success.board.list"),
+    BOARD_DETAIL_FETCHED(200, "S8005", "success.board.detail"),
+    BOARD_CREATED(201, "S8001", "success.board.created"),
+    BOARD_UPDATED(200, "S8002", "success.board.updated"),
+    BOARD_DELETED(200, "S8003", "success.board.deleted"),
 
     // ==================== 리뷰 관련 성공 (7xxx) ====================
     REVIEW_CREATED(201, "S7001", "success.review.created"),
