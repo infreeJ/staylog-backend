@@ -52,7 +52,7 @@
 			COUNT(*) OVER(PARTITION BY b.accommodation_id) AS reviewCount
 		FROM board b
 		JOIN users u ON b.user_id = u.user_id
-		WHERE board_type = 'BOARD_REVIEW' AND b.accommodation_id = #{accommodationId}
+		WHERE board_type = 'REVIEW' AND b.accommodation_id = #{accommodationId}
 		ORDER BY b.created_at DESC
 	</select>
 
