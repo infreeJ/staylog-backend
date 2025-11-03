@@ -8,8 +8,8 @@ import org.apache.ibatis.type.Alias;
 import java.time.LocalDateTime;
 
 /**
- * 알림 조회 및 푸시용 Dto
- * details 필드는 타입별로 다른 객체가 들어간다
+ * 알림 목록 조회 및 푸시용 Dto
+ * @apiNote details 필드는 타입별로 다른 객체가 들어간다
  * @author 이준혁
  */
 @Alias("notificationResponse")

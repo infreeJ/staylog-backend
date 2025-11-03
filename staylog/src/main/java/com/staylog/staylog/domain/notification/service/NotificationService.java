@@ -45,17 +45,10 @@ public interface NotificationService {
 
     /**
      * 모든 알림 읽음 처리
+     * @author 이준혁
      * @param readAllRequest 유저 PK
      */
     public void readAll(ReadAllRequest readAllRequest);
-
-    /**
-     * 클라이언트 구독 메서드
-     * @param token AccessToken
-     * @return SseEmitter
-     * @author 이준혁
-     */
-    public SseEmitter subscribe(String token);
 
     /**
      * 안읽은 알림 수 조회
