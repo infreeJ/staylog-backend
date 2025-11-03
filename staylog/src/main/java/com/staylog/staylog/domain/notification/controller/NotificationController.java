@@ -83,7 +83,7 @@ public class NotificationController {
      * @param token AccessToken
      * @return SseEmitter
      */
-    @Operation(summary = "알림 목록 조회", description = "로그인한 사용자의 모든 알림 리스트를 조회합니다.")
+    @Operation(summary = "클라이언트 SSE 채널 구독", description = "로그인한 사용자의 토큰을 검증하여 SSE 채널에 구독시킵니다.")
     @GetMapping(value = "/v1/notification/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@RequestParam String token) {
 
