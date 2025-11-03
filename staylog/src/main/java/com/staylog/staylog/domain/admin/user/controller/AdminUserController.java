@@ -41,8 +41,6 @@ public class AdminUserController {
     @Operation(summary = "모든 유저 목록", description = "모든 유저 목록 조회")
     @GetMapping("/admin/users")
     public ResponseEntity<SuccessResponse<AdminGetUserDetailResponse>> getAllUsers(@RequestParam(defaultValue = "1")int pageNum, AdminUserListRequest req) {
-        log.info("모든 유저 목록 조회 : ", req);
-        log.info("모든 유저 목록 조회 : ", req.getStatus());
 
         AdminGetUserDetailResponse response = adminUserService.getUsers(pageNum, req);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
