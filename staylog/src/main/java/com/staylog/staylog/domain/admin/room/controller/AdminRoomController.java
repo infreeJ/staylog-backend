@@ -108,7 +108,7 @@ public class AdminRoomController {
 	        @Parameter(description = "객실 ID")
 	        @PathVariable Long roomId,
 	        @Parameter(description = "변경할 상태")
-	        RoomUpdateStatusRequest request) {
+	        @RequestBody RoomUpdateStatusRequest request) {
 		request.setRoomId(roomId);
 		roomService.updateRoomStatus(request);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());

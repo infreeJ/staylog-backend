@@ -86,7 +86,7 @@
 	</update>
 	
 	<!-- 객실 논리 삭제/복원(상태전환) -->
-	<update id="deleteRoom" parameterType="long">
+	<update id="updateRoomStatus" parameterType="com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest">
 	    UPDATE room
 	    SET deleted_yn = #{deletedYn},
 	        updated_at = SYSTIMESTAMP
