@@ -45,6 +45,7 @@ public enum SuccessCode {
     // ==================== 예약 관련 성공 (5xxx) ====================
     BOOKING_CREATED(201, "S5001", "success.booking.created"),
     BOOKING_CANCELLED(200, "S5002", "success.booking.cancelled"),
+    BOOKING_STATUS_UPDATED(200, "S5003", "success.booking.status.updated"),
 
     // ==================== 결제 관련 성공 (6xxx) ====================
     PAYMENT_PREPARED(200, "S6001", "success.payment.prepared"),

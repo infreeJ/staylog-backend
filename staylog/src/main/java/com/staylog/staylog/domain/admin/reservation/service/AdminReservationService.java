@@ -21,16 +21,16 @@ public interface AdminReservationService {
     /**
      * 예약 상세 조회
      * @param bookingId 예약 고유 Id
-     * @returen 예약 상세 Dto
+     * @return 예약 상세 Dto
      */
-    AdminReservationDto getReservaionDetail (Long bookingId);
+    AdminReservationDto getReservationDetail (Long bookingId);
     /**
      * 예약 상태 변경
      * @param bookingId 예약 고유 Id
      * @param status 변경할 예약 상태 코드 (공통 코드 그룹)
      * @return true : 성공 / false : 실패
      */
-    boolean updateReservationStatus (Long bookingId, String status);
+    void updateReservationStatus (Long bookingId, String status);
     /**
      * 페이지 네이션을 위한 전체 예약 건수 조회
      *
