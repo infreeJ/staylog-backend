@@ -49,22 +49,12 @@ public enum SuccessCode {
     PAYMENT_COMPLETED(200, "S6002", "success.payment.completed"),
     REFUND_COMPLETED(200, "S6003", "success.payment.refunded"),
 
-    // ==================== 게시판 관련 성공 (8xxx) ====================
-    BOARD_LIST_FETCHED(200, "S8004", "success.board.list"),
-    BOARD_DETAIL_FETCHED(200, "S8005", "success.board.detail"),
-    BOARD_CREATED(201, "S8001", "success.board.created"),
-    BOARD_UPDATED(200, "S8002", "success.board.updated"),
-    BOARD_DELETED(200, "S8003", "success.board.deleted"),
-
-    // ==================== 리뷰 관련 성공 (7xxx) ====================
-    REVIEW_CREATED(201, "S7001", "success.review.created"),
-    REVIEW_UPDATED(200, "S7002", "success.review.updated"),
-    REVIEW_DELETED(200, "S7003", "success.review.deleted"),
-
-    // ==================== 저널 관련 성공 (8xxx) ====================
-    JOURNAL_CREATED(201, "S8001", "success.journal.created"),
-    JOURNAL_UPDATED(200, "S8002", "success.journal.updated"),
-    JOURNAL_DELETED(200, "S8003", "success.journal.deleted");
+    // ==================== 게시판 관련 성공 (7xxx) ====================
+    BOARD_LIST_FETCHED(200, "S7004", "success.board.list"),
+    BOARD_DETAIL_FETCHED(200, "S7005", "success.board.detail"),
+    BOARD_CREATED(201, "S7001", "success.board.created"),
+    BOARD_UPDATED(200, "S7002", "success.board.updated"),
+    BOARD_DELETED(200, "S7003", "success.board.deleted");
 
     private final int httpStatus;
     private final String code;

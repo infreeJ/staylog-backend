@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.board.mapper;
 
 import com.staylog.staylog.domain.board.dto.BoardDto;
+import com.staylog.staylog.domain.board.dto.BookingDto;
 import com.staylog.staylog.domain.board.dto.request.BoardListRequest;
 import com.staylog.staylog.domain.board.dto.request.BoardRequest;
 import com.staylog.staylog.domain.board.dto.response.BoardListResponse;
@@ -11,14 +12,17 @@ import java.util.List;
 @Mapper
 public interface BoardMapper {
 
-    BoardListResponse getByBoardType(BoardListRequest boardListRequest);
+    List<BoardDto> getByBoardType(String boardType);
+    BoardDto getByBoardId(long boardId);
+
     void insert(BoardDto boardDto);
     void update(BoardDto boardDto);
     void delete(long boardId);
 
     int countByBoardType(String boardType);
+    int countBoardList(BoardDto boardDto);
 
-
+    List<BookingDto> bookingList(Long userId);
 }
 
 

@@ -26,12 +26,8 @@ import java.util.List;
 @AllArgsConstructor
 public class BoardListResponse {
 
-    private List<BoardDto> boardList;   // 게시글 목록
+    private List<BoardDto> boardList;
 
-    private String boardType;   // 게시판 카테고리 (review, journal, 공지사항..)
-    private String keyword;     // 검색어
-    private String search;      // 검색 조건 구분 ('title', 'content', ...)
-    private String query;       // 검색 쿼리 문자열 ( keyword + search )
 
     // Pagination
     private PageResponse pageResponse;      // 페이징 처리 - Pagination 클래스 재사용

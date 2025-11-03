@@ -19,6 +19,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PageResponse {
 
+
+
     private int pageNum; // 페이지 번호
     private int pageSize;   // 페이지당 게시글 수
     private int totalCount; // 전체 게시글 수

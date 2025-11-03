@@ -1,8 +1,6 @@
 package com.staylog.staylog.global.common.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * 페이지 요청 정보 DTO
@@ -11,7 +9,8 @@ import lombok.NoArgsConstructor;
  * - 페이지 번호, 페이지 크기, 검색 관련 조건 포함
  */
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class PageRequest {
