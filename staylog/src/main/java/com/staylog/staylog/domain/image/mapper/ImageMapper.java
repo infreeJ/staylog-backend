@@ -11,6 +11,7 @@ import java.util.List;
 @Mapper
 public interface ImageMapper {
 	void insertImage(ImageDto imageDto);
-	Long selectMaxDisplayOrder(@Param("targetType") String targetType, @Param("targetId") Long targetId);
-	List<ImageDto> selectImagesByTarget(@Param("targetType") String targetType, @Param("targetId") Long targetId); // Added method
+	Long selectMaxDisplayOrder(String targetType, Long targetId);
+	List<ImageDto> selectImagesByTarget(String targetType, Long targetId);
+	ImageDto selectProfileByUserId(String targetType, @Param("targetId") Long userId);
 }

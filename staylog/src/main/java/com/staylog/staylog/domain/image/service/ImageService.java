@@ -1,15 +1,17 @@
 package com.staylog.staylog.domain.image.service;
 
-import com.staylog.staylog.domain.image.dto.ImageDto;
+import com.staylog.staylog.domain.image.dto.ImageServeDto;
+
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
+/**
+ * 이미지 저장 서비스 인터페이스
+ * @author 고윤제
+ */
 public interface ImageService {
-
-    List<ImageDto> saveImages(List<MultipartFile> files, String targetType, Long targetId) throws IOException;
-
-    List<ImageDto> getImagesByTarget(String targetType, Long targetId); // 이미지 목록 조회 메서드 추가
-
+    List<ImageServeDto> saveImages(List<MultipartFile> files, String targetType, long targetId);
+    List<ImageServeDto> getImagesByTarget(String targetType, long targetId);
+    List<ImageServeDto> updateImages(List<MultipartFile> files);
 }

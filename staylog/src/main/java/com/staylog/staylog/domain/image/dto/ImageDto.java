@@ -15,7 +15,7 @@ public class ImageDto {
 	private long imageId;
 	private String imageType;
 	private String targetType;
-	private String targetId;
+	private long targetId;
 	private String savedUrl; // DB 컬럼명 변경에 따라 savedName을 savedUrl로 변경
 	private String originalName;
 	private String fileSize;
