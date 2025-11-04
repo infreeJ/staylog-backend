@@ -57,7 +57,7 @@ public enum SuccessCode {
     BOARD_DETAIL_FETCHED(200, "S7005", "success.board.detail"),
     BOARD_CREATED(201, "S7001", "success.board.created"),
     BOARD_UPDATED(200, "S7002", "success.board.updated"),
-    BOARD_DELETED(200, "S7003", "success.board.deleted");
+    BOARD_DELETED(200, "S7003", "success.board.deleted"),
 
     // ==================== 00 관련 성공 (8xxx) ====================
     
