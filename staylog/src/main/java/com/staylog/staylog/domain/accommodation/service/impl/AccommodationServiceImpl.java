@@ -45,6 +45,16 @@ public class AccommodationServiceImpl implements AccommodationService {
             throw new BusinessException(ErrorCode.ROOM_LIST_NOT_FOUND);
         }
         
+        for (RoomListResponse room : roomList) {
+            // 예약 불가일 조회
+            List<String> blockedDates = rmMapper.SelectBlockedDates(
+                room.getRoomId(),
+                new Date(System.currentTimeMillis()),       // fromDate: 오늘
+                new Date(System.currentTimeMillis() + 1000L*60*60*24*180) // toDate: 6개월
+            );
+            room.setDisabledDates(blockedDates);
+        }
+        
         accommodation.setRooms(roomList);
         
         // 해당 숙소에 대한 리뷰 목록 조회
@@ -58,16 +68,6 @@ public class AccommodationServiceImpl implements AccommodationService {
         // 실제로 해당 숙소의 리뷰가 없을 경우 (오류 X)
         if (reviewList.isEmpty()) {
             log.info("숙소 번호 = {} 의 리뷰는 존재하지 않습니다", accommodationId);
-        }
-        
-        for (RoomListResponse room : roomList) {
-            // 예약 불가일 조회
-            List<String> blockedDates = rmMapper.SelectBlockedDates(
-                room.getRoomId(),
-                new Date(System.currentTimeMillis()),       // fromDate: 오늘
-                new Date(System.currentTimeMillis() + 1000L*60*60*24*180) // toDate: 6개월
-            );
-            room.setDisabledDates(blockedDates);
         }
         
         accommodation.setReviews(reviewList);

@@ -5,5 +5,5 @@ import java.util.List;
 public class RoomAvailabilityResponse {
 
 	private long roomId;//객실 ID
-	private List<String> blockedDates; //예약 가능한 날짜
+	private List<String> blockedDates; //예약 불가능한 날짜
 }
