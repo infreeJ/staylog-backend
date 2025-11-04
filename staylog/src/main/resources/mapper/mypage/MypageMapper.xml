@@ -5,45 +5,145 @@
     <!-- 1. 회원 정보 조회 -->
     <select id="selectMemberInfo"
             parameterType="long"
-            resultType="MemberInfoResponse">
+            resultType="MemberInfoDto">
         SELECT
-            user_id,
-            login_id,
-            email,
-            role,
-            name,
-            nickname,
-            phone,
-            gender,
-            birth_date,
-            profile_image,
-            created_at,
-            updated_at
+            user_id, login_id, email, role, name, nickname, phone,
+            gender, birth_date, profile_image, created_at, updated_at
         FROM users
         WHERE user_id = #{userId}
     </select>
 
     <!-- 2. 회원 정보 수정 -->
     <update id="updateMemberInfo"
-            parameterType="UpdateMemberInfoRequest">
+            parameterType="MemberInfoDto">
         UPDATE users
-        SET name = #{name},
-            nickname = #{nickname},
-            phone = #{phone},
-            gender = #{gender},
-            birth_date = #{birthDate},
-            updated_at = SYSDATE
-        WHERE user_id = #{userId}
+        <set>
+        	<!-- (모두 입력했을 때만 변경) -->
+        	<if test="name != null and name != ''">name = #{name},</if>            
+	        <if test="password != null and password != ''">password = #{password},</if>            
+	        <if test="nickname != null and nickname != ''">nickname = #{nickname},</if>            
+	        <if test="email != null and email != ''">email = #{email},</if>            
+	        <if test="phone != null and phone != ''">phone = #{phone},</if>            
+	        <if test="gender != null and gender != ''">gender = #{gender},</if>
+	        <if test="birthDate != null and birthDate != ''">
+            	birth_date = TO_DATE(REGEXP_SUBSTR(#{birthDate}, '^[0-9]{4}-[0-9]{2}-[0-9]{2}'), 'YYYY-MM-DD'),
+	        </if>
+	        <!-- 프로필 이미지 -->
+			<if test="profileImage != null and profileImage != ''">
+            	profile_image = #{profileImage, jdbcType=VARCHAR},
+       		</if>
+		    updated_at = SYSDATE
+		</set>
+		WHERE user_id = #{userId}
     </update>
 
-    <!-- 3. 회원 탈퇴 -->
-<!--     <update id="deleteMemberInfo" parameterType="long">
-        UPDATE users
-        SET deleted_yn = 'Y',
-            status = 'WITHDRAWN',
-            deleted_at = SYSDATE
-        WHERE user_id = #{userId}
-    </update> -->
+
+
+    <!-- 4. 예약 내역 (status = upcoming/completed/canceled) -->
+    <select id="selectBookings"
+            resultType="BookingInfoResponse">
+        SELECT
+            b.booking_id AS bookingId,
+            a.accommodation_name AS accommodationName,
+            r.room_name AS roomName,
+            b.check_in  AS checkIn,
+            b.check_out AS checkOut,
+            b.status    AS status,
+            b.created_at AS createdAt
+        FROM booking b
+        JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+        JOIN room r ON r.room_id = b.room_id
+        WHERE b.user_id = #{userId}
+        <choose>
+            <when test="status == 'upcoming' or status == 'confirmed'">
+                AND b.status = 'CONFIRMED'
+                AND b.check_in &gt; SYSDATE
+            </when>
+            <when test="status == 'completed'">
+                AND b.status = 'CONFIRMED'
+                AND b.check_out &lt; SYSDATE
+            </when>
+            <when test="status == 'canceled'">
+                AND b.status = 'CANCELED'
+            </when>
+        </choose>
+        ORDER BY b.check_in DESC
+    </select>
+
+    <!-- 5. 리뷰 내역 -->
+    <select id="selectReviews"
+            resultType="ReviewInfoResponse">
+        <choose>
+            <!-- 작성 가능한 리뷰 -->
+            <when test="type == 'available'">
+                SELECT
+                    b.booking_id AS bookingId,
+                    a.accommodation_name AS accommodationName,
+                    b.check_in  AS checkIn,
+                    b.check_out AS checkOut
+                FROM booking b
+                JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+                WHERE b.user_id = #{userId}
+                  AND b.status = 'CONFIRMED'
+                  AND b.check_out &lt; SYSDATE
+                  AND NOT EXISTS (
+                      SELECT 1 FROM review r WHERE r.booking_id = b.booking_id
+                  )
+                ORDER BY b.check_out DESC
+            </when>
+
+            <!-- 내가 쓴 리뷰 -->
+            <otherwise>
+                SELECT
+                    r.review_id AS reviewId,
+                    a.accommodation_name AS accommodationName,
+                    r.content   AS content,
+                    r.rating    AS rating,
+                    r.created_at AS createdAt
+                FROM review r
+                JOIN booking b ON r.booking_id = b.booking_id
+                JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+                WHERE b.user_id = #{userId}
+                ORDER BY r.created_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 6. 문의 내역 -->
+    <select id="selectInquiries"
+            resultType="InquiryInfoResponse">
+        <choose>
+            <when test="type == 'faq'">
+                SELECT
+                    f.faq_id AS id,
+                    f.question AS question,
+                    f.answer AS answer,
+                    f.category AS category,
+                    f.created_at AS createdAt
+                FROM faq f
+                ORDER BY f.created_at DESC
+            </when>
+            <otherwise>
+                SELECT
+                    i.inquiry_id AS id,
+                    i.title AS title,
+                    i.content AS content,
+                    i.status AS status,
+                    i.created_at AS createdAt
+                FROM inquiry i
+                WHERE i.user_id = #{userId}
+                ORDER BY i.created_at DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 7. 1:1 문의 작성 -->
+    <insert id="insertInquiry"
+            parameterType="InquiryWriteRequest"
+            useGeneratedKeys="true" keyProperty="inquiryId">
+        INSERT INTO inquiry (inquiry_id, user_id, title, content, status, created_at)
+        VALUES (seq_inquiry_id.NEXTVAL, #{userId}, #{title}, #{content}, 'WAITING', SYSDATE)
+    </insert>
 
 
 </mapper>
