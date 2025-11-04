@@ -27,39 +27,47 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/v1")
 public class AdminReservationController {
-     private final AdminReservationService reservationService;
-     private final MessageUtil messageUtil;
+    private final AdminReservationService reservationService;
+    private final MessageUtil messageUtil;
 
     /**
      * 예약 목록 조회
      */
     @Operation(summary = "모든 예약 목록", description = "모든 예약 목록 조회")
     @GetMapping("/admin/reservations")
-    public ResponseEntity<SuccessResponse<List<AdminReservationDto>>> getReservationList (AdminReservationListRequest req) {
+    public ResponseEntity<SuccessResponse<List<AdminReservationDto>>> getReservationList(AdminReservationListRequest req) {
         List<AdminReservationDto> list = reservationService.getReservationList(req);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
-        SuccessResponse<List<AdminReservationDto>> success = SuccessResponse.of(code,message,list);
+        SuccessResponse<List<AdminReservationDto>> success = SuccessResponse.of(code, message, list);
         return ResponseEntity.ok(success);
     }
+
     /**
      * 예약 상세 조회
      */
     @Operation(summary = "예약 상세 조회", description = "예약 정보 조회")
     @GetMapping("/admin/reservations/{bookingId}")
     public ResponseEntity<SuccessResponse<AdminReservationDto>> getReservationDetail(@PathVariable Long bookingId) {
-        AdminReservationDto detail = reservationService.getReservaionDetail(bookingId);
+        AdminReservationDto detail = reservationService.getReservationDetail(bookingId);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
-        SuccessResponse<AdminReservationDto> success = SuccessResponse.of(code,message,detail);
+        SuccessResponse<AdminReservationDto> success = SuccessResponse.of(code, message, detail);
         return ResponseEntity.ok(success);
     }
+
 //    /**
 //     * 예약 상태 변경
 //     */
 //    @PatchMapping("/admin/reservations/{bookingId}/status")
-//    public ResponseEntity<SuccessResponse<Void>> updateReservationStatus(@PathVariable Long bookingId, @RequestParam("status") String status){
-//        boolean update = reservationService.updateReservationStatus(bookingId, status);
-//
+//    public ResponseEntity<SuccessResponse<Void>> updateReservationStatus(
+//            @PathVariable Long bookingId,
+//            @RequestParam("status") String status) {
+//        reservationService.updateReservationStatus(bookingId, status);
+//        String message = messageUtil.getMessage(SuccessCode.BOOKING_STATUS_UPDATED.getMessageKey());
+//        String code = SuccessCode.BOOKING_STATUS_UPDATED.name();
+//        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
+//        return ResponseEntity.ok(success);
 //    }
+
 }

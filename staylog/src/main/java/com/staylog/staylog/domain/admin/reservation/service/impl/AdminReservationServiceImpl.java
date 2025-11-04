@@ -5,13 +5,17 @@ import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
 import com.staylog.staylog.domain.admin.reservation.mapper.AdminReservationMapper;
 import com.staylog.staylog.domain.admin.reservation.service.AdminReservationService;
+import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- * 관리자 예약 관리 서비스 구현체
+ * 관리자 예약 관리 서비스 인터페이스
+ *
+ * @author 고영석
  */
 @Service
 @RequiredArgsConstructor
@@ -26,14 +30,17 @@ public class AdminReservationServiceImpl implements AdminReservationService {
     }
 
     @Override
-    public AdminReservationDto getReservaionDetail(Long bookingId) {
+    public AdminReservationDto getReservationDetail(Long bookingId) {
         return mapper.getReservationDetail(bookingId);
     }
 
     @Override
-    public boolean updateReservationStatus(Long bookingId, String status) {
+    public void updateReservationStatus(Long bookingId, String status) {
         int result = mapper.updateReservationStatus(bookingId, status);
-        return result > 0; // true : 성공 / false : 실패
+        if (result == 0 ) {
+            // 없는 예약이거나 같은 상태로 업데이트 시도 등
+            throw new BusinessException(ErrorCode.BOOKING_NOT_FOUND);
+        }
     }
 
     @Override
