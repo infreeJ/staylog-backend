@@ -85,17 +85,24 @@
 
     <!-- 해당 카테고리 게시글 상세 조회 -->
     <select id="getByBoardId" parameterType="long" resultType="BoardDto">
-        SELECT board_id, region_code, board_type,
-            accommodation_id, booking_id, b.user_id, u.nickname AS nickName,
-            title, content,
-            rating, views_count, created_at, updated_at, deleted,
+        SELECT board_id,
+            region_code,
+            board_type,
+            accommodation_id,
+            booking_id, b.user_id,
+            u.nickname AS nickName,
+            title,
+            content,
+            rating,
+        views_count,
+        created_at, updated_at, deleted,
             NVL(COUNT(l.like_id), 0) AS likes
         FROM board b
         JOIN users u
             ON b.user_id = u.user_id
         LEFT JOIN likes l
             ON b.board_id = l.board_id
-        WHERE board_id = #{boardId}
+        WHERE b.board_id = #{boardId}
         GROUP BY
             b.board_id, b.region_code, b.board_type,
             b.accommodation_id, b.booking_id, b.user_id, u.nickname,

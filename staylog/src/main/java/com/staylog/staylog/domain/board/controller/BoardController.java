@@ -32,9 +32,9 @@ public class BoardController {
     // 게시판 카테고리별 목록 조회
     @GetMapping("/boards")
     public ResponseEntity<SuccessResponse<BoardListResponse>> boardList(@ModelAttribute BoardDto boardDto,
-                                                               @ModelAttribute PageRequest pageRequest){
+                                                                        @ModelAttribute PageRequest pageRequest) {
 
-        BoardListResponse response = boardService.getByBoardType(boardDto,pageRequest);
+        BoardListResponse response = boardService.getByBoardType(boardDto, pageRequest);
         String message = messageUtil.getMessage(SuccessCode.BOARD_LIST_FETCHED.getMessageKey());
         String code = SuccessCode.BOARD_LIST_FETCHED.name();
 
@@ -46,23 +46,23 @@ public class BoardController {
 
     // 게시판 등록
     @PostMapping("/boards")
-    public ResponseEntity<SuccessResponse<BoardDto>> boardCreate (@RequestBody BoardDto boardDto){
+    public ResponseEntity<SuccessResponse<Void>> boardCreate(@RequestBody BoardDto boardDto) {
 
-            boardService.insert(boardDto);
+        boardService.insert(boardDto);
 
-            String code = SuccessCode.BOARD_CREATED.name();
-            String message = messageUtil.getMessage(SuccessCode.BOARD_CREATED.getMessageKey());
+        String code = SuccessCode.BOARD_CREATED.name();
+        String message = messageUtil.getMessage(SuccessCode.BOARD_CREATED.getMessageKey());
 
-            SuccessResponse<BoardDto> success = SuccessResponse.of(code, message, boardDto);
+        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
 
-            return ResponseEntity.ok(success);
+        return ResponseEntity.ok(success);
 
     }
 
 
     // 게시판 수정
     @PatchMapping("/boards")
-    public ResponseEntity<SuccessResponse<BoardDto>> boardUpdate (@ModelAttribute BoardDto boardDto){
+    public ResponseEntity<SuccessResponse<BoardDto>> boardUpdate(@ModelAttribute BoardDto boardDto) {
 
         boardService.update(boardDto);
 
@@ -76,7 +76,7 @@ public class BoardController {
 
     // 게시판 삭제
     @DeleteMapping("/boards")
-    public ResponseEntity<SuccessResponse<Void>> boardDelete (long boardId){
+    public ResponseEntity<SuccessResponse<Void>> boardDelete(long boardId) {
 
         boardService.delete(boardId);
 
@@ -90,7 +90,7 @@ public class BoardController {
 
     // 예약내역 불러오기
     @GetMapping("/boards/bookings/{userId}")
-    public ResponseEntity<SuccessResponse<List<BookingDto>>> bookingList(@PathVariable Long userId){
+    public ResponseEntity<SuccessResponse<List<BookingDto>>> bookingList(@PathVariable Long userId) {
 
         List<BookingDto> bookings = boardService.bookingList(userId);
 
@@ -101,4 +101,18 @@ public class BoardController {
         return ResponseEntity.ok(success);
 
     }
+
+    // 게시글 상세정보 불러오기
+    @GetMapping("/boards/{boardId}")
+    public ResponseEntity<SuccessResponse<BoardDto>> getByBoardId(@PathVariable Long boardId) {
+
+        BoardDto board = boardService.getByBoardId(boardId);
+
+        String code = SuccessCode.BOARD_DETAIL_FETCHED.name();
+        String message = messageUtil.getMessage(SuccessCode.BOARD_DETAIL_FETCHED.getMessageKey());
+
+        SuccessResponse<BoardDto> success = SuccessResponse.of(code, message, board);
+        return ResponseEntity.ok(success);
+    }
+
 }

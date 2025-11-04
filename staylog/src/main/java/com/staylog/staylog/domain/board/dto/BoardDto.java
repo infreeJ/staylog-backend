@@ -40,7 +40,7 @@ public class BoardDto {
     private String accommodationName;  // 숙소 고유번호
     private Long bookingId;        // 예약 고유번호 (UNIQUE)
     private Long userId;           // 작성자 고유번호
-    private String userNickName;       // 작성자 닉네임
+    private String userNickName;   // 작성자 닉네임
 
 
     private String title;           // 리뷰 제목
