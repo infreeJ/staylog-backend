@@ -13,73 +13,106 @@
         <result property="maxCapacity" column="MAX_CAPACITY"/>
         <result property="basePrice" column="BASE_PRICE"/>
         <result property="reservationCount" column="RES_COUNT"/>
+        <result property="totalCapacity" column="TOTAL_CAPACITY"/>
+        <!-- 이미지 임시 비활성화 -->
+        <!--
         <collection property="mainImg" ofType="String">
             <result column="IMG_URL"/>
         </collection>
+        -->
     </resultMap>
 
-    <select id="getAccomList" resultMap="AccomWithImagesMap">
+    <!-- 1단계: 예약 가능한 숙소 ID 추출 -->
+    <select id="getAvailableAccomIds" resultType="long">
+        SELECT DISTINCT R.ACCOMMODATION_ID
+        FROM ROOM R
+        WHERE R.DELETED_YN = 'N'
+        <if test="people != null">
+            AND R.TOTAL_CAPACITY >= #{people}
+        </if>
+        <if test="checkIn != null and checkOut != null">
+            AND NOT EXISTS (
+                SELECT 1
+                FROM RESERVATION X
+                WHERE X.ROOM_ID = R.ROOM_ID
+                  AND X.STATUS IN ('CONFIRMED','PENDING')
+                  AND X.CHECK_IN <![CDATA[<]]> #{checkOut}
+                  AND X.CHECK_OUT > #{checkIn}
+            )
+        </if>
+    </select>
+
+    <!-- 2단계: 숙소 기본 정보 + 객실 집계 (예약 수 제외) -->
+    <select id="getAccomListBasic" resultMap="AccomWithImagesMap">
+        SELECT * FROM (
+            SELECT
+                A.ACCOMMODATION_ID,
+                A.NAME AS ACCOMMODATION_NAME,
+                C.CODE_NAME AS REGION_NAME,
+                2 AS MIN_CAPACITY,
+                MAX(R.TOTAL_CAPACITY) AS MAX_CAPACITY,
+                SUM(R.TOTAL_CAPACITY) AS TOTAL_CAPACITY,
+                MIN(R.PRICE) AS BASE_PRICE,
+                0 AS RES_COUNT,
+                A.CREATED_AT,
+                ROW_NUMBER() OVER (
+                    <choose>
+                        <when test="request.order == 'lowPrice'">
+                            ORDER BY MIN(R.PRICE) ASC, A.ACCOMMODATION_ID ASC
+                        </when>
+                        <when test="request.order == 'highPrice'">
+                            ORDER BY MIN(R.PRICE) DESC, A.ACCOMMODATION_ID ASC
+                        </when>
+                        <when test="request.order == 'new'">
+                            ORDER BY A.CREATED_AT DESC, A.ACCOMMODATION_ID ASC
+                        </when>
+                        <when test="request.order == 'popular'">
+                            ORDER BY A.ACCOMMODATION_ID ASC
+                        </when>
+                        <otherwise>
+                            ORDER BY A.NAME ASC, A.ACCOMMODATION_ID ASC
+                        </otherwise>
+                    </choose>
+                ) AS RN
+            FROM ACCOMMODATION A
+            JOIN COMMON_CODE C ON A.REGION_CODE = C.CODE_ID AND C.USE_YN = 'Y'
+            JOIN ROOM R ON A.ACCOMMODATION_ID = R.ACCOMMODATION_ID AND R.DELETED_YN = 'N'
+            <where>
+                A.DELETED_YN = 'N'
+                <if test="availableAccomIds != null and !availableAccomIds.isEmpty()">
+                    AND A.ACCOMMODATION_ID IN
+                    <foreach item="id" collection="availableAccomIds" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </if>
+                <if test="request.regionCodes != null and !request.regionCodes.isEmpty()">
+                    AND A.REGION_CODE IN
+                    <foreach item="code" collection="request.regionCodes" open="(" separator="," close=")">
+                        #{code}
+                    </foreach>
+                </if>
+            </where>
+            GROUP BY A.ACCOMMODATION_ID, A.NAME, C.CODE_NAME, A.CREATED_AT
+        )
+        WHERE RN BETWEEN 1 AND 20
+    </select>
+
+    <!-- 3단계: 예약 수만 조회 (popular 정렬 시만 호출) -->
+
+    <select id="getReservationCounts" resultType="map">
         SELECT
-            A.ACCOMMODATION_ID,
-            A.NAME AS ACCOMMODATION_NAME,
-            C.CODE_NAME AS REGION_NAME,
-            MIN(R.MAX_ADULT + R.MAX_CHILDREN + R.MAX_INFANT) AS MIN_CAPACITY,
-            MAX(R.MAX_ADULT + R.MAX_CHILDREN + R.MAX_INFANT) AS MAX_CAPACITY,
-            MIN(R.PRICE) AS BASE_PRICE,
-            NVL(COUNT(DISTINCT RS.BOOKING_ID), 0) AS RES_COUNT,
-            I.FILE_SAVED_NAME AS IMG_URL,
-            A.CREATED_AT
-        FROM ACCOMMODATION A
-        JOIN ROOM R ON A.ACCOMMODATION_ID = R.ACCOMMODATION_ID AND R.DELETED_YN = 'N'
-        JOIN COMMON_CODE C ON A.REGION_CODE = C.CODE_ID AND C.USE_YN = 'Y'
-        LEFT JOIN IMAGE_FILE I ON I.TARGET_ID = A.ACCOMMODATION_ID
-            AND I.TARGET_TYPE = 'ACCOM'
-            AND I.IMAGE_TYPE = 'IMG_ORIGINAL'
-        LEFT JOIN RESERVATION RS ON RS.ROOM_ID = R.ROOM_ID
-            AND RS.STATUS IN ('CONFIRMED', 'PENDING')
-        <where>
-            A.DELETED_YN = 'N'
-            <if test="regionCodes != null and !regionCodes.isEmpty()">
-                AND A.REGION_CODE IN
-                <foreach item="code" collection="regionCodes" open="(" separator="," close=")">
-                    #{code}
-                </foreach>
-            </if>
-            <if test="people != null">
-                AND (R.MAX_ADULT + R.MAX_CHILDREN + R.MAX_INFANT) >= #{people}
-            </if>
-            <if test="checkIn != null and checkOut != null">
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM RESERVATION X
-                    WHERE X.ROOM_ID = R.ROOM_ID
-                    AND X.STATUS IN ('CONFIRMED', 'PENDING')
-                    AND (X.CHECK_IN <![CDATA[<]]> #{checkOut} AND X.CHECK_OUT > #{checkIn})
-                )
-            </if>
-            <if test="lastAccomId != null">
-                AND A.ACCOMMODATION_ID > #{lastAccomId}
-            </if>
-        </where>
-        GROUP BY A.ACCOMMODATION_ID, A.NAME, C.CODE_NAME, I.FILE_SAVED_NAME, A.CREATED_AT
-        <choose>
-            <when test="order == 'lowPrice'">
-                ORDER BY BASE_PRICE ASC, A.ACCOMMODATION_ID ASC
-            </when>
-            <when test="order == 'highPrice'">
-                ORDER BY BASE_PRICE DESC, A.ACCOMMODATION_ID ASC
-            </when>
-            <when test="order == 'new'">
-                ORDER BY A.CREATED_AT DESC, A.ACCOMMODATION_ID ASC
-            </when>
-            <when test="order == 'popular'">
-                ORDER BY RES_COUNT DESC, A.ACCOMMODATION_ID ASC
-            </when>
-            <otherwise>
-                ORDER BY A.NAME ASC, A.ACCOMMODATION_ID ASC
-            </otherwise>
-        </choose>
-        FETCH FIRST 20 ROWS ONLY
+            R.ACCOMMODATION_ID as accommodationId,
+            NVL(COUNT(DISTINCT RS.BOOKING_ID), 0) AS reservationCount
+        FROM ROOM R
+        LEFT JOIN RESERVATION RS
+          ON RS.ROOM_ID = R.ROOM_ID
+         AND RS.STATUS IN ('CONFIRMED', 'PENDING')
+        WHERE R.DELETED_YN = 'N'
+          AND R.ACCOMMODATION_ID IN
+          <foreach item="id" collection="accommodationIds" open="(" separator="," close=")">
+              #{id}
+          </foreach>
+        GROUP BY R.ACCOMMODATION_ID
     </select>
 
 </mapper>

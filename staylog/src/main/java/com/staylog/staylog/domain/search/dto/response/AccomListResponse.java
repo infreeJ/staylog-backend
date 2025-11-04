@@ -15,6 +15,7 @@ public class AccomListResponse {
     private String regionName;
     private Integer minCapacity; //쿼리에서 최소인원 2로 설정돼 있음.
     private Integer maxCapacity;
+    private Integer totalCapacity; // maxadult + maxchildren + maxinfant
     private Integer basePrice;
     private Integer reservationCount;
 
