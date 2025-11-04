@@ -1,9 +1,6 @@
 package com.staylog.staylog.domain.notification.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.ibatis.type.Alias;
 
 /**
@@ -16,6 +13,7 @@ import org.apache.ibatis.type.Alias;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class NotificationRequest {
     private Long notiId; // selectKey로 가져오기
     private Long userId;

@@ -164,6 +164,14 @@
     </select>
 
 
+    <!-- 게시글 PK로 작성자 PK 조회(알림에서 사용할 목적) -->
+    <select id="getUserIdByBoardId" parameterType="long" resultType="long">
+        SELECT user_id
+        FROM board
+        WHERE board_id = #{boardId}
+    </select>
+
+
 
 <!-- 시퀀스 생성 board
 

@@ -1,14 +1,12 @@
 package com.staylog.staylog.domain.notification.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class DetailsResponse {
     private String imageUrl;
     private String date; // 예약타입 -> 체크인~체크아웃 / 댓글,리뷰타입 -> 작성일

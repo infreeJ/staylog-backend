@@ -116,6 +116,12 @@ public class JwtTokenProvider {
         return claims.get("email", String.class);
     }
 
+    // 토큰에서 닉네임 추출
+    public String getNicknameFromToken(String token) {
+        Claims claims = getClaimsFromToken(token);
+        return claims.get("nickname", String.class);
+    }
+
     // 토큰에서 권한(Role) 추출
     public String getRoleFromToken(String token) {
         Claims claims = getClaimsFromToken(token);

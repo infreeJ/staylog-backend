@@ -3,6 +3,7 @@ package com.staylog.staylog.domain.notification.service;
 import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadAllRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadRequest;
+import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.dto.response.NotificationResponse;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -16,7 +17,7 @@ public interface NotificationService {
      * @author 이준혁
      * @param notificationRequest 알림 정보
      */
-    public void saveAndPushNotification(NotificationRequest notificationRequest);
+    public void saveAndPushNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse);
 
 
     /**

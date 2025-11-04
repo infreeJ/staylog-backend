@@ -32,6 +32,7 @@ public class NotificationServiceImpl implements NotificationService {
     /**
      * 알림 데이터 저장 및 푸시
      * @param notificationRequest 알림 데이터 + JSON 형태의 String Type 데이터
+     * @param detailsResponse 반복적인 직렬화, 역직렬화를 막기 위한 온전한 Details 객체
      * @apiNote 알림 별로 필요한 상세데이터는 해당하는 서비스 로직에서
      * JSON 형식으로 각 타입별 데이터에 맞게 notificationRequest.details 필드에 담아 가져온다.
      * notificationRequest를 사용해서 DB에 저장 후 details 필드의 값을 사용해,
@@ -39,7 +40,9 @@ public class NotificationServiceImpl implements NotificationService {
      * @author 이준혁
      */
     @Override
-    public void saveAndPushNotification(NotificationRequest notificationRequest) {
+    public void saveAndPushNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse) {
+        
+        // Details가 String으로 구성된 객체로 DB 저장
         int isSuccess = notificationMapper.notiSave(notificationRequest);
 
         if (isSuccess == 0) {
@@ -48,25 +51,25 @@ public class NotificationServiceImpl implements NotificationService {
             // throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
         }
 
-        // DetailsResponse 타입으로 역직렬화
-        DetailsResponse detailsObject;
-        try {
-            detailsObject = objectMapper.readValue(
-                    notificationRequest.getDetails(),
-                    DetailsResponse.class
-            );
-        } catch (Exception e) {
-            log.error("PUSH용 JSON 역직렬화 실패: {}", notificationRequest.getDetails(), e);
-            detailsObject = null; // (혹은 new DetailsResponse() 빈 객체)
-        }
+//        // DetailsResponse 타입으로 역직렬화
+//        DetailsResponse detailsObject;
+//        try {
+//            detailsObject = objectMapper.readValue(
+//                    notificationRequest.getDetails(),
+//                    DetailsResponse.class
+//            );
+//        } catch (Exception e) {
+//            log.error("PUSH용 JSON 역직렬화 실패: {}", notificationRequest.getDetails(), e);
+//            detailsObject = null; // (혹은 new DetailsResponse() 빈 객체)
+//        }
 
-        // NotificationResponse 구성
+        // NotificationResponse 구성 (호출한 메서드에서 전달받은 온전한 DetailsResponse 객체 사용)
         NotificationResponse notificationResponse = NotificationResponse.builder()
                 .notiId(notificationRequest.getNotiId()) // selectKey로 가져온 PK
                 .targetId(notificationRequest.getTargetId())
                 .isRead("N")
                 .createdAt(LocalDateTime.now())
-                .details(detailsObject) // 변환된 객체
+                .details(detailsResponse) // 변환된 객체
                 .build();
 
         // Sse 푸시 메서드 호출
