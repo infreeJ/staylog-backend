@@ -30,7 +30,7 @@
 	 <select id="selectRoomList" parameterType="long" resultType="RoomListResponse">
 		SELECT rm.room_id AS roomId, 
 			rm.name, rm.price,
-	 		(rm.max_adult + rm.max_children) AS maxGuest,
+	 		(rm.max_adult + rm.max_children + rm.max_infant) AS maxGuest,
 	 		cc_type.code_name_en AS rmTypeNameEn, 
 			cc_type.code_name AS rmTypeName
 		FROM room rm
@@ -52,7 +52,7 @@
 			COUNT(*) OVER(PARTITION BY b.accommodation_id) AS reviewCount
 		FROM board b
 		JOIN users u ON b.user_id = u.user_id
-		WHERE board_type = 'REVIEW' AND b.accommodation_id = #{accommodationId}
+		WHERE board_type = 'BOARD_REVIEW' AND b.accommodation_id = #{accommodationId}
 		ORDER BY b.created_at DESC
 	</select>
 
