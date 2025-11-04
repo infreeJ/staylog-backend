@@ -74,6 +74,12 @@ public class SecurityConfig {
                          * @author 고윤제
                          */
                 		.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()	// 프리플라이트 통과
+
+                        /**
+                         * SSE 구독 경로는 인증 필요
+                         * @author 이준혁
+                         */
+                        .requestMatchers("/api/v1/notification/subscribe").authenticated()	// 프리플라이트 통과
                 		
                         // 나머지 요청은 인증 필요
                         .anyRequest().authenticated()

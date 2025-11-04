@@ -20,10 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class SseServiceImpl implements SseService {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final JwtTokenValidator jwtTokenValidator;
-
-
     // Emitter 타임아웃 시간 (30분)
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 30;
 
@@ -33,22 +29,12 @@ public class SseServiceImpl implements SseService {
 
     /**
      * 클라이언트 구독 메서드
-     * @param token AccessToken
+     * @param userId 인증된 사용자 PK
      * @return SseEmitter
      * @author 이준혁
      */
     @Override
-    public SseEmitter subscribe(String token) {
-
-        boolean isValid = jwtTokenValidator.validateAccessToken(token);
-        if (!isValid) {
-            throw new BusinessException(ErrorCode.INVALID_TOKEN);
-        }
-
-        long userId = jwtTokenProvider.getUserIdFromToken(token);
-        if (userId == 0) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
+    public SseEmitter subscribe(Long userId) {
 
         // SseEmitter를 생성하고 Map에 저장
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);

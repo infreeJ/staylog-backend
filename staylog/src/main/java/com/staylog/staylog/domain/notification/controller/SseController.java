@@ -1,14 +1,16 @@
 package com.staylog.staylog.domain.notification.controller;
 
 import com.staylog.staylog.domain.notification.service.SseService;
+import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.exception.BusinessException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -24,13 +26,18 @@ public class SseController {
     /**
      * 클라이언트 구독 컨트롤러 메서드
      * @author 이준혁
-     * @param token AccessToken
+     * @param userId 인증된 사용자의 PK
      * @return SseEmitter
      */
     @Operation(summary = "클라이언트 SSE 채널 구독", description = "로그인한 사용자의 토큰을 검증하여 SSE 채널에 구독시킵니다.")
     @GetMapping(value = "/notification/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@RequestParam String token) {
+    public SseEmitter subscribe(@AuthenticationPrincipal Long userId) {
 
-        return sseService.subscribe(token);
+        if (userId == null) {
+            // 로직상 필터 401를 뱉지만 만약을 대비한 방어
+            throw new BusinessException(ErrorCode.INVALID_TOKEN);
+        }
+
+        return sseService.subscribe(userId);
     }
 }
