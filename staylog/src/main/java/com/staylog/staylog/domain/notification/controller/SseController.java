@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@Tag(name = "NotificationController", description = "알림 API")
+@Tag(name = "SseController", description = "SSE API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("v1")
