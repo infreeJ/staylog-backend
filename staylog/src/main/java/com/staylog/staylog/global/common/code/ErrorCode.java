@@ -90,6 +90,15 @@ public enum ErrorCode {
     NOTIFICATION_EMITTER_NOT_FOUND(HttpStatus.NOT_FOUND, "E10004", "error.notification.emitter.not.found");
 
 
+	// ==================== 댓글 관련 에러 (11xxx) ====================
+    COMMENTS_NOT_FOUND(HttpStatus.NOT_FOUND, "E11001", "error.comments.not.found"),
+    COMMENTS_FAILED_CREATED(HttpStatus.BAD_REQUEST, "E11002", "error.comments.failed.create"),
+    COMMENTS_FAILED_UPDATED(HttpStatus.BAD_REQUEST, "E11003", "error.comments.failed.update"),
+    COMMENTS_FAILED_DELETED(HttpStatus.BAD_REQUEST, "E11004", "error.comments.failed.delete"),
+    COMMENTS_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "E11005", "error.comments.not.authorized"),
+    BOARD_NOT_FOUND_FOR_COMMENT(HttpStatus.NOT_FOUND, "E11006", "error.board.not.found.for.comment");
+
+	
     private final HttpStatus status;
     private final String code;
     private final String messageKey;

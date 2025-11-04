@@ -59,8 +59,8 @@ public enum SuccessCode {
     BOARD_UPDATED(200, "S7002", "success.board.updated"),
     BOARD_DELETED(200, "S7003", "success.board.deleted"),
 
-    // ==================== 00 관련 성공 (8xxx) ====================
-    
+    // ==================== 이미지 관련 성공 (8xxx) ====================
+    IMAGE_UPLOAD_SUCCESS(201, "S8001", "success.image.uploaded");
   
     // ==================== 알림 관련 성공 (9xxx) ====================
     NOTIFICATION_CREATE(201, "S9001", "success.notification.created"),
@@ -71,10 +71,12 @@ public enum SuccessCode {
 
 	//===================== 객실 관련 성공 (10xxx)=====================
 	ROOM_SUCCESS(200, "S10001", "success.room"),
-
-	//===================== 이미지 관련 성공 (11xxx)====================
-	IMAGE_UPLOAD_SUCCESS(201, "S11001", "success.image.uploaded");
-
+	
+	//===================== 댓글 관련 성공 (11xxx)=====================
+	COMMENTS_LIST_FETCHED(200, "S11001", "success.comments.list"),
+	COMMENTS_CREATED(201, "S11002", "success.comments.created"),
+	COMMENTS_UPDATED(200, "S11003", "success.comments.updated"),
+	COMMENTS_DELETED(200, "S11004", "success.comments.deleted");
 
     private final int httpStatus;
     private final String code;

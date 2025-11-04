@@ -8,11 +8,12 @@ import java.util.List;
 @Mapper
 public interface CommentsMapper {
 
-    List<CommentsDto> getByBoardId(int boardId);
-    void insert(CommentsDto dto);
-    void delete(CommentsDto dto);
-    void update(CommentsDto dto);
-
-
-
+	// 게시판 고유 번호로 댓글 목록 조회
+	List<CommentsDto> getByBoardId(Long boardId);
+	// 댓글 등록
+    int insert(CommentsDto dto);
+    // 댓글 삭제 (논리 삭제 이용)
+    int delete(CommentsDto dto);
+    // 댓글 수정
+    int update(CommentsDto dto);
 }
