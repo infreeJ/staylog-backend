@@ -77,7 +77,10 @@ public enum SuccessCode {
     NOTIFICATION_UNREAD_COUNT(200, "S9005", "success.notification.unread-count"),
 
 	//===================== 객실 관련 성공 (10xxx)=====================
-	ROOM_SUCCESS(200, "S10001", "success.room");
+	ROOM_SUCCESS(200, "S10001", "success.room"),
+
+	//===================== 이미지 관련 성공 (11xxx)====================
+	IMAGE_UPLOAD_SUCCESS(201, "S11001", "success.image.uploaded");
 
     private final int httpStatus;
     private final String code;

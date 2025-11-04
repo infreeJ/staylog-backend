@@ -4,18 +4,39 @@
 <mapper namespace="com.staylog.staylog.domain.image.mapper.ImageMapper">
 
 	<insert id="insertImage" parameterType="imageDto">
+        <selectKey keyProperty="imageId" resultType="long" order="BEFORE">
+            SELECT seq_image_id.NEXTVAL FROM DUAL
+        </selectKey>
 		INSERT INTO image_file (
+		    image_id,
 			image_type, target_type, target_id,
-			saved_name, original_name, file_size,
+			saved_url, original_name, file_size,
 			mime_type, display_order, upload_date
 		)
 		VALUES (
+		    #{imageId},
 			#{imageType}, #{targetType}, #{targetId},
-			#{savedName}, #{originalName}, #{fileSize},
-			#{mimeType}, #{displayOrder}, #{uploadDate}
+			#{savedUrl}, #{originalName}, #{fileSize},
+			#{mimeType}, #{displayOrder}, SYSDATE
 		)
 	</insert>
 	
+	<select id="selectMaxDisplayOrder" resultType="long">
+        SELECT NVL(MAX(display_order), 0) + 1
+        FROM image_file
+        WHERE target_type = #{targetType} AND target_id = #{targetId}
+    </select>
+
+	<select id="selectImagesByTarget" resultType="imageDto">
+        SELECT
+            image_id, image_type, target_type, target_id,
+            saved_url, original_name, file_size,
+            mime_type, display_order, upload_date
+        FROM image_file
+        WHERE target_type = #{targetType} AND target_id = #{targetId}
+        ORDER BY display_order ASC
+    </select>
+
 	<select id="selectImageByTarget">
 		
 	</select>
