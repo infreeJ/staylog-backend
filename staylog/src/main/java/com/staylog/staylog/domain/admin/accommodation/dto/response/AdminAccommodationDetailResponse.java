@@ -29,7 +29,7 @@ public class AdminAccommodationDetailResponse {
     private String typeName;
     
     /** 지역 ID (FK - common_code) */
-    private String region;
+    private String regionCode;
     /** 지역명 (호텔, 리조트 등) */
     private String regionName;
     

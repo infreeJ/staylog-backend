@@ -31,7 +31,7 @@ public class RoomDetailResponse {
     private String checkInTime;
     private String checkOutTime;
 
-	
+    private String description;
 	
 
 }

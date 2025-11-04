@@ -19,7 +19,7 @@
 			cc_region.code_name AS regionName			
 		FROM ACCOMMODATION ac
 		JOIN COMMON_CODE cc_type ON ac.ac_type = cc_type.code_id
-		JOIN COMMON_CODE cc_region ON ac.region = cc_region.code_id
+		JOIN COMMON_CODE cc_region ON ac.region_code = cc_region.code_id
 		WHERE ac.accommodation_id = #{accommodationId}
 	</select>
 	
@@ -30,7 +30,7 @@
 	 <select id="selectRoomList" parameterType="long" resultType="RoomListResponse">
 		SELECT rm.room_id AS roomId, 
 			rm.name, rm.price,
-	 		(rm.max_adult + rm.max_children) AS maxGuest,
+	 		(rm.max_adult + rm.max_children + rm.max_infant) AS maxGuest,
 	 		cc_type.code_name_en AS rmTypeNameEn, 
 			cc_type.code_name AS rmTypeName
 		FROM room rm
@@ -43,7 +43,7 @@
  		숙소의 객실 리스트 조회
         TODO: 리뷰 이미지 관련 코드 추후 추가 필요 
     -->
-	<select id="selectAcReviewList" parameterType="long" resultType="ReviewResponse">
+	<select id="selectReviewList" parameterType="long" resultType="ReviewResponse">
 		SELECT u.nickname,
 			u.profile_image AS profileImage,
 			b.board_id AS boardId,
@@ -55,4 +55,5 @@
 		WHERE board_type = 'BOARD_REVIEW' AND b.accommodation_id = #{accommodationId}
 		ORDER BY b.created_at DESC
 	</select>
+
 </mapper>

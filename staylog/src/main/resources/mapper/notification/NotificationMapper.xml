@@ -2,5 +2,55 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.notification.mapper.NotificationMapper">
+<mapper namespace="com.staylog.staylog.domain.notification.mapper.NotificationMapper">
+
+    <!-- 알림 데이터 저장 -->
+    <insert id="notiSave" parameterType="notificationRequest">
+        <selectKey keyProperty="notiId" resultType="long" order="BEFORE">
+            SELECT seq_notification_id
+            FROM DUAL
+        </selectKey>
+        INSERT INTO notification(noti_id, user_id, noti_type, target_id, details)
+        VALUES(#{notiId}, #{userId}, #{notiType}, #{targetId}, #{details})
+    </insert>
+
+    <!-- 알림 데이터 조회 -->
+    <select id="findNotificationsByUserId" parameterType="long" resultType="NotificationSelectRequest">
+        SELECT *
+        FROM notification
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 알림 데이터 삭제 -->
+    <delete id="deleteByNotiId" parameterType="long">
+        DELETE FROM notification
+        WHERE noti_id = #{notiId}
+    </delete>
+
+    <!-- 단일 알림 읽음 처리 -->
+    <update id="readOne" parameterType="readRequest">
+        UPDATE notification
+        SET is_read = 'Y'
+        WHERE noti_id = #{notiId}
+    </update>
+
+    <!-- 모든 알림 읽음 처리 -->
+    <update id="readAll" parameterType="readAllRequest">
+        UPDATE notification
+        SET is_read = 'Y'
+    </update>
+
+    <!-- 안읽은 알림 수 조회 -->
+    <select id="unreadCount" parameterType="long" resultType="int">
+        SELECT count(*)
+        FROM notification
+        WHERE user_id = #{userId} AND is_read = 'N'
+    </select>
+
 </mapper>
+
+
+
+
+

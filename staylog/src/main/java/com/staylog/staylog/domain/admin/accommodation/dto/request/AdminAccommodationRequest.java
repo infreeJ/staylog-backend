@@ -28,7 +28,7 @@ public class AdminAccommodationRequest {
     private String acType;
     
     /** 지역 코드 */
-    private String region;
+    private String regionCode;
     
     private String description;
     

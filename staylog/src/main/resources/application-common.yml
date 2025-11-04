@@ -17,6 +17,12 @@ spring:
       connection-timeout: 30000
       pool-name: StaylogHikariCP
 
+  # https 관련 오류 수정
+  security:
+    filter:
+      dispatcher-types: 
+        - REQUEST
+        - ERROR
 # =====================================
 # Email 인증
 # =====================================
@@ -42,6 +48,8 @@ server:
       enabled: true
       force: true
 
+  # https 신뢰
+  forward-headers-strategy: framework
 
 # =====================================
 # Mybatis Settings

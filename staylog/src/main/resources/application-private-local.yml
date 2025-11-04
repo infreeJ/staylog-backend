@@ -24,3 +24,20 @@ spring:
 # =====================================
 jwt:
   secret: ${JWT_SECRET}
+
+
+# =======================================
+# KAKAO_REST_API_KEY
+# =======================================
+kakao:
+  local:
+    base-url: https://dapi.kakao.com
+    rest-api-key: ${KAKAO_MAP_KEY}
+
+
+# =====================================
+# File save location
+# =====================================
+file:
+  image-location: ${IMAGE_LOCATION}
+  file-location: ${FILE_LOCATION}
