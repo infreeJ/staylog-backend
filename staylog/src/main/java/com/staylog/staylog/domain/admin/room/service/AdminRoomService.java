@@ -4,11 +4,12 @@ import java.util.List;
 
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomSearchRequest;
+import com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse;
 
 /**
  * 관리자 객실 서비스 인터페이스
- * 객실의 등록, 수정, 삭제, 조회 비즈니스 로직을 처리합니다.
+ * 객실의 등록, 수정, 삭제/복원, 조회 비즈니스 로직을 처리합니다.
  *
  * @author 천승현
  */
@@ -31,20 +32,12 @@ public interface AdminRoomService {
     AdminRoomDetailResponse getRoomDetail(Long roomId);
     
     /**
-     * 객실 논리 삭제
-     * deleted_yn을 'Y'로 변경하여 논리적으로 삭제 처리합니다.
+     * 객실 상태 전환(삭제/복원)
+     * 요청 DTO의 deletedYn 값에 따라 객실의 상태를 'Y' (삭제) 또는 'N' (복원)으로 변경합니다.
      * 
-     * @param roomId 삭제할 객실 ID
+     * @param request 상태를 변경할 객실 ID와 변경할 상태(deletedYn)를 포함하는 요청 DTO
      */
-    void deleteRoom(Long roomId);
-    
-    /**
-     * 객실 논리 복원
-     * deleted_yn을 'N'로 변경하여 논리적으로 복원 처리합니다.
-     * 
-     * @param roomId 복원할 객실 ID
-     */
-    void restoreRoom(Long roomId);
+    void updateRoomStatus(RoomUpdateStatusRequest request);
     
     /**
      * 객실 정보 수정

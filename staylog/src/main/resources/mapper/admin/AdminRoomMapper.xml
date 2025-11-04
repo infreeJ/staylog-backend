@@ -56,6 +56,7 @@
 	        r.double_bed,
 	        r.queen_bed,
 	        r.king_bed,
+	        r.description,
 	        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 	        TO_CHAR(r.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS updatedAt
 	    FROM room r
@@ -83,19 +84,11 @@
 	        updated_at = SYSTIMESTAMP
 	    WHERE room_id = #{roomId}
 	</update>
-
-	<!-- 객실 논리 삭제 -->
-	<update id="deleteRoom" parameterType="long">
-	    UPDATE room
-	    SET deleted_yn = 'Y',
-	        updated_at = SYSTIMESTAMP
-	    WHERE room_id = #{roomId}
-	</update>
 	
-	<!-- 객실 논리 복원 -->
-	<update id="restoreRoom" parameterType="long">
+	<!-- 객실 논리 삭제/복원(상태전환) -->
+	<update id="updateRoomStatus" parameterType="com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest">
 	    UPDATE room
-	    SET deleted_yn = 'N',
+	    SET deleted_yn = #{deletedYn},
 	        updated_at = SYSTIMESTAMP
 	    WHERE room_id = #{roomId}
 	</update>
@@ -110,13 +103,13 @@
 	        room_id, accommodation_id, name, rm_type,
 	        price, max_adult, max_children, max_infant,
 	        check_in, check_out, area,
-	        single_bed, double_bed, queen_bed, king_bed,
+	        single_bed, double_bed, queen_bed, king_bed, description,
 	        created_at
 	    ) VALUES (
 	        #{roomId}, #{accommodationId}, #{name}, #{rmType},
 	        #{price}, #{maxAdult}, #{maxChildren}, #{maxInfant},
 	        #{checkIn}, #{checkOut}, #{area},
-	        #{singleBed}, #{doubleBed}, #{queenBed}, #{kingBed},
+	        #{singleBed}, #{doubleBed}, #{queenBed}, #{kingBed}, #{description}
 	        SYSTIMESTAMP
 	    )
 	</insert>

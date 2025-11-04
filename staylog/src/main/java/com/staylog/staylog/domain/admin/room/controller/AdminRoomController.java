@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomSearchRequest;
+import com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse;
 import com.staylog.staylog.domain.admin.room.service.AdminRoomService;
 import com.staylog.staylog.global.common.code.SuccessCode;
@@ -90,46 +91,26 @@ public class AdminRoomController {
 	}
 
 	/**
-	 * 객실 논리 삭제
-	 * deleted_yn을 'Y'로 변경하여 논리적으로 삭제 처리합니다.
-	 * 
+	 * 객실 상태 변경 (삭제/복원)
+	 *
 	 * @param accommodationId 숙소 ID
-	 * @param roomId 삭제할 객실 ID
+	 * @param roomId 객실 ID
+	 * @param request 상태 변경 요청 (deletedYn)
 	 */
 	@Operation(
-		summary = "객실 삭제", 
-		description = "객실을 논리 삭제합니다. (deleted_yn = 'Y')"
+	    summary = "객실 상태 변경",
+	    description = "객실의 활성/삭제 상태를 변경합니다. (Y: 삭제, N: 활성)"
 	)
-	@PatchMapping("/admin/accommodations/{accommodationId}/rooms/{roomId}/delete")
-	public ResponseEntity<SuccessResponse<Void>> deleteRoom(
-			@Parameter(description = "숙소 ID") 
-			@PathVariable Long accommodationId,
-			@Parameter(description = "삭제할 객실 ID") 
-			@PathVariable Long roomId) {
-		roomService.deleteRoom(roomId);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
-        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
-	}
-	
-	/**
-	 * 객실 논리 복원
-	 * deleted_yn을 'N'로 변경하여 논리적으로 복원 처리합니다.
-	 * 
-	 * @param accommodationId 숙소 ID
-	 * @param roomId 복원할 객실 ID
-	 */
-	@Operation(
-		summary = "객실 복원", 
-		description = "객실을 논리 복원합니다. (deleted_yn = 'N')"
-	)
-	@PatchMapping("/admin/accommodations/{accommodationId}/rooms/{roomId}/restore")
-	public ResponseEntity<SuccessResponse<Void>> restoreRoom(
-			@Parameter(description = "숙소 ID") 
-			@PathVariable Long accommodationId,
-			@Parameter(description = "삭제할 객실 ID") 
-			@PathVariable Long roomId) {
-		roomService.restoreRoom(roomId);
+	@PatchMapping("/admin/accommodations/{accommodationId}/rooms/{roomId}/status")
+	public ResponseEntity<SuccessResponse<Void>> updateRoomStatus(
+	        @Parameter(description = "숙소 ID")
+	        @PathVariable Long accommodationId,
+	        @Parameter(description = "객실 ID")
+	        @PathVariable Long roomId,
+	        @Parameter(description = "변경할 상태")
+	        @RequestBody RoomUpdateStatusRequest request) {
+		request.setRoomId(roomId);
+		roomService.updateRoomStatus(request);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));

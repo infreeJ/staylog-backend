@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomSearchRequest;
+import com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse;
 import com.staylog.staylog.domain.admin.room.mapper.AdminRoomMapper;
 import com.staylog.staylog.domain.admin.room.service.AdminRoomService;
@@ -46,26 +47,16 @@ public class AdminRoomServiceImpl implements AdminRoomService {
 		return mapper.selectRoomDetail(roomId);
 	}
 
-	/**
-	 * 객실 논리 삭제
-	 * deleted_yn을 'Y'로 변경하여 논리적으로 삭제 처리합니다.
-	 * 
-	 * @param roomId 삭제할 객실 ID
-	 */
+    /**
+     * 객실 상태 전환(삭제/복원)
+     * 요청 DTO의 deletedYn 값에 따라 객실의 상태를 'Y' (삭제) 또는 'N' (복원)으로 변경합니다.
+     * 
+     * @param request 상태를 변경할 객실 ID와 변경할 상태(deletedYn)를 포함하는 요청 DTO
+     */
 	@Override
-	public void deleteRoom(Long roomId) {
-		mapper.deleteRoom(roomId);
-	}
-	
-	/**
-	 * 객실 논리 복원
-	 * deleted_yn을 'N'로 변경하여 논리적으로 복원 처리합니다.
-	 * 
-	 * @param roomId 복원할 객실 ID
-	 */
-	@Override
-	public void restoreRoom(Long roomId) {
-		mapper.restoreRoom(roomId);
+	public void updateRoomStatus(RoomUpdateStatusRequest request) {
+		
+		mapper.updateRoomStatus(request);
 	}
 
 	/**

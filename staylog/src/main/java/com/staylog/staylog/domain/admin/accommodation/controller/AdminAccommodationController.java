@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.staylog.staylog.domain.accommodation.controller.AccommodationController;
+import com.staylog.staylog.domain.admin.accommodation.dto.request.AccommodationUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationSearchRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.response.AdminAccommodationDetailResponse;
@@ -84,40 +84,23 @@ public class AdminAccommodationController {
     }
 
     /**
-     * 숙소 논리 삭제
-     * deleted_yn을 'Y'로 변경하여 논리적으로 삭제 처리합니다.
+     * 숙소 논리적 삭제 및 복원 (상태 전환)
+     * 요청 DTO의 deletedYn 값에 따라 숙소의 상태를 'Y' (삭제) 또는 'N' (복원)으로 변경합니다.
      * 
-     * @param accommodationId 삭제할 숙소 ID
+     * @param accommodationId 상태를 변경할 숙소 ID (URL 경로에서 추출)
+     * @param request 변경할 상태 값 (deletedYn = 'Y' 또는 'N')
      */
     @Operation(
-        summary = "숙소 삭제", 
-        description = "숙소를 논리 삭제합니다. (deleted_yn = 'Y')"
+		summary = "숙소 상태 전환 (삭제/복원)", 
+        description = "숙소의 논리적 삭제 여부(deleted_yn)를 'Y' 또는 'N'으로 변경합니다."
     )
-    @PatchMapping("/admin/accommodations/{accommodationId}/delete")
-    public ResponseEntity<SuccessResponse<Void>> deleteAccommodation(
-            @Parameter(description = "삭제할 숙소 ID") 
-            @PathVariable Long accommodationId) {
-        accomService.deleteAccommodation(accommodationId);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
-        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
-    }
-    
-    /**
-     * 숙소 논리 복원
-     * deleted_yn을 'N'로 변경하여 논리적으로 복원 처리합니다.
-     * 
-     * @param accommodationId 복원할 숙소 ID
-     */
-    @Operation(
-        summary = "숙소 복원", 
-        description = "숙소를 논리 복원합니다. (deleted_yn = 'N')"
-    )
-    @PatchMapping("/admin/accommodations/{accommodationId}/restore")
-    public ResponseEntity<SuccessResponse<Void>> restoreAccommodation(
-            @Parameter(description = "복원할 숙소 ID") 
-            @PathVariable Long accommodationId) {
-        accomService.restoreAccommodation(accommodationId);
+    @PatchMapping("/admin/accommodations/{accommodationId}/status")
+    public ResponseEntity<SuccessResponse<Void>> updateAccommodationStatus(
+    		@Parameter(description = "상태를 변경할 숙소 ID") 
+            @PathVariable Long accommodationId, // @PathVariable은 ID를 받도록 수정
+            @RequestBody AccommodationUpdateStatusRequest request) {
+    	request.setAccommodationId(accommodationId);
+        accomService.updateAccommodationStatus(request);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));

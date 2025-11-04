@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.staylog.staylog.domain.admin.accommodation.dto.request.AccommodationUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationSearchRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.response.AdminAccommodationDetailResponse;
@@ -24,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 관리자 숙소 관리 서비스 구현체
- * 숙소의 등록, 수정, 삭제, 조회 기능을 제공합니다.
+ * 숙소의 등록, 수정, 삭제/복원, 조회 기능을 제공합니다.
  *
  * @author 천승현
  */
@@ -76,27 +77,15 @@ public class AdminAccommodationServiceImpl implements AdminAccommodationService 
 	}
 	
 	/**
-	 * 숙소 삭제
-	 * 숙소를 삭제 상태로 변경합니다. (deleted_yn = 'Y')
-	 * 
-	 * @param accommodationId 삭제할 숙소 ID
+	 * 숙소 상태변환 (삭제/복원)
+	 * 요청 DTO의 deletedYn 값에 따라 숙소의 상태를 'Y' (삭제) 또는 'N' (복원)으로 변경합니다.
+	 * * @param request 상태를 변경할 숙소 ID와 변경할 상태(deletedYn)를 포함하는 요청 DTO
 	 */
 	@Override
-	public void deleteAccommodation(Long accommodationId) {
+	public void updateAccommodationStatus(AccommodationUpdateStatusRequest request) {
 		
-		mapper.deleteAccommodation(accommodationId);
-	}
-	
-	/**
-	 * 숙소 복원
-	 * 숙소를 복원 상태로 변경합니다. (deleted_yn = 'N')
-	 * 
-	 * @param accommodationId 복원할 숙소 ID
-	 */
-	@Override
-	public void restoreAccommodation(Long accommodationId) {
-		
-		mapper.restoreAccommodation(accommodationId);
+		mapper.updateAccommodationStatus(request);
+		mapper.updateAccommodationRoomStatus(request); // 숙소의 객실 상태값 처리
 	}
 	
 	/**

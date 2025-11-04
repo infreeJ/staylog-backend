@@ -2,13 +2,14 @@ package com.staylog.staylog.domain.admin.accommodation.service;
 
 import java.util.List;
 
+import com.staylog.staylog.domain.admin.accommodation.dto.request.AccommodationUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationSearchRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.response.AdminAccommodationDetailResponse;
 
 /**
  * 관리자 숙소 관리 서비스 인터페이스
- * 숙소의 등록, 수정, 삭제, 조회 기능을 제공합니다.
+ * 숙소의 등록, 수정, 삭제/복원, 조회 기능을 제공합니다.
  *
  * @author 천승현
  */
@@ -41,20 +42,11 @@ public interface AdminAccommodationService {
 	void updateAccommodation(AdminAccommodationRequest request);
 	
 	/**
-	 * 숙소 삭제
-	 * 숙소를 삭제 상태로 변경합니다. (deleted_yn = 'Y')
-	 * 
-	 * @param accommodationId 삭제할 숙소 ID
+	 * 숙소 상태변환 (삭제/복원)
+	 * 요청 DTO의 deletedYn 값에 따라 숙소의 상태를 'Y' (삭제) 또는 'N' (복원)으로 변경합니다.
+	 * * @param request 상태를 변경할 숙소 ID와 변경할 상태(deletedYn)를 포함하는 요청 DTO
 	 */
-	void deleteAccommodation(Long accommodationId);
-	
-	/**
-	 * 숙소 복원
-	 * 숙소를 복원 상태로 변경합니다. (deleted_yn = 'N')
-	 * 
-	 * @param accommodationId 복원할 숙소 ID
-	 */
-	void restoreAccommodation(Long accommodationId);
+	void updateAccommodationStatus(AccommodationUpdateStatusRequest request);
 	
 	/**
 	 * 숙소 등록

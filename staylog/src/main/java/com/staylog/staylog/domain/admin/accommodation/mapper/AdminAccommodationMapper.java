@@ -1,12 +1,14 @@
 package com.staylog.staylog.domain.admin.accommodation.mapper;
 
-import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationRequest;
-import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationSearchRequest;
-import com.staylog.staylog.domain.admin.accommodation.dto.response.AdminAccommodationDetailResponse;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
+import com.staylog.staylog.domain.admin.accommodation.dto.request.AccommodationUpdateStatusRequest;
+import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationRequest;
+import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationSearchRequest;
+import com.staylog.staylog.domain.admin.accommodation.dto.response.AdminAccommodationDetailResponse;
 
 @Mapper
 public interface AdminAccommodationMapper {
@@ -33,18 +35,18 @@ public interface AdminAccommodationMapper {
     int updateAccommodation(AdminAccommodationRequest request);
 
     /**
-     * 숙소 논리 삭제
-     * @param accommodationId 숙소 ID
+     * 숙소 상태전환 (삭제/복원)
+     * @param request 숙소 상태 변경 요청 DTO (accommodationId, deletedYn 포함)
      * @return 삭제된 행 수
-     */
-    int deleteAccommodation(@Param("accommodationId") Long accommodationId);
+     * */
+    int updateAccommodationStatus(AccommodationUpdateStatusRequest request);
     
     /**
-     * 숙소 논리 복원
-     * @param accommodationId 숙소 ID
-     * @return 복원된 행 수
-     */
-    int restoreAccommodation(@Param("accommodationId") Long accommodationId);
+     * 숙소의 모든 객실 상태전환 (삭제/복원)
+     * @param request 객실 상태 변경 요청 DTO (accommodationId, deletedYn 포함)
+     * @return 삭제된 행 수
+     * */
+    int updateAccommodationRoomStatus(AccommodationUpdateStatusRequest request);
 
     /**
      * 숙소 등록

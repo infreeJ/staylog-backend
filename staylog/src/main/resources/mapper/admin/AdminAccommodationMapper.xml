@@ -77,18 +77,18 @@
 	    WHERE accommodation_id = #{accommodationId}
 	</update>
 	
-	<!-- 숙소 논리 삭제 -->
-	<update id="deleteAccommodation" parameterType="long">
+	<!-- 숙소 논리 삭제/복원(상태전환) -->
+	<update id="updateAccommodationStatus" parameterType="map">
 	    UPDATE accommodation
-	    SET deleted_yn = 'Y',
+	    SET deleted_yn = #{deletedYn},
 	        updated_at = SYSDATE
 	    WHERE accommodation_id = #{accommodationId}
 	</update>
-		
-	<!-- 숙소 논리 복원 -->
-	<update id="restoreAccommodation" parameterType="long">
-	    UPDATE accommodation
-	    SET deleted_yn = 'N',
+	
+	<!-- 숙소의 모든 객실 삭제/복원(상태전환) -->
+	<update id="updateAccommodationRoomStatus" parameterType="map">
+	    UPDATE room
+	    SET deleted_yn = #{deletedYn},
 	        updated_at = SYSDATE
 	    WHERE accommodation_id = #{accommodationId}
 	</update>
