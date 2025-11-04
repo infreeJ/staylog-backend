@@ -19,4 +19,6 @@ public interface BoardService {
 
     List<BookingDto> bookingList(long userId);
 
+
+
 }

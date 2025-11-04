@@ -74,6 +74,11 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<BookingDto> bookingList(long userId) {
+
         return boardMapper.bookingList(userId);
     }
+
+
+
+
 }

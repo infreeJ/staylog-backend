@@ -23,6 +23,8 @@ public interface BoardMapper {
     int countBoardList(BoardDto boardDto);
 
     List<BookingDto> bookingList(Long userId);
+
+
 }
 
 

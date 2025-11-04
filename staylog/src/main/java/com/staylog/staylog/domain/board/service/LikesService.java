@@ -6,9 +6,12 @@ import java.util.List;
 
 public interface LikesService {
 
-    public List<LikesDto> getByBoardId(int boardId);
+
     public void insert(LikesDto dto);
     public void delete(LikesDto dto);
-    public int countByBoardId(int boardId);
 
+    public int countByBoardId(long boardId);
+    public int liked(long boardId, long userId);
+
+    public List<LikesDto> getByBoardId(long boardId);
 }

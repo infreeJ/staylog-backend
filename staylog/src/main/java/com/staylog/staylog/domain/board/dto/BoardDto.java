@@ -41,11 +41,12 @@ public class BoardDto {
     private Long bookingId;        // 예약 고유번호 (UNIQUE)
     private Long userId;           // 작성자 고유번호
     private String userNickName;   // 작성자 닉네임
+    private String userName;        // 작성자 아이디(영문 or 한글)
 
 
     private String title;           // 리뷰 제목
     private String content;         // 리뷰 내용
-    private String userName;        // 작성자 아이디(영문 or 한글)
+
 
     private Integer rating;         // 별점 (1~5)
     private Integer viewsCount;     // 조회 수

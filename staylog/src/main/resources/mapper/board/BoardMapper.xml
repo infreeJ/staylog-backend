@@ -85,29 +85,32 @@
 
     <!-- 해당 카테고리 게시글 상세 조회 -->
     <select id="getByBoardId" parameterType="long" resultType="BoardDto">
-        SELECT board_id,
-            region_code,
-            board_type,
-            accommodation_id,
-            booking_id, b.user_id,
-            u.nickname AS nickName,
-            title,
-            content,
-            rating,
-        views_count,
-        created_at, updated_at, deleted,
-            NVL(COUNT(l.like_id), 0) AS likes
+        SELECT b.board_id AS boardId,
+            b.region_code AS regionCode,
+            b.board_type AS boardType,
+            b.accommodation_id AS accommodationId,
+            b.booking_id AS bookingId,
+            b.user_id AS userId,
+            u.name AS userName,
+            u.nickname AS userNickName,
+            b.title,
+            b.content,
+            b.rating,
+            b.views_count AS viewsCount,
+            TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS'),
+            TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS'),
+            b.deleted,
+            (
+                SELECT NVL(COUNT(*), 0)
+                FROM likes l
+                WHERE b.board_id = l.board_id
+            ) AS likes
         FROM board b
         JOIN users u
             ON b.user_id = u.user_id
         LEFT JOIN likes l
             ON b.board_id = l.board_id
         WHERE b.board_id = #{boardId}
-        GROUP BY
-            b.board_id, b.region_code, b.board_type,
-            b.accommodation_id, b.booking_id, b.user_id, u.nickname,
-            b.title, b.content, b.rating, b.views_count,
-            b.created_at, b.updated_at, b.deleted
     </select>
         
     <!-- 게시글 수정 -->
@@ -143,7 +146,7 @@
 
     </insert>
 
-    <!-- 예약내역 목록 by user_id -->
+    <!-- 예약내역 목록 -->
     <select id="bookingList" parameterType="long" resultType="BookingDto">
         SELECT
             r.booking_id AS bookingId,
@@ -176,7 +179,7 @@
     CREATE TABLE board (
         board_id           NUMBER PRIMARY KEY,
         accommodation_id   NUMBER NOT NULL,
-        booking_id         NUMBER UNIQUE,
+        booking_id         NUMBER NOT NULL,
         user_id            NUMBER NOT NULL,
 
         region_code        VARCHAR2(20) NOT NULL,
