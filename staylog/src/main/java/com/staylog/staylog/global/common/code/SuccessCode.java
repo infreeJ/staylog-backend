@@ -74,7 +74,13 @@ public enum SuccessCode {
     NOTIFICATION_DELETE(200, "S9003", "success.notification.delete"),
 	
 	//===================== 객실 관련 성공 (10xxx)=====================
-	ROOM_SUCCESS(200, "S10001", "success.room");
+	ROOM_SUCCESS(200, "S10001", "success.room"),
+	
+	//===================== 댓글 관련 성공 (11xxx)=====================
+	COMMENTS_LIST_FETCHED(200, "S11001", "success.comments.list"),
+	COMMENTS_CREATED(201, "S11002", "success.comments.created"),
+	COMMENTS_UPDATED(200, "S11003", "success.comments.updated"),
+	COMMENTS_DELETED(200, "S11004", "success.comments.deleted");
 
     private final int httpStatus;
     private final String code;
