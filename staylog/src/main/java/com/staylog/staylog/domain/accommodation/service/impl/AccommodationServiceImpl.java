@@ -1,5 +1,6 @@
 package com.staylog.staylog.domain.accommodation.service.impl;
 
+import java.sql.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import com.staylog.staylog.domain.accommodation.dto.response.AccommodationDetail
 import com.staylog.staylog.domain.accommodation.dto.response.ReviewResponse;
 import com.staylog.staylog.domain.accommodation.dto.response.RoomListResponse;
 import com.staylog.staylog.domain.accommodation.mapper.AccommodationMapper;
+import com.staylog.staylog.domain.accommodation.mapper.RoomMapper;
 import com.staylog.staylog.domain.accommodation.service.AccommodationService;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.exception.BusinessException;
@@ -22,6 +24,7 @@ public class AccommodationServiceImpl implements AccommodationService {
 	
 	// 의존 주입
     private final AccommodationMapper acMapper;
+    private final RoomMapper rmMapper;
 	
     @Override
 	public AccommodationDetailResponse getAcDetail(Long accommodationId) {
@@ -40,6 +43,16 @@ public class AccommodationServiceImpl implements AccommodationService {
         if (roomList == null) {
             log.warn("객실 목록 조회 실패 : 숙소 번호 = {} 의 객실 목록을 찾을 수 없습니다", accommodationId);
             throw new BusinessException(ErrorCode.ROOM_LIST_NOT_FOUND);
+        }
+        
+        for (RoomListResponse room : roomList) {
+            // 예약 불가일 조회
+            List<String> blockedDates = rmMapper.SelectBlockedDates(
+                room.getRoomId(),
+                new Date(System.currentTimeMillis()),       // fromDate: 오늘
+                new Date(System.currentTimeMillis() + 1000L*60*60*24*180) // toDate: 6개월
+            );
+            room.setDisabledDates(blockedDates);
         }
         
         accommodation.setRooms(roomList);

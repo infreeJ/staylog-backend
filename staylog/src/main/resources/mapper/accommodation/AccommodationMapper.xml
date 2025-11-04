@@ -30,7 +30,7 @@
 	 <select id="selectRoomList" parameterType="long" resultType="RoomListResponse">
 		SELECT rm.room_id AS roomId, 
 			rm.name, rm.price,
-	 		(rm.max_adult + rm.max_children) AS maxGuest,
+	 		(rm.max_adult + rm.max_children + rm.max_infant) AS maxGuest,
 	 		cc_type.code_name_en AS rmTypeNameEn, 
 			cc_type.code_name AS rmTypeName
 		FROM room rm
