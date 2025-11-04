@@ -60,7 +60,7 @@ public enum SuccessCode {
     BOARD_DELETED(200, "S7003", "success.board.deleted"),
 
     // ==================== 이미지 관련 성공 (8xxx) ====================
-    IMAGE_UPLOAD_SUCCESS(201, "S8001", "success.image.uploaded");
+    IMAGE_UPLOAD_SUCCESS(201, "S8001", "success.image.uploaded"),
   
     // ==================== 알림 관련 성공 (9xxx) ====================
     NOTIFICATION_CREATE(201, "S9001", "success.notification.created"),
