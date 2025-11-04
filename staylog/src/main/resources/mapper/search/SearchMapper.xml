@@ -91,6 +91,10 @@
                         #{code}
                     </foreach>
                 </if>
+                <!-- 무한 스크롤: lastAccomId 이후 데이터만 조회 -->
+                <if test="request.lastAccomId != null">
+                    AND A.ACCOMMODATION_ID > #{request.lastAccomId}
+                </if>
             </where>
             GROUP BY A.ACCOMMODATION_ID, A.NAME, C.CODE_NAME, A.CREATED_AT
         )
