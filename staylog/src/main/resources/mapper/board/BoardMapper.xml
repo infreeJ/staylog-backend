@@ -47,11 +47,15 @@
             b.user_id AS userId,
             u.nickname AS userNickName,
             b.title,
-            b.likes_count,
             b.rating,
             b.views_count,
             TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
             TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
+            (
+                SELECT NVL(COUNT(*), 0)
+                FROM likes l
+                WHERE b.board_id = l.board_id
+            ) AS likes,
             b.deleted
         FROM board b
         JOIN accommodation a
@@ -64,20 +68,7 @@
         WHERE
             b.deleted = 'N'
             AND b.board_type = #{boardType}
-
-<!--            &lt;!&ndash; 지역 필터 &ndash;&gt;-->
-<!--            <if test="regionCode != null and regionCode != ''">-->
-<!--                And b.region_code = #{regionCode}-->
-<!--            </if>-->
-
-<!--            &lt;!&ndash; 키워드 검색 &ndash;&gt;-->
-<!--            <if test="keyword != null and keyword !=''">-->
-<!--                AND (b.title LIKE '%' || #{keyword} || '%'-->
-<!--                    OR b.content LIKE '%' || #{keyword} || '%')-->
-<!--            </if>-->
-
-<!--        ORDER BY b.created_at DESC-->
-<!--        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY-->
+        ORDER BY b.board_id DESC
     </select>
 
 
@@ -97,8 +88,8 @@
             b.content,
             b.rating,
             b.views_count AS viewsCount,
-            TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS'),
-            TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS'),
+            TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+            TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
             b.deleted,
             (
                 SELECT NVL(COUNT(*), 0)
@@ -108,8 +99,6 @@
         FROM board b
         JOIN users u
             ON b.user_id = u.user_id
-        LEFT JOIN likes l
-            ON b.board_id = l.board_id
         WHERE b.board_id = #{boardId}
     </select>
 
