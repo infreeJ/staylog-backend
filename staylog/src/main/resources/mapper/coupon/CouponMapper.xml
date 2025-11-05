@@ -31,7 +31,7 @@
     </insert>
 
     <!-- 쿠폰 사용 가능 여부 확인 -->
-    <select id="checkAvailableCoupon" parameterType="long" resultType="String">
+    <select id="checkAvailableCoupon" parameterType="long" resultType="couponCheckDto">
         SELECT is_used, expired_at
         FROM coupon
         WHERE coupon_id = #{couponId}

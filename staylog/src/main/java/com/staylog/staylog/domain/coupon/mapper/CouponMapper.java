@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.coupon.mapper;
 
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
+import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -37,9 +38,9 @@ public interface CouponMapper {
      * 쿠폰 사용 여부 확인
      * @author 이준혁
      * @param couponId 쿠폰 PK
-     * @return 사용할 수 있는 쿠폰은 'N' 아니라면 'Y' 반환
+     * @return CouponCheckDto is_used, expiredAt 반환
      */
-    public String checkAvailableCoupon(long couponId);
+    public CouponCheckDto checkAvailableCoupon(long couponId);
 
     /**
      * 쿠폰 사용 처리

@@ -2,6 +2,7 @@ package com.staylog.staylog.domain.coupon.service.impl;
 
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
 import com.staylog.staylog.domain.coupon.dto.request.UseCouponRequest;
+import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -79,15 +82,19 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public void useCoupon(UseCouponRequest useCouponRequest) {
         long couponId = useCouponRequest.getCouponId();
-        String checkCoupon = couponMapper.checkAvailableCoupon(couponId);
+        CouponCheckDto couponCheckDto = couponMapper.checkAvailableCoupon(couponId);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiredAt = couponCheckDto.getExpiredAt();
+        boolean isNotExpired = (expiredAt == null) || (expiredAt.isAfter(now));
 
         int isSuccess = 0;
-        if(checkCoupon.equals("N")) {
+        if(couponCheckDto.getIsUsed().equals("N") && isNotExpired) {
             isSuccess = couponMapper.useCoupon(couponId);
         }
 
         if(isSuccess == 0) {
-            log.warn("쿠폰 사용 실패: 이미 사용된 쿠폰입니다. - couponId={}", couponId);
+            log.warn("쿠폰 사용 실패: 만료 기간이 지났거나 이미 사용된 쿠폰입니다. - couponId={}", couponId);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
     }
