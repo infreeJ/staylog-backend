@@ -20,7 +20,7 @@ import lombok.Setter;
 public class AdminAccommodationSearchRequest {
     
 	/** 지역 코드 */
-    private String region;
+    private String regionCode;
     
     /** 숙소 타입 코드 */
     private String acType;

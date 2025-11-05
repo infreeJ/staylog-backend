@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomSearchRequest;
+import com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse;
 
 import java.util.List;
@@ -27,11 +28,11 @@ public interface AdminRoomMapper {
     AdminRoomDetailResponse selectRoomDetail(@Param("roomId") Long roomId);
 
     /**
-     * 객실 논리 삭제(상태전환)
-     * @param roomId 객실 ID
+     * 객실 논리 삭제/복원(상태전환)
+     * @param request 객실 상태 변경 요청 DTO (roomId, deletedYn 포함)
      * @return 삭제된 행 수
      */
-    int deleteRoom(@Param("roomId") Long roomId);
+    int updateRoomStatus(RoomUpdateStatusRequest request);
 
     /**
      * 객실 수정

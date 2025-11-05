@@ -16,6 +16,9 @@ public interface AuthService {
     //로그아웃
     void logout(HttpServletRequest request, HttpServletResponse response);
 
+    // 만료된 RefreshToken 삭제 스케줄러
+    public void deleteExpiredTokens();
+
     //AccessToken 갱신
     TokenResponse refreshAccessToken(HttpServletRequest request, HttpServletResponse response);
 

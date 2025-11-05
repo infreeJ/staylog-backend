@@ -3,6 +3,8 @@ package com.staylog.staylog.domain.auth.mapper;
 import com.staylog.staylog.domain.auth.dto.EmailVerificationDto;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.time.LocalDateTime;
+
 @Mapper
 public interface EmailMapper {
 
@@ -29,4 +31,12 @@ public interface EmailMapper {
      * @return 성공 여부 1 또는 0
      */
     public int deleteVerificationByEmail(String email);
+
+    /**
+     * 만료된 이메일 데이터 삭제
+     * @author 이준혁
+     * @param now 현재 시간
+     * @return 성공 여부 1 또는 0
+     */
+    public int deleteExpiredEmail(LocalDateTime now);
 }

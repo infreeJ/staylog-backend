@@ -7,6 +7,9 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -59,6 +62,44 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ErrorResponse> handleIOException(IOException ex, HttpServletRequest request) {
+        log.error("파일 처리 중 IO 오류 발생", ex);
+
+        ErrorCode errorCode = ErrorCode.FILE_UPLOAD_FAILED; // 적절한 ErrorCode 사용
+        String message = messageUtil.getMessage(errorCode.getMessageKey());
+
+        ErrorResponse error = ErrorResponse.builder()
+                .code(errorCode.getCode())
+                .message(message)
+                .status(errorCode.getStatus().value())
+                .path(request.getRequestURI())
+                .method(request.getMethod())
+                .build();
+
+        return new ResponseEntity<>(error, errorCode.getStatus());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
+        log.warn("잘못된 인자 오류 발생: {}", ex.getMessage());
+
+        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE; // 적절한 ErrorCode 사용
+        String message = messageUtil.getMessage(errorCode.getMessageKey());
+        // IllegalArgumentException의 메시지를 직접 사용하고 싶다면:
+        // String message = ex.getMessage();
+
+        ErrorResponse error = ErrorResponse.builder()
+                .code(errorCode.getCode())
+                .message(message)
+                .status(errorCode.getStatus().value())
+                .path(request.getRequestURI())
+                .method(request.getMethod())
+                .build();
+
+        return new ResponseEntity<>(error, errorCode.getStatus());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
         log.error("서버 오류 발생", ex);
@@ -75,4 +116,6 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
 }
+

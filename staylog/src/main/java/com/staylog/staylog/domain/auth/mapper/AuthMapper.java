@@ -1,6 +1,5 @@
 package com.staylog.staylog.domain.auth.mapper;
 
-import com.staylog.staylog.domain.auth.dto.EmailVerificationDto;
 import com.staylog.staylog.domain.auth.dto.request.SignupRequest;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

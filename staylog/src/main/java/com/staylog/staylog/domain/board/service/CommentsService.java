@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CommentsService {
 
-    public List<CommentsDto> getByBoardId(int boardId);
+    public List<CommentsDto> getByBoardId(Long boardId);
     public void insert(CommentsDto dto);
     public void delete(CommentsDto dto);
     public void update(CommentsDto dto);

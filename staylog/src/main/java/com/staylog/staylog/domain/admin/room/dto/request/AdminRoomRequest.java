@@ -57,4 +57,7 @@ public class AdminRoomRequest {
     private Integer queenBed;
     /** 킹 베드 수 */
     private Integer kingBed;
+    
+    /** 객실 설명 */
+    private String description;
 }
