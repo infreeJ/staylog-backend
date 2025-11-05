@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 public class CouponResponse {
     private long couponId;
     private long userId;
-    private String couponType;
+    private String name;
+    private int discount;
     private String isUsed;
     private LocalDateTime createdAt;
     private LocalDateTime usedAt;

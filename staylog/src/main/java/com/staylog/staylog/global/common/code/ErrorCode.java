@@ -96,7 +96,14 @@ public enum ErrorCode {
     COMMENTS_FAILED_UPDATED(HttpStatus.BAD_REQUEST, "E11003", "error.comments.failed.update"),
     COMMENTS_FAILED_DELETED(HttpStatus.BAD_REQUEST, "E11004", "error.comments.failed.delete"),
     COMMENTS_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "E11005", "error.comments.not.authorized"),
-    BOARD_NOT_FOUND_FOR_COMMENT(HttpStatus.NOT_FOUND, "E11006", "error.board.not.found.for.comment");
+    BOARD_NOT_FOUND_FOR_COMMENT(HttpStatus.NOT_FOUND, "E11006", "error.board.not.found.for.comment"),
+
+
+    // ==================== 쿠폰 관련 에러 (12xxx) ====================
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "E12001", "error.coupon.not.found"),
+    COUPON_FAILED_USED(HttpStatus.BAD_REQUEST, "E12002", "error.coupon.failed.used"),
+    COUPON_FAILED_CREATED(HttpStatus.BAD_REQUEST, "E12002", "error.coupon.failed.created"),
+    COUPON_FAILED_DELETED(HttpStatus.BAD_REQUEST, "E12002", "error.coupon.failed.deleted");
 
 	
     private final HttpStatus status;

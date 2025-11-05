@@ -6,14 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.ibatis.type.Alias;
 
-@Alias("couponRequest")
+@Alias("useCouponRequest")
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CouponRequest {
+public class UseCouponRequest {
     private long couponId;
-    private long userId;
-    private String name;
-    private int discount;
 }

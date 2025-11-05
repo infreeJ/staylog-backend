@@ -76,7 +76,15 @@ public enum SuccessCode {
 	COMMENTS_LIST_FETCHED(200, "S11001", "success.comments.list"),
 	COMMENTS_CREATED(201, "S11002", "success.comments.created"),
 	COMMENTS_UPDATED(200, "S11003", "success.comments.updated"),
-	COMMENTS_DELETED(200, "S11004", "success.comments.deleted");
+	COMMENTS_DELETED(200, "S11004", "success.comments.deleted"),
+
+    // ==================== 쿠폰 관련 성공 (12xxx) ====================
+    COUPON_LIST_FIND(200, "S12001", "success.coupon.list.find"),
+    COUPON_CREATE(201, "S12002", "success.coupon.created"),
+    COUPON_USED(201, "S12003", "success.coupon.used"),
+    COUPON_DELETED(201, "S12003", "success.coupon.deleted");
+
+
 
     private final int httpStatus;
     private final String code;

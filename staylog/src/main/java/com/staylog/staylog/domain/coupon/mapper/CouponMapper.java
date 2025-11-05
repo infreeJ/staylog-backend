@@ -4,16 +4,26 @@ import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 @Mapper
 public interface CouponMapper {
 
     /**
-     * 특정 유저의 모든 쿠폰 조회
+     * 특정 유저의 사용 가능한 모든 쿠폰 조회
      * @author 이준혁
      * @param userId 유저 PK
-     * @return CouponResponse[] 쿠폰 목록
+     * @return List<CouponResponse> 쿠폰 목록
      */
-    public CouponResponse[] getByUserId(long userId);
+    public List<CouponResponse> getAvailableCouponList(long userId);
+
+    /**
+     * 특정 유저의 이미 사용한 모든 쿠폰 조회
+     * @author 이준혁
+     * @param userId 유저 PK
+     * @return List<CouponResponse> 쿠폰 목록
+     */
+    public List<CouponResponse> getUnavailableCouponList(long userId);
 
     /**
      * 쿠폰 추가
@@ -22,6 +32,14 @@ public interface CouponMapper {
      * @return 성공 시 1, 실패 시 0 반환
      */
     public int saveCoupon(CouponRequest couponRequest);
+
+    /**
+     * 쿠폰 사용 여부 확인
+     * @author 이준혁
+     * @param couponId 쿠폰 PK
+     * @return 사용할 수 있는 쿠폰은 'N' 아니라면 'Y' 반환
+     */
+    public String checkAvailableCoupon(long couponId);
 
     /**
      * 쿠폰 사용 처리

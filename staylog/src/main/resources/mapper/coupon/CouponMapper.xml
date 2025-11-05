@@ -4,28 +4,43 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.staylog.staylog.domain.coupon.mapper.CouponMapper">
 
-    <!-- 특정 유저의 모든 쿠폰 조회 -->
-    <select id="getByUserId" parameterType="long" resultType="couponResponse">
+    <!-- 특정 유저의 사용 가능한 모든 쿠폰 조회 -->
+    <select id="getAvailableCouponList" parameterType="long" resultType="couponResponse">
         SELECT *
         FROM coupon
-        WHERE user_id = #{userID}
+        WHERE user_id = #{userID} AND is_used = 'N'
+    </select>
+
+    <!-- 특정 유저의 이미 사용한 모든 쿠폰 조회 -->
+    <select id="getUnavailableCouponList" parameterType="long" resultType="couponResponse">
+        SELECT *
+        FROM coupon
+        WHERE user_id = #{userID} AND is_used = 'Y'
     </select>
 
     <!-- 쿠폰 추가 -->
     <insert id="saveCoupon" parameterType="couponRequest">
         <selectKey keyProperty="couponId" resultType="long" order="BEFORE">
-            SELECT seq_coupon_id
+            SELECT seq_coupon_id.NEXTVAL
             FROM DUAL
         </selectKey>
-        INSERT INTO coupon(coupon_id, user_id, coupon_type)
-        VALUES(#{couponId}, #{userId}, #{couponType}
+        INSERT INTO coupon(coupon_id, user_id, name, discount)
+        VALUES(#{couponId}, #{userId}, #{name}, #{discount})
     </insert>
+
+    <!-- 쿠폰 사용 가능 여부 확인 -->
+    <select id="checkAvailableCoupon" parameterType="long" resultType="String">
+        SELECT is_used
+        FROM coupon
+        WHERE coupon_id = #{couponId}
+    </select>
+
 
     <!-- 쿠폰 사용처리 -->
     <update id="useCoupon" parameterType="long">
         UPDATE coupon
-        SET is_used = 'Y'
-        WHERE coupon_id = #{couponId}
+        SET is_used = 'Y', used_at = SYSDATE
+        WHERE coupon_id = #{couponId} AND is_used = 'N'
     </update>
 
     <!-- 쿠폰 삭제 -->
