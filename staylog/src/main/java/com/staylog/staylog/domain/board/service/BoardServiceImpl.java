@@ -3,6 +3,7 @@ package com.staylog.staylog.domain.board.service;
 import com.staylog.staylog.domain.board.dto.BoardDto;
 
 import com.staylog.staylog.domain.board.dto.BookingDto;
+import com.staylog.staylog.domain.board.dto.request.BoardListRequest;
 import com.staylog.staylog.domain.board.dto.response.BoardListResponse;
 import com.staylog.staylog.domain.board.mapper.BoardMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
@@ -23,14 +24,14 @@ public class BoardServiceImpl implements BoardService {
 
 
     @Override
-    public BoardListResponse getByBoardType(BoardDto boardDto, PageRequest pageRequest) {
+    public BoardListResponse getByBoardType(BoardListRequest boardListRequest, PageRequest pageRequest) {
 
         // 전체 게시글 수
-        int totalCount = boardMapper.countByBoardType(boardDto.getBoardType());
+        int totalCount = boardMapper.countByBoardType(boardListRequest.getBoardType());
 
 
         // 게시글 목록
-        List<BoardDto> boardList = boardMapper.getByBoardType(boardDto.getBoardType());
+        List<BoardDto> boardList = boardMapper.getByBoardType(boardListRequest);
 
         // 페이지 계산 결과
         PageResponse pageResponse = new PageResponse();
@@ -44,19 +45,20 @@ public class BoardServiceImpl implements BoardService {
 
     }
 
+    // 게시글 상세보기
     @Override
     public BoardDto getByBoardId(long boardId) {
 
         return boardMapper.getByBoardId(boardId);
     }
 
-
+    // 게시글 등록
     @Override
     @Transactional
-    public void insert(BoardDto boardDto) {
+    public BoardDto insert(BoardDto boardDto) {
 
         boardMapper.insert(boardDto);
-
+        return boardDto;
     }
 
     @Override

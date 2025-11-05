@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface BoardMapper {
 
-    List<BoardDto> getByBoardType(String boardType);
+    List<BoardDto> getByBoardType(BoardListRequest boardListRequest);
     BoardDto getByBoardId(long boardId);
 
     void insert(BoardDto boardDto);

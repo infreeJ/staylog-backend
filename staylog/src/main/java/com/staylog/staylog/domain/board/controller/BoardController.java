@@ -2,6 +2,7 @@ package com.staylog.staylog.domain.board.controller;
 
 import com.staylog.staylog.domain.board.dto.BoardDto;
 import com.staylog.staylog.domain.board.dto.BookingDto;
+import com.staylog.staylog.domain.board.dto.request.BoardListRequest;
 import com.staylog.staylog.domain.board.dto.response.BoardListResponse;
 
 import com.staylog.staylog.domain.board.service.BoardService;
@@ -31,10 +32,10 @@ public class BoardController {
 
     // 게시판 카테고리별 목록 조회
     @GetMapping("/boards")
-    public ResponseEntity<SuccessResponse<BoardListResponse>> boardList(@ModelAttribute BoardDto boardDto,
+    public ResponseEntity<SuccessResponse<BoardListResponse>> boardList(@ModelAttribute BoardListRequest boardListRequest,
                                                                         @ModelAttribute PageRequest pageRequest) {
 
-        BoardListResponse response = boardService.getByBoardType(boardDto, pageRequest);
+        BoardListResponse response = boardService.getByBoardType(boardListRequest, pageRequest);
         String message = messageUtil.getMessage(SuccessCode.BOARD_LIST_FETCHED.getMessageKey());
         String code = SuccessCode.BOARD_LIST_FETCHED.name();
 
@@ -46,14 +47,14 @@ public class BoardController {
 
     // 게시판 등록
     @PostMapping("/boards")
-    public ResponseEntity<SuccessResponse<Void>> boardCreate(@RequestBody BoardDto boardDto) {
+    public ResponseEntity<SuccessResponse<BoardDto>> boardCreate(@RequestBody BoardDto boardDto) {
 
-        boardService.insert(boardDto);
+        BoardDto newBoard = boardService.insert(boardDto);
 
         String code = SuccessCode.BOARD_CREATED.name();
         String message = messageUtil.getMessage(SuccessCode.BOARD_CREATED.getMessageKey());
 
-        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
+        SuccessResponse<BoardDto> success = SuccessResponse.of(code, message, newBoard);
 
         return ResponseEntity.ok(success);
 
