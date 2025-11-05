@@ -10,8 +10,10 @@ public interface LikesMapper {
 
     int countByBoardId(long boardId);
     List<LikesDto> getByBoardId(long boardId);
-    void addLike(LikesDto dto);
-    void deleteLike(LikesDto dto);
+    void addLike(LikesDto likesDto);
+    void deleteLike(LikesDto likesDto);
 
     boolean liked(long boardId, long userId);
+
+
 }

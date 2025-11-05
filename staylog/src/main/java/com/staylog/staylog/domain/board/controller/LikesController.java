@@ -44,11 +44,13 @@ public class LikesController {
         return ResponseEntity.ok(success);
     }
 
-    // 좋아요 등록
-    @PostMapping("/likes")
-    public ResponseEntity<SuccessResponse<Void>> addLike(@RequestBody LikesDto likesDto) {
 
-        likesService.addLike(likesDto);
+
+    // 좋아요 등록
+    @PostMapping("/likes/toggle")
+    public ResponseEntity<SuccessResponse<Void>> toggleLike(@RequestBody LikesDto likesDto) {
+
+        likesService.toggleLike(likesDto);
 
         String code = SuccessCode.BOARD_CREATED.name();
         String message = messageUtil.getMessage(SuccessCode.BOARD_CREATED.getMessageKey());
@@ -58,19 +60,34 @@ public class LikesController {
 
     }
 
-    // 좋아요 삭제
-    @DeleteMapping("/likes")
-    public ResponseEntity<SuccessResponse<Void>> deleteLike(@RequestBody LikesDto likesDto) {
-
-        likesService.deleteLike(likesDto);
-
-        String code = SuccessCode.BOARD_DELETED.name();
-        String message = messageUtil.getMessage(SuccessCode.BOARD_DELETED.getMessageKey());
-        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
-
-        return ResponseEntity.ok(success);
-
-    }
+//
+//    // 좋아요 등록
+//    @PostMapping("/likes")
+//    public ResponseEntity<SuccessResponse<Void>> addLike(@RequestBody LikesDto likesDto) {
+//
+//        likesService.addLike(likesDto);
+//
+//        String code = SuccessCode.BOARD_CREATED.name();
+//        String message = messageUtil.getMessage(SuccessCode.BOARD_CREATED.getMessageKey());
+//        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
+//
+//        return ResponseEntity.ok(success);
+//
+//    }
+//
+//    // 좋아요 삭제
+//    @DeleteMapping("/likes")
+//    public ResponseEntity<SuccessResponse<Void>> deleteLike(@RequestBody LikesDto likesDto) {
+//
+//        likesService.deleteLike(likesDto);
+//
+//        String code = SuccessCode.BOARD_DELETED.name();
+//        String message = messageUtil.getMessage(SuccessCode.BOARD_DELETED.getMessageKey());
+//        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
+//
+//        return ResponseEntity.ok(success);
+//
+//    }
 
 
 

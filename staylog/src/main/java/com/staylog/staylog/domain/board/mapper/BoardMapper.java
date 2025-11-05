@@ -25,6 +25,9 @@ public interface BoardMapper {
     List<BookingDto> bookingList(Long userId);
 
 
+    void increaseLikeCount(Long boardId);
+    void decreaseLikeCount(Long boardId);
+    void updateLikeCount(Long boardId);
 }
 
 

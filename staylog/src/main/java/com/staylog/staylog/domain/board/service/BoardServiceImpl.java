@@ -28,6 +28,7 @@ public class BoardServiceImpl implements BoardService {
         // 전체 게시글 수
         int totalCount = boardMapper.countByBoardType(boardDto.getBoardType());
 
+
         // 게시글 목록
         List<BoardDto> boardList = boardMapper.getByBoardType(boardDto.getBoardType());
 

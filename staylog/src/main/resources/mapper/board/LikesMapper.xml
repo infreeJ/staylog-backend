@@ -13,17 +13,11 @@
 
     </select>
 
-    <!--  해당 게시글(board_id) 좋아요 수 조회  -->
-    <select id="likes" parameterType="long" resultType="int">
-        SELECT count(*) AS likes
-        FROM likes
-        WHERE board_id = #{boardId}
 
-    </select>
 
 
     <!-- 사용자 별 좋아요 여부 -->
-    <select id="liked" resultType="boolean">
+    <select id="liked" parameterType="map" resultType="boolean">
         SELECT CASE WHEN EXISTS (
         SELECT 1 FROM likes
         WHERE board_id = #{boardId}
@@ -52,14 +46,10 @@
 
     <!--  좋아요 등록  -->
     <insert id="addLike" parameterType="LikesDto">
-        <selectKey keyProperty="likeId" resultType="long" order="BEFORE">
-            SELECT seq_likes_id.NEXTVAL FROM dual
-        </selectKey>
-
         INSERT INTO likes
         (like_id, user_id, board_id)
         VALUES (
-            #{likeId},
+            seq_likes_id.NEXTVAL,
             #{userId},
             #{boardId}
         )

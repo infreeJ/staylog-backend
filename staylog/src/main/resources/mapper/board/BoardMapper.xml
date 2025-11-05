@@ -112,6 +112,8 @@
             ON b.board_id = l.board_id
         WHERE b.board_id = #{boardId}
     </select>
+
+
         
     <!-- 게시글 수정 -->
     <update id="update" parameterType="BoardDto">
@@ -162,6 +164,28 @@
             ON rm.accommodation_id = a.accommodation_id
         WHERE r.user_id = #{userId}
     </select>
+
+
+
+    <!-- 좋아요 update / +1 / -1 -->
+    <update id="updateLikeCount" parameterType="long">
+        UPDATE board b SET b.likes_count = (
+            SELECT COUNT(*)
+            FROM likes l
+            WHERE l.board_id = b.board_id
+        )
+        WHERE b.board_id = #{boardId}
+    </update>
+
+    <update id="increaseLikeCount" parameterType="long">
+        UPDATE board SET likes_count = likes_count + 1
+        WHERE board_id = #{boardId}
+    </update>
+
+    <update id="decreaseLikeCount" parameterType="long">
+        UPDATE board SET likes_count = likes_count - 1
+        WHERE board_id = #{boardId}
+    </update>
 
 
 
