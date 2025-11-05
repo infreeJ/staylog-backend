@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,12 +46,11 @@ public class NotificationServiceImpl implements NotificationService {
      * @author 이준혁
      */
     @Override
-    @EventListener
+    @TransactionalEventListener
     public void handleCommentCreatedEvent(CommentCreatedEvent event) {
 
         String nickname = userMapper.findNicknameByUserId(event.getUserId()); // 댓글 작성자 닉네임
         CommentsDto commentsDto = commentsMapper.getOneByCommentId(event.getCommentId()); // 댓글 데이터
-        String notiType = commentsDto.getBoardType(); // 댓글이 작성된 게시글의 타입
         long recipientId = boardMapper.getUserIdByBoardId(event.getBoardId()); // 댓글이 작성된 게시글 작성자의 PK
 
         // 알림 카드에 출력할 데이터 구성
@@ -69,7 +69,7 @@ public class NotificationServiceImpl implements NotificationService {
             // INSERT의 parameterType 객체 구성
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(recipientId)
-                    .notiType(notiType)
+                    .notiType("NOTI_COMMENT_CREATE")
                     .targetId(commentsDto.getBoardId())
                     .details(detailsObject)
                     .build();
