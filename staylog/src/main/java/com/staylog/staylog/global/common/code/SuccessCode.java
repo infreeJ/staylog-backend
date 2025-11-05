@@ -50,7 +50,6 @@ public enum SuccessCode {
     // ==================== 결제 관련 성공 (6xxx) ====================
     PAYMENT_PREPARED(200, "S6001", "success.payment.prepared"),
     PAYMENT_COMPLETED(200, "S6002", "success.payment.completed"),
-    REFUND_COMPLETED(200, "S6003", "success.payment.refunded"),
 
     // ==================== 게시판 관련 성공 (7xxx) ====================
     BOARD_LIST_FETCHED(200, "S7004", "success.board.list"),
@@ -76,7 +75,11 @@ public enum SuccessCode {
 	COMMENTS_LIST_FETCHED(200, "S11001", "success.comments.list"),
 	COMMENTS_CREATED(201, "S11002", "success.comments.created"),
 	COMMENTS_UPDATED(200, "S11003", "success.comments.updated"),
-	COMMENTS_DELETED(200, "S11004", "success.comments.deleted");
+	COMMENTS_DELETED(200, "S11004", "success.comments.deleted"),
+
+	//===================== 환불 관련 성공 (12xxx)=====================
+	REFUND_REQUESTED(200, "S12001", "success.refund.requested"),
+	REFUND_COMPLETED(200, "S12002", "success.refund.completed");
 
     private final int httpStatus;
     private final String code;

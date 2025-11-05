@@ -58,7 +58,8 @@ public enum ErrorCode {
     BOOKING_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "E5002", "error.booking.already.cancelled"),
     BOOKING_CANNOT_CANCEL(HttpStatus.BAD_REQUEST, "E5003", "error.booking.cannot.cancel"),
     INVALID_BOOKING_DATE(HttpStatus.BAD_REQUEST, "E5004", "error.booking.invalid.date"),
-    
+    BOOKING_EXPIRED(HttpStatus.BAD_REQUEST, "E5005", "error.booking.expired"),
+    BOOKING_NOT_PENDING(HttpStatus.BAD_REQUEST, "E5006", "error.booking.not.pending"),
 
     // ==================== 결제 관련 에러 (6xxx) ====================
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "E6001", "error.payment.not.found"),
@@ -66,6 +67,12 @@ public enum ErrorCode {
     PAYMENT_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "E6003", "error.payment.already.completed"),
     PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "E6004", "error.payment.amount.mismatch"),
     REFUND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E6005", "error.payment.refund.failed"),
+    PAYMENT_EXPIRED(HttpStatus.BAD_REQUEST, "E6006", "error.payment.expired"),
+    PAYMENT_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, "E6007", "error.payment.timeout"),
+    TOSS_API_ERROR(HttpStatus.BAD_GATEWAY, "E6008", "error.payment.toss.api"),
+    PAYMENT_CANCELLED_BY_USER(HttpStatus.BAD_REQUEST, "E6009", "error.payment.cancelled.by.user"),
+    PAYMENT_ALREADY_REFUNDED(HttpStatus.BAD_REQUEST, "E6010", "error.payment.already.refunded"),
+    WEBHOOK_SIGNATURE_INVALID(HttpStatus.UNAUTHORIZED, "E6011", "error.payment.webhook.signature.invalid"),
 
     // ==================== 게시판 관련 에러 (7xxx) ====================
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "E7001", "error.board.not.found"),
@@ -96,9 +103,16 @@ public enum ErrorCode {
     COMMENTS_FAILED_UPDATED(HttpStatus.BAD_REQUEST, "E11003", "error.comments.failed.update"),
     COMMENTS_FAILED_DELETED(HttpStatus.BAD_REQUEST, "E11004", "error.comments.failed.delete"),
     COMMENTS_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "E11005", "error.comments.not.authorized"),
-    BOARD_NOT_FOUND_FOR_COMMENT(HttpStatus.NOT_FOUND, "E11006", "error.board.not.found.for.comment");
+    BOARD_NOT_FOUND_FOR_COMMENT(HttpStatus.NOT_FOUND, "E11006", "error.board.not.found.for.comment"),
 
-	
+    // ==================== 환불 관련 에러 (12xxx) ====================
+    REFUND_NOT_FOUND(HttpStatus.NOT_FOUND, "E12001", "error.refund.not.found"),
+    REFUND_POLICY_VIOLATION(HttpStatus.BAD_REQUEST, "E12002", "error.refund.policy.violation"),
+    REFUND_ALREADY_PROCESSED(HttpStatus.BAD_REQUEST, "E12003", "error.refund.already.processed"),
+    REFUND_AMOUNT_INVALID(HttpStatus.BAD_REQUEST, "E12004", "error.refund.amount.invalid"),
+    TOSS_REFUND_API_ERROR(HttpStatus.BAD_GATEWAY, "E12005", "error.refund.toss.api");
+
+
     private final HttpStatus status;
     private final String code;
     private final String messageKey;
