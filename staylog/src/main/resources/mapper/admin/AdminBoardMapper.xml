@@ -11,7 +11,7 @@
 		    b.accommodation_id,
 		    a.name AS accommodationName,
 		    b.user_id,
-		    u.nickname,
+		    u.nickname AS userNickName,
 		    b.title,
 		    <!-- 리뷰 게시글만 사용 -->
 		    b.rating,
