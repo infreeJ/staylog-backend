@@ -40,4 +40,9 @@
 	<select id="selectImageByTarget">
 		
 	</select>
+	
+	<select id="getNextBoardId" resultType="long">
+		SELECT seq_board_id.NEXTVAL FROM DUAL
+	</select>
+	
 </mapper>

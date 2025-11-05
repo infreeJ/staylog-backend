@@ -103,4 +103,15 @@ public class ImageServiceImpl implements ImageService {
 		return null;
 	}
 
+	
+	//정나영
+	@Override
+	public Long getBoardId() {
+		
+		//boardId 만 미리 발급 = 이미지 테이블의 TargetId 
+		Long imageId = imageMapper.getNextBoardId();
+		
+		return imageId;
+	}
+
 }

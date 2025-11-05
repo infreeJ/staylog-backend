@@ -14,4 +14,7 @@ public interface ImageService {
     List<ImageServeDto> saveImages(List<MultipartFile> files, String targetType, long targetId);
     List<ImageServeDto> getImagesByTarget(String targetType, long targetId);
     List<ImageServeDto> updateImages(List<MultipartFile> files);
+    
+    //정나영
+    Long getBoardId();
 }

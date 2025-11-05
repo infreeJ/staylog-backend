@@ -14,4 +14,7 @@ public interface ImageMapper {
 	Long selectMaxDisplayOrder(String targetType, Long targetId);
 	List<ImageDto> selectImagesByTarget(String targetType, Long targetId);
 	ImageDto selectProfileByUserId(String targetType, @Param("targetId") Long userId);
+
+	//정나영 : 보드 아이디만(타겟 아이디)만
+	Long getNextBoardId();
 }

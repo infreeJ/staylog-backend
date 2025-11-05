@@ -15,6 +15,7 @@ public class RoomDetailResponse {
 	private int maxAdult;
 	private int maxChildren;
 	private int maxInfant;
+	private int totalCapacity;
 	private String checkIn;
 	private String checkOut;
 	private String status;

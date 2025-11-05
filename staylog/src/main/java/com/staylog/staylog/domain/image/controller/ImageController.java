@@ -57,5 +57,18 @@ public class ImageController {
     	return null;
     }
     
+    @PostMapping("/images/imageId/draft") //정나영 : 보드 아이디만 미리 발급
+    public ResponseEntity<SuccessResponse<Long>> selectImageId(){
+    	
+    	Long imageId = imageService.getBoardId();
+    	String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+    	String code = SuccessCode.SUCCESS.getCode();
+    	
+    	SuccessResponse<Long> success = SuccessResponse.of(code,message,imageId);
+    	
+    	return ResponseEntity.ok(success);
+    	
+    }
+    
     
 }
