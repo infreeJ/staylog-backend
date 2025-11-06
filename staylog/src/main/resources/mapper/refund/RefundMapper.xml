@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.staylog.staylog.domain.refund.mapper.RefundMapper">
+
+    <!-- 환불 생성 -->
+    <insert id="insertRefund" useGeneratedKeys="true" keyProperty="refundId" keyColumn="REFUND_ID">
+        INSERT INTO TEAM404F.REFUND (
+            PAY_ID,
+            BOOKING_ID,
+            TOTAL_AMOUNT,
+            REFUND_AMOUNT,
+            REFUND_TYPE,
+            REFUND_REASON,
+            STATUS,
+            REQUESTED_AT
+        ) VALUES (
+            #{paymentId},
+            #{bookingId},
+            #{totalAmount},
+            #{refundAmount},
+            #{refundType},
+            #{refundReason},
+            #{status},
+            SYSTIMESTAMP
+        )
+    </insert>
+
+    <!-- 환불 조회 (ID) -->
+    <select id="findRefundById" resultType="map">
+        SELECT
+            rf.REFUND_ID AS refundId,
+            rf.PAY_ID AS paymentId,
+            rf.BOOKING_ID AS bookingId,
+            rf.TOTAL_AMOUNT AS totalAmount,
+            rf.REFUND_AMOUNT AS refundAmount,
+            rf.REFUND_TYPE AS refundType,
+            rf.REFUND_REASON AS refundReason,
+            rf.STATUS AS status,
+            rf.REQUESTED_AT AS requestedAt,
+            rf.APPROVED_AT AS approvedAt,
+            rf.COMPLETED_AT AS completedAt,
+            rf.FAILURE_REASON AS failureReason,
+            r.BOOKING_NUM AS bookingNum,
+            r.CHECK_IN AS checkInDate,
+            r.STATUS AS bookingStatus,
+            p.STATUS AS paymentStatus,
+            p.PAYMENT_KEY AS paymentKey
+        FROM TEAM404F.REFUND rf
+        LEFT JOIN TEAM404F.RESERVATION r ON rf.BOOKING_ID = r.BOOKING_ID
+        LEFT JOIN TEAM404F.PAYMENT p ON rf.PAY_ID = p.PAY_ID
+        WHERE rf.REFUND_ID = #{refundId}
+    </select>
+
+    <!-- 환불 조회 (결제 ID) -->
+    <select id="findRefundByPaymentId" resultType="map">
+        SELECT
+            rf.REFUND_ID AS refundId,
+            rf.PAY_ID AS paymentId,
+            rf.BOOKING_ID AS bookingId,
+            rf.TOTAL_AMOUNT AS totalAmount,
+            rf.REFUND_AMOUNT AS refundAmount,
+            rf.REFUND_TYPE AS refundType,
+            rf.REFUND_REASON AS refundReason,
+            rf.STATUS AS status,
+            rf.REQUESTED_AT AS requestedAt,
+            rf.APPROVED_AT AS approvedAt,
+            rf.COMPLETED_AT AS completedAt,
+            rf.FAILURE_REASON AS failureReason,
+            r.BOOKING_NUM AS bookingNum,
+            r.CHECK_IN AS checkInDate,
+            r.STATUS AS bookingStatus,
+            p.STATUS AS paymentStatus,
+            p.PAYMENT_KEY AS paymentKey
+        FROM TEAM404F.REFUND rf
+        LEFT JOIN TEAM404F.RESERVATION r ON rf.BOOKING_ID = r.BOOKING_ID
+        LEFT JOIN TEAM404F.PAYMENT p ON rf.PAY_ID = p.PAY_ID
+        WHERE rf.PAY_ID = #{paymentId}
+    </select>
+
+    <!-- 환불 상태 업데이트 -->
+    <update id="updateRefundStatus">
+        UPDATE TEAM404F.REFUND
+        SET STATUS = #{status},
+            APPROVED_AT = SYSTIMESTAMP
+        WHERE REFUND_ID = #{refundId}
+    </update>
+
+    <!-- 환불 완료 처리 -->
+    <update id="updateRefundCompletion">
+        UPDATE TEAM404F.REFUND
+        SET STATUS = #{status},
+            COMPLETED_AT = SYSTIMESTAMP
+        WHERE REFUND_ID = #{refundId}
+    </update>
+
+    <!-- 환불 실패 처리 -->
+    <update id="updateRefundFailure">
+        UPDATE TEAM404F.REFUND
+        SET STATUS = #{status},
+            FAILURE_REASON = #{failureReason},
+            COMPLETED_AT = SYSTIMESTAMP
+        WHERE REFUND_ID = #{refundId}
+    </update>
+
+</mapper>

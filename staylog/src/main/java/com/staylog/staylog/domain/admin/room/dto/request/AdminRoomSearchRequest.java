@@ -1,5 +1,9 @@
 package com.staylog.staylog.domain.admin.room.dto.request;
 
+import org.apache.ibatis.type.Alias;
+
+import com.staylog.staylog.global.common.dto.PageRequest;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,12 +16,13 @@ import lombok.Setter;
  *
  * @author 천승현
  */
+@Alias("AdminRoomSearchRequest")
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminRoomSearchRequest {
+public class AdminRoomSearchRequest extends PageRequest {
 
     /** 숙소 ID (필수) */
     private Long accommodationId;

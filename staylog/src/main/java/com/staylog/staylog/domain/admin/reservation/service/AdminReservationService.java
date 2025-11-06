@@ -2,6 +2,7 @@ package com.staylog.staylog.domain.admin.reservation.service;
 
 import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
+import com.staylog.staylog.domain.admin.reservation.dto.response.AdminReservationListResponse;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface AdminReservationService {
      * @param req 검색 조건 및 페이지 정보 Dto
      * @return 예약 목록
      */
-    List<AdminReservationDto> getReservationList (AdminReservationListRequest req);
+    AdminReservationListResponse getReservationList(AdminReservationListRequest req);
     /**
      * 예약 상세 조회
      * @param bookingId 예약 고유 Id

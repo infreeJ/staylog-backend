@@ -50,7 +50,7 @@ public class AdminBoardController {
 	        description = "검색 조건에 맞는 게시글 목록을 조회합니다. 게시글타입을 제외한 모든 파라미터는 선택사항입니다."
 	    )
 	    @GetMapping("/admin/boards")
-	    public ResponseEntity<SuccessResponse< Map<String, Object>>> getlist(
+	    public ResponseEntity<SuccessResponse<Map<String, Object>>> getlist(
 	            @Parameter(description = "게시글 검색 조건") AdminBoardSearchRequest searchRequest) {
 	    	
 	    	// Service 에서 Map 반환 (boards + page 정보 포함)

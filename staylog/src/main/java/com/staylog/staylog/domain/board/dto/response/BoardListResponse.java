@@ -4,6 +4,7 @@ import com.staylog.staylog.domain.board.dto.BoardDto;
 import com.staylog.staylog.global.common.response.PageResponse;
 
 import lombok.*;
+import org.apache.ibatis.type.Alias;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ import java.util.List;
  *
  * @author 김지은
  */
+
 
 @Builder
 @Getter

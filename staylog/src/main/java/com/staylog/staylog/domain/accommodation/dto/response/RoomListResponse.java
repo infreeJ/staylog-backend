@@ -19,8 +19,8 @@ public class RoomListResponse {
 	private String name;
 	private int price;
 	private int maxGuest;
-	private String rmTypeNameEn;
-	private String rmTypeName;
+	// 객실 유형 code_id
+	private String rmTypeCodeId;
 	// 예약 불가일
 	private List<String> disabledDates;
 }

@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface BoardMapper {
 
-    List<BoardDto> getByBoardType(String boardType);
+    List<BoardDto> getByBoardType(BoardListRequest boardListRequest);
     BoardDto getByBoardId(long boardId);
 
     void insert(BoardDto boardDto);
@@ -33,6 +33,7 @@ public interface BoardMapper {
     void decreaseLikeCount(Long boardId);
     void updateLikeCount(Long boardId);
 
+    void increaseViewsCount(Long boardId);
 
     // 게시글 PK로 숙소명 조회 (알림에서 사용)
     public String getAccommodationNameByBoardId(long boardId);

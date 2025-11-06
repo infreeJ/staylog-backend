@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw spring-boot:run:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

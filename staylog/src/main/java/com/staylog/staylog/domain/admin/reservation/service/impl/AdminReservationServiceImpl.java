@@ -3,9 +3,11 @@ package com.staylog.staylog.domain.admin.reservation.service.impl;
 
 import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
+import com.staylog.staylog.domain.admin.reservation.dto.response.AdminReservationListResponse;
 import com.staylog.staylog.domain.admin.reservation.mapper.AdminReservationMapper;
 import com.staylog.staylog.domain.admin.reservation.service.AdminReservationService;
 import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.common.response.PageResponse;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,18 @@ public class AdminReservationServiceImpl implements AdminReservationService {
 
 
     @Override
-    public List<AdminReservationDto> getReservationList(AdminReservationListRequest req) {
-        return mapper.findReservations(req);
+    public AdminReservationListResponse getReservationList(AdminReservationListRequest req) {
+        int totalCount = mapper.countReservations(req);
+
+        PageResponse page = new PageResponse();
+        page.calculate(req, totalCount);
+
+        List<AdminReservationDto> list = mapper.findReservations(req);
+
+        AdminReservationListResponse resp = new AdminReservationListResponse();
+        resp.setReservations(list);
+        resp.setPage(page);
+        return resp; // ✅ 단일 객체 반환
     }
 
     @Override

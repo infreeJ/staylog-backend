@@ -28,7 +28,7 @@ public class CommonCodeController {
 
     /**
      * 부모 코드로 자식 코드 목록 조회
-     * GET /v1/common-codes?parentId=REGION_TYPE
+     * GET /v1/common-codes?parentId=REGION_TYPEh
      */
     @Operation(summary = "자식 코드 조회", description = "부모 코드 ID로 자식 코드 목록을 조회합니다.")
     @GetMapping

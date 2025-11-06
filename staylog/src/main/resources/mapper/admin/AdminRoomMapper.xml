@@ -5,18 +5,44 @@
 <mapper namespace="com.staylog.staylog.domain.admin.room.mapper.AdminRoomMapper">
 
 	<!-- 숙소별 객실 목록 조회 -->
-	<select id="selectRoomListByAccommodation" resultType="com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse">
-	    SELECT
-	    	r.accommodation_id,
-	    	a.name AS accommodationName,
-	        r.room_id,
-	        r.name,
-	        r.rm_type,
-	        ct.code_name AS typeName,
-	        r.price,
-	        r.max_adult,
-	        r.deleted_yn,
-	        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt
+	<select id="selectRoomListByAccommodation" parameterType="AdminRoomSearchRequest" resultType="AdminRoomDetailResponse">
+		SELECT *
+	    FROM (
+		    SELECT
+		    	r.accommodation_id,
+		    	a.name AS accommodationName,
+		        r.room_id,
+		        r.name,
+		        r.rm_type,
+		        ct.code_name AS typeName,
+		        r.price,
+		        r.max_adult,
+		        r.deleted_yn,
+			    ROWNUM AS rn,
+		        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt
+		    FROM room r
+		    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
+		    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
+		    <where>
+		    	r.accommodation_id = #{accommodationId}
+	            <if test="rmType != null and rmType != ''">
+	            	AND r.rm_type = #{rmType}
+	        	</if>
+				<if test="keyword != null and keyword != ''">
+		            AND r.name LIKE '%' || #{keyword} || '%'
+		        </if>
+	        	<if test="deletedYn != null and deletedYn != ''">
+		           AND r.deleted_yn = #{deletedYn}
+		        </if>
+	        </where>
+		    ORDER BY r.deleted_yn ASC, r.created_at DESC
+		) t
+		WHERE t.rn BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	<!-- 전체 게시글 수 조회 -->
+	<select id="countRoomList" parameterType="AdminRoomSearchRequest" resultType="int">
+	    SELECT COUNT(*)
 	    FROM room r
 	    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
 	    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
@@ -32,11 +58,10 @@
 	           AND r.deleted_yn = #{deletedYn}
 	        </if>
         </where>
-	    ORDER BY r.deleted_yn ASC, r.created_at DESC
 	</select>
 
 	<!-- 객실 상세 조회 -->
-	<select id="selectRoomDetail" parameterType="long" resultType="com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse">
+	<select id="selectRoomDetail" parameterType="long" resultType="AdminRoomDetailResponse">
 	    SELECT
 	    	r.accommodation_id,
 	    	a.name AS accommodationName,
@@ -48,8 +73,8 @@
 	        r.max_adult,
 	        r.max_children,
 	        r.max_infant,
-	        r.check_in,
-	        r.check_out,
+	        TO_CHAR(r.check_in, 'HH24:MI') AS checkIn,
+			TO_CHAR(r.check_out, 'HH24:MI') AS checkOut,
 	        r.area,
 	        r.deleted_yn,
 	        r.single_bed,
@@ -66,7 +91,7 @@
 	</select>
 
 	<!-- 객실 수정 -->
-	<update id="updateRoom" parameterType="com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest">
+	<update id="updateRoom" parameterType="AdminRoomRequest">
 		UPDATE room
 	    SET name = #{name},
 	        rm_type = #{rmType},
@@ -74,8 +99,8 @@
 	        max_adult = #{maxAdult},
 	        max_children = #{maxChildren},
 	        max_infant = #{maxInfant},
-	        check_in = #{checkIn},
-	        check_out = #{checkOut},
+	        check_in = TO_TIMESTAMP(#{checkIn}, 'HH24:MI'),
+	        check_out = TO_TIMESTAMP(#{checkOut}, 'HH24:MI'),
 	        area = #{area},
 	        single_bed = #{singleBed},
 	        double_bed = #{doubleBed},
@@ -86,7 +111,7 @@
 	</update>
 	
 	<!-- 객실 논리 삭제/복원(상태전환) -->
-	<update id="updateRoomStatus" parameterType="com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest">
+	<update id="updateRoomStatus" parameterType="RoomUpdateStatusRequest">
 	    UPDATE room
 	    SET deleted_yn = #{deletedYn},
 	        updated_at = SYSTIMESTAMP
@@ -94,7 +119,7 @@
 	</update>
 
 	<!-- 객실 추가 -->
-	<insert id="insertRoom" parameterType="com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest">
+	<insert id="insertRoom" parameterType="AdminRoomRequest">
 	    <selectKey keyProperty="roomId" resultType="long" order="BEFORE">
 	        SELECT seq_room_id.NEXTVAL FROM DUAL
 	    </selectKey>
@@ -108,7 +133,9 @@
 	    ) VALUES (
 	        #{roomId}, #{accommodationId}, #{name}, #{rmType},
 	        #{price}, #{maxAdult}, #{maxChildren}, #{maxInfant},
-	        #{checkIn}, #{checkOut}, #{area},
+	        TO_TIMESTAMP(#{checkIn}, 'HH24:MI'),
+	        TO_TIMESTAMP(#{checkOut}, 'HH24:MI'),
+	        #{area},
 	        #{singleBed}, #{doubleBed}, #{queenBed}, #{kingBed}, #{description}
 	        SYSTIMESTAMP
 	    )

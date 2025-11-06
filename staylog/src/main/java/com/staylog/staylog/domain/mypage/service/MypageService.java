@@ -37,7 +37,7 @@ public interface MypageService {
     
     
     /**
-     * 예약정보 조회
+     * 예약정보 조회 (해당 회원의 예약 목록을 status 조건으로 조회)
      * @param userId 예약 내역을 조회할 회원의 고유 번호
      * @param status 예약 상태 (upcoming / completed / canceled)
      * @return 조건에 맞는 예약 내역 리스트 (BookingInfoResponse)

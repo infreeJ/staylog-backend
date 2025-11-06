@@ -49,11 +49,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String email = jwtTokenProvider.getEmailFromToken(token);
                     String role = jwtTokenProvider.getRoleFromToken(token);
 
+                    // JWT Claims에서 추가 정보 추출
+                    io.jsonwebtoken.Claims claims = jwtTokenProvider.getClaimsFromToken(token);
+                    String nickname = claims.get("nickname", String.class);
+                    String loginId = claims.get("loginId", String.class);
+
+                    // SecurityUser 객체 생성
+                    com.staylog.staylog.global.security.SecurityUser securityUser =
+                        new com.staylog.staylog.global.security.SecurityUser(
+                            userId,
+                            email,
+                            role,
+                            nickname,
+                            loginId
+                        );
+
                     // Spring Security 인증 객체 생성
                     UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                            userId, // principal (사용자 ID)
-                            null,   // credentials (비밀번호는 불필요)
+                            securityUser, // principal (SecurityUser 객체)
+                            null,         // credentials (비밀번호는 불필요)
                             Collections.singletonList(new SimpleGrantedAuthority(role)) // authorities (권한)
                         );
 

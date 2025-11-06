@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.staylog.staylog.domain.board.mapper.ViewsMapper">
+
+
+    <!-- 최근 1시간 내 조회이력 존재 여부 -->
+    <select id="existsRecentView" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM views
+        WHERE board_id = #{boardId}
+            AND user_id = #{userId}
+            AND viewed_at > SYSTIMESTAMP - INTERVAL '1' HOUR
+    </select>
+
+
+    <!-- 조회 기록 추가 -->
+    <insert id="addView" parameterType="map">
+        INSERT INTO views
+            (board_id, user_id, viewed_at)
+        VALUES(
+            seq_views_id.NEXTVAL, #{userId}, SYSTIMESTAMP
+        )
+    </insert>
+
+    <!-- 조회수 조회 -->
+    <select id="CountByBoardId" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM views
+        WHERE board_id = #{boardId}
+
+    </select>
+
+<!-- views 테이블 생성
+
+CREATE TABLE views (
+    view_id NUMBER PRIMARY KEY,
+    board_id NUMBER NOT NULL,
+    user_id NUMBER NOT NULL,
+    viewed_at TIMESTAMP DEFAULT SYSTIMESTAMP
+);
+
+-->
+
+<!-- view_id 시퀀스 생성
+CREATE SEQUENCE seq_view_id
+    START WITH 1
+    INCREMENT BY 1;
+
+-->
+
+
+
+</mapper>
