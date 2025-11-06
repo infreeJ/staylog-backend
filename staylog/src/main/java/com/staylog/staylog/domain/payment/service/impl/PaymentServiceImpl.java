@@ -7,6 +7,7 @@ import com.staylog.staylog.domain.payment.dto.request.PreparePaymentRequest;
 import com.staylog.staylog.domain.payment.dto.response.PaymentResultResponse;
 import com.staylog.staylog.domain.payment.dto.response.PreparePaymentResponse;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
+import com.staylog.staylog.domain.payment.service.PaymentCompensationService;
 import com.staylog.staylog.domain.payment.service.PaymentService;
 import com.staylog.staylog.external.toss.client.TossPaymentClient;
 import com.staylog.staylog.external.toss.config.TossPaymentsConfig;
@@ -42,6 +43,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingService bookingService;
     private final TossPaymentClient tossPaymentClient;
     private final TossPaymentsConfig tossConfig;
+    private final PaymentCompensationService compensationService;
 
     /**
      * 결제 준비
@@ -72,7 +74,14 @@ public class PaymentServiceImpl implements PaymentService {
             throw new PaymentAmountMismatchException(bookingAmount, request.getAmount());
         }
 
-        // 4. 결제 생성 (READY 상태)
+        // 4. 계좌이체인 경우 만료 시간 연장 (5분 → 7일)
+        if ("TRANSFER".equals(request.getMethod())) {
+            LocalDateTime newExpiresAt = LocalDateTime.now().plusDays(7);
+            bookingMapper.updateExpiresAt(request.getBookingId(), newExpiresAt);
+            log.info("계좌이체 예약 만료 시간 연장: bookingId={}, expiresAt={}", request.getBookingId(), newExpiresAt);
+        }
+
+        // 5. 결제 생성 (READY 상태)
         Map<String, Object> params = new HashMap<>();
         params.put("status", "PAY_READY");  // READY 상태
         params.put("amount", request.getAmount());
@@ -82,11 +91,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         paymentMapper.insertPayment(params);
 
-        // 5. 생성된 결제 조회
+        // 6. 생성된 결제 조회
         Long paymentId = (Long) params.get("paymentId");
         Map<String, Object> payment = paymentMapper.findPaymentById(paymentId);
 
-        log.info("결제 준비 완료: paymentId={}, orderId={}", paymentId, bookingNum);
+        log.info("결제 준비 완료: paymentId={}, orderId={}, method={}", paymentId, bookingNum, request.getMethod());
 
         return PreparePaymentResponse.builder()
                 .paymentId(paymentId)
@@ -123,8 +132,8 @@ public class PaymentServiceImpl implements PaymentService {
         if (!bookingAmount.equals(request.getAmount())) {
             log.error("결제 금액 불일치: 예약금액={}, 요청금액={}", bookingAmount, request.getAmount());
 
-            // 보상 트랜잭션 실행
-            compensateFailedPayment(bookingId, "결제 금액 불일치");
+            // 보상 트랜잭션 실행 (독립 트랜잭션)
+            compensationService.compensateFailedPayment(bookingId, "결제 금액 불일치");
 
             throw new PaymentAmountMismatchException(bookingAmount, request.getAmount());
         }
@@ -175,46 +184,18 @@ public class PaymentServiceImpl implements PaymentService {
             // 6. 실패: 보상 트랜잭션 (PAYMENT(FAILED) + RESERVATION(CANCELED))
             log.error("Toss 결제 승인 실패: {}", e.getMessage(), e);
 
-            compensateFailedPayment(bookingId, e.getTossErrorMessage());
+            // 독립적인 트랜잭션으로 보상 실행 (REQUIRES_NEW)
+            compensationService.compensateFailedPayment(bookingId, e.getTossErrorMessage());
 
             throw e;  // 호출자에게 예외 전파
         } catch (Exception e) {
             // 7. 기타 예외: 보상 트랜잭션
             log.error("결제 승인 중 예외 발생: {}", e.getMessage(), e);
 
-            compensateFailedPayment(bookingId, "결제 처리 중 오류 발생");
+            // 독립적인 트랜잭션으로 보상 실행 (REQUIRES_NEW)
+            compensationService.compensateFailedPayment(bookingId, "결제 처리 중 오류 발생");
 
             throw new PaymentFailedException("결제 처리 중 오류가 발생했습니다");
-        }
-    }
-
-    /**
-     * 보상 트랜잭션
-     * - PAYMENT -> FAILED
-     * - RESERVATION -> CANCELED
-     *
-     * @param bookingId 예약 ID
-     * @param failureReason 실패 사유
-     */
-    private void compensateFailedPayment(Long bookingId, String failureReason) {
-        log.warn("보상 트랜잭션 실행: bookingId={}, reason={}", bookingId, failureReason);
-
-        try {
-            // PAYMENT 상태 -> FAILED
-            Map<String, Object> payment = paymentMapper.findPaymentByBookingId(bookingId);
-            if (payment != null) {
-                Long paymentId = ((Number) payment.get("paymentId")).longValue();
-                paymentMapper.updatePaymentFailure(paymentId, "PAY_FAILED", failureReason);
-            }
-
-            // RESERVATION 상태 -> CANCELED
-            bookingMapper.updateBookingStatus(bookingId, "RES_CANCELED");
-
-            log.info("보상 트랜잭션 완료: bookingId={}", bookingId);
-
-        } catch (Exception e) {
-            log.error("보상 트랜잭션 실패: bookingId={}, error={}", bookingId, e.getMessage(), e);
-            // 보상 트랜잭션 실패는 로그만 남기고 예외를 던지지 않음 (최종 에러는 원래 에러)
         }
     }
 }

@@ -50,6 +50,7 @@ public enum SuccessCode {
     // ==================== 결제 관련 성공 (6xxx) ====================
     PAYMENT_PREPARED(200, "S6001", "success.payment.prepared"),
     PAYMENT_COMPLETED(200, "S6002", "success.payment.completed"),
+    WEBHOOK_PROCESSED(200, "S6003", "success.payment.webhook.processed"),
 
     // ==================== 게시판 관련 성공 (7xxx) ====================
     BOARD_LIST_FETCHED(200, "S7004", "success.board.list"),

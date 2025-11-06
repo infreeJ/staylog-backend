@@ -33,6 +33,7 @@
             INFANTS,
             TOTAL_GUEST_COUNT,
             CREATED_AT,
+            EXPIRES_AT,
             IS_WRITED
         ) VALUES (
             #{userId},
@@ -48,6 +49,7 @@
             #{infants, jdbcType=INTEGER},
             #{totalGuestCount, jdbcType=INTEGER},
             SYSTIMESTAMP,
+            #{expiresAt},
             'N'
         )
     </insert>
@@ -70,6 +72,7 @@
             r.TOTAL_GUEST_COUNT AS totalGuestCount,
             r.CREATED_AT AS createdAt,
             r.UPDATED_AT AS updatedAt,
+            r.EXPIRES_AT AS expiresAt,
             rm.NAME AS roomName,
             a.NAME AS accommodationName,
             r.PAY_ID AS paymentId
@@ -97,6 +100,7 @@
             r.TOTAL_GUEST_COUNT AS totalGuestCount,
             r.CREATED_AT AS createdAt,
             r.UPDATED_AT AS updatedAt,
+            r.EXPIRES_AT AS expiresAt,
             r.PAY_ID AS paymentId
         FROM TEAM404F.RESERVATION r
         WHERE r.BOOKING_NUM = #{bookingNum}
@@ -110,15 +114,24 @@
         WHERE BOOKING_ID = #{bookingId}
     </update>
 
-    <!-- 만료된 예약 조회 (5분 이상 경과한 PENDING 예약) -->
+    <!-- 예약 만료 시간 업데이트 -->
+    <update id="updateExpiresAt">
+        UPDATE TEAM404F.RESERVATION
+        SET EXPIRES_AT = #{expiresAt},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE BOOKING_ID = #{bookingId}
+    </update>
+
+    <!-- 만료된 예약 조회 (EXPIRES_AT이 현재 시간보다 이전인 PENDING 예약) -->
     <select id="findExpiredBookings" resultType="map">
         SELECT
             BOOKING_ID AS bookingId,
             BOOKING_NUM AS bookingNum,
-            STATUS AS status
+            STATUS AS status,
+            EXPIRES_AT AS expiresAt
         FROM TEAM404F.RESERVATION
         WHERE STATUS = 'RES_PENDING'
-          AND CREATED_AT <![CDATA[<]]> #{expiresAt}
+          AND EXPIRES_AT <![CDATA[<]]> #{now}
     </select>
 
 </mapper>

@@ -54,9 +54,17 @@ public interface BookingMapper {
                              @Param("status") String status);
 
     /**
+     * 예약 만료 시간 업데이트 (결제 준비 시 결제 수단에 따라 연장)
+     * @param bookingId 예약 ID
+     * @param expiresAt 새로운 만료 시간
+     */
+    void updateExpiresAt(@Param("bookingId") Long bookingId,
+                         @Param("expiresAt") LocalDateTime expiresAt);
+
+    /**
      * 만료된 예약 조회 (스케줄러용)
-     * @param expiresAt 만료 기준 시각 (현재 시각 - 5분)
+     * @param now 현재 시각
      * @return 만료된 예약 목록
      */
-    List<Map<String, Object>> findExpiredBookings(@Param("expiresAt") LocalDateTime expiresAt);
+    List<Map<String, Object>> findExpiredBookings(@Param("now") LocalDateTime now);
 }

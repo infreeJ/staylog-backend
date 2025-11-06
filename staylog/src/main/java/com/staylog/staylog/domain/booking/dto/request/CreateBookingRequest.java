@@ -31,6 +31,11 @@ public class CreateBookingRequest {
     @Positive(message = "결제 금액은 양수여야 합니다")
     private Long amount;
 
+    // 결제 수단 (선택) - null이면 기본값 5분 만료
+    // "CARD", "VIRTUAL_ACCOUNT", "TRANSFER"
+    @Pattern(regexp = "CARD|VIRTUAL_ACCOUNT|TRANSFER", message = "올바른 결제 수단이 아닙니다")
+    private String paymentMethod;
+
     // 인원 정보 (선택)
     // guestName은 JWT의 nickname에서 자동으로 설정됩니다
     @Min(value = 1, message = "성인은 최소 1명 이상이어야 합니다")

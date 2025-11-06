@@ -82,12 +82,9 @@ public class RefundController {
 
         RefundDetailResponse response = refundService.getRefund(refundId);
 
-        return ResponseEntity.ok(
-                SuccessResponse.of(
-                        SuccessCode.REFUND_GET_SUCCESS.getCode(),
-                        messageUtil.getMessage(SuccessCode.REFUND_GET_SUCCESS.getMessageKey()),
-                        response
-                )
-        );
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+
+        return ResponseEntity.ok(SuccessResponse.of(code, message, response));
     }
 }

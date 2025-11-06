@@ -66,7 +66,10 @@ public class BookingServiceImpl implements BookingService {
         Integer infants = request.getInfants() != null ? request.getInfants() : 0;
         Integer totalGuestCount = adults + children + infants;
 
-        // 4. 예약 생성
+        // 4. 만료 시간 계산 (결제 수단에 따라 다름)
+        LocalDateTime expiresAt = calculateExpiresAt(request.getPaymentMethod());
+
+        // 5. 예약 생성
         Map<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("roomId", request.getRoomId());
@@ -80,6 +83,7 @@ public class BookingServiceImpl implements BookingService {
         params.put("children", children);
         params.put("infants", infants);
         params.put("totalGuestCount", totalGuestCount);
+        params.put("expiresAt", expiresAt);  // 만료 시간
 
         bookingMapper.insertBooking(params);
 
@@ -113,7 +117,7 @@ public class BookingServiceImpl implements BookingService {
 
     /**
      * 예약 상태가 PENDING인지 검증 (결제 준비 전)
-     * - 만료 체크 (생성 후 5분)
+     * - 만료 체크 (EXPIRES_AT 기준)
      * - PENDING 상태 체크
      */
     @Override
@@ -127,10 +131,10 @@ public class BookingServiceImpl implements BookingService {
 
         String status = (String) booking.get("status");
 
-        // 만료 체크 (생성 후 5분)
-        LocalDateTime createdAt = (LocalDateTime) booking.get("createdAt");
-        if (createdAt.plusMinutes(5).isBefore(LocalDateTime.now())) {
-            log.warn("예약 만료: bookingId={}, createdAt={}", bookingId, createdAt);
+        // 만료 체크 (EXPIRES_AT 기준)
+        LocalDateTime expiresAt = (LocalDateTime) booking.get("expiresAt");
+        if (expiresAt.isBefore(LocalDateTime.now())) {
+            log.warn("예약 만료: bookingId={}, expiresAt={}", bookingId, expiresAt);
             throw new BookingExpiredException(bookingId);
         }
 
@@ -153,13 +157,14 @@ public class BookingServiceImpl implements BookingService {
 
     /**
      * 만료된 예약 자동 취소
-     * - 5분 이상 경과한 PENDING 예약을 CANCELED로 변경
+     * - EXPIRES_AT이 현재 시간보다 이전인 PENDING 예약을 CANCELED로 변경
+     * - 결제 수단에 따라 만료 시간이 다름 (카드 5분, 가상계좌 7일 등)
      */
     @Override
     @Transactional
     public int cancelExpiredBookings() {
-        LocalDateTime expiresAt = LocalDateTime.now().minusMinutes(5);
-        List<Map<String, Object>> expiredBookings = bookingMapper.findExpiredBookings(expiresAt);
+        LocalDateTime now = LocalDateTime.now();
+        List<Map<String, Object>> expiredBookings = bookingMapper.findExpiredBookings(now);
 
         if (expiredBookings.isEmpty()) {
             return 0;
@@ -189,6 +194,21 @@ public class BookingServiceImpl implements BookingService {
     private String generateBookingNum() {
         return "ORDER_" + System.currentTimeMillis() + "_" +
                 UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    /**
+     * 만료 시간 계산
+     *
+     * 예약 생성 시점에는 결제 수단을 알 수 없으므로 기본값 5분으로 설정
+     * 결제 준비 시점에 결제 수단에 따라 만료 시간을 연장함
+     *
+     * @param paymentMethod 결제 수단 (사용 안 함, 하위 호환성 유지용)
+     * @return 만료 시간 (5분 후)
+     */
+    private LocalDateTime calculateExpiresAt(String paymentMethod) {
+        // 모든 예약 5분으로 생성
+        // 계좌이체는 결제 준비 시점에 7일로 연장
+        return LocalDateTime.now().plusMinutes(5);
     }
 
     /**
