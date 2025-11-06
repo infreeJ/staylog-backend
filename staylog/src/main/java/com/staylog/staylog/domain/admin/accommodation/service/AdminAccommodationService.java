@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.admin.accommodation.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AccommodationUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.accommodation.dto.request.AdminAccommodationRequest;
@@ -22,7 +23,7 @@ public interface AdminAccommodationService {
 	 * @param searchRequest 검색 조건 (지역, 숙소타입, 키워드, 삭제여부)
 	 * @return 검색 조건에 맞는 숙소 목록
 	 */
-	List<AdminAccommodationDetailResponse> getList(AdminAccommodationSearchRequest searchRequest);
+	Map<String, Object> getList(AdminAccommodationSearchRequest searchRequest);
 	
 	/**
 	 * 숙소 상세 조회

@@ -1,6 +1,6 @@
 package com.staylog.staylog.domain.admin.room.controller;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +43,6 @@ public class AdminRoomController {
 	/**
 	 * 특정 숙소의 객실 목록 조회 (검색 필터 포함)
 	 * 
-	 * @param accommodationId 숙소 ID (필수)
 	 * @param searchRequest 검색 조건 (객실타입, 객실명, 삭제여부 등)
 	 * @return 객실 목록
 	 */
@@ -52,18 +51,17 @@ public class AdminRoomController {
 		description = "특정 숙소에 속한 객실 목록을 조회합니다."
 	)
 	@GetMapping("/admin/accommodations/{accommodationId}/rooms")
-	public ResponseEntity<SuccessResponse<List<AdminRoomDetailResponse>>> list(
-			@Parameter(description = "숙소 ID") 
-			@PathVariable Long accommodationId,
-			@Parameter(description = "객실 검색 조건") 
-			AdminRoomSearchRequest searchRequest) {
-		// accommodationId를 searchRequest에 설정
-		searchRequest.setAccommodationId(accommodationId);
-		List<AdminRoomDetailResponse> list = roomService.getRoomList(searchRequest);
+	public ResponseEntity<SuccessResponse<Map<String, Object>>> getlist(
+			@Parameter(description = "객실 검색 조건") AdminRoomSearchRequest searchRequest) {
+		
+    	// Service 에서 Map 반환(rooms + page 정보 포함)
+    	Map<String, Object> result = roomService.getRoomList(searchRequest);
+    	
 		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
-        SuccessResponse<List<AdminRoomDetailResponse>> success = SuccessResponse.of(code, message, list);
-		return ResponseEntity.ok(success);
+        SuccessResponse<Map<String, Object>> success = SuccessResponse.of(code, message, result);
+		
+        return ResponseEntity.ok(success);
 	}
 
 	/**

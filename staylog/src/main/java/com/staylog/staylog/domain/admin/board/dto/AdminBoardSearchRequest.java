@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminBoardSearchRequest extends PageRequest{
+public class AdminBoardSearchRequest extends PageRequest {
 	
 	/** 게시글 타입 (필수) */
     private String boardType;      // BOARD_REVIEW, BOARD_JOURNAL
