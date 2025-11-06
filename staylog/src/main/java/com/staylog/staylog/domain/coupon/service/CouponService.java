@@ -11,14 +11,6 @@ import java.util.List;
 public interface CouponService {
 
     /**
-     * 회원가입 이벤트리스너 메서드
-     * @param event 이벤트 객체
-     * @author 이준혁
-     */
-    public void handleSignupEvent(SignupEvent event);
-
-
-    /**
      * 특정 유저의 사용 가능한 모든 쿠폰 조회
      * @author 이준혁
      * @param userId 유저 PK

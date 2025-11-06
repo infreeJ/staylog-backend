@@ -40,15 +40,18 @@ public class NotificationServiceImpl implements NotificationService {
     private final UserMapper userMapper;
     private final CommentsMapper commentsMapper;
     private final BoardMapper boardMapper;
+    
+    
+    // TODO: 쿠폰 발급 이벤트를 받을 메서드 정의 필요
+    
 
     /**
      * 리뷰 게시글 작성 이벤트리스너 메서드
      * @param event 이벤트 객체
      * @author 이준혁
      */
-    @Override
     @TransactionalEventListener
-    public void handleReviewCreatedEvent(ReviewCreatedEvent event) {
+    private void handleReviewCreatedEvent(ReviewCreatedEvent event) {
         long recipientId = (long) 7;  // TODO: 원래 Admin에게 보내야하지만 개발 환경이라 infreeJ 아이디로 수취
         String nickname = userMapper.findNicknameByUserId(event.getUserId());
         String accommodationName = boardMapper.getAccommodationNameByBoardId(event.getBoardId());
@@ -88,9 +91,8 @@ public class NotificationServiceImpl implements NotificationService {
      * @param event 이벤트 객체
      * @author 이준혁
      */
-    @Override
     @TransactionalEventListener
-    public void handleSignupEvent(SignupEvent event) {
+    private void handleSignupEvent(SignupEvent event) {
 
         long recipientId = event.getUserId();
 
@@ -132,9 +134,8 @@ public class NotificationServiceImpl implements NotificationService {
      * @param event 이벤트 객체
      * @author 이준혁
      */
-    @Override
     @TransactionalEventListener
-    public void handleCommentCreatedEvent(CommentCreatedEvent event) {
+    private void handleCommentCreatedEvent(CommentCreatedEvent event) {
 
         String nickname = userMapper.findNicknameByUserId(event.getUserId()); // 댓글 작성자 닉네임
         CommentsDto commentsDto = commentsMapper.getOneByCommentId(event.getCommentId()); // 댓글 데이터
@@ -182,8 +183,7 @@ public class NotificationServiceImpl implements NotificationService {
      * NotificationResponse를 구성하여 사용자에게 PUSH한다.
      * @author 이준혁
      */
-    @Override
-    public void saveAndPushNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse) {
+    private void saveAndPushNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse) {
 
         // DB 저장
         int success = notificationMapper.notiSave(notificationRequest);

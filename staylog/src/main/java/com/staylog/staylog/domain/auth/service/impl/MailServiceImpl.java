@@ -139,9 +139,8 @@ public class MailServiceImpl implements MailService {
      * 만료된 이메일 데이터 삭제
      * @author 이준혁
      */
-    @Override
     @Scheduled(cron = "0 0 4 * * *") // 매일 새벽 4시
-    public void deleteExpiredEmail() {
+    private void deleteExpiredEmail() {
         emailMapper.deleteExpiredEmail(LocalDateTime.now());
     }
 }

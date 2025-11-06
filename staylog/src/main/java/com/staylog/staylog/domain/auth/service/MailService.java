@@ -19,10 +19,4 @@ public interface MailService {
      */
     boolean verifyMail(String email, String code);
 
-
-    /**
-     * 만료된 이메일 데이터 삭제
-     * @author 이준혁
-     */
-    public void deleteExpiredEmail();
 }

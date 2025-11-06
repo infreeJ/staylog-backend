@@ -34,9 +34,8 @@ public class CouponServiceImpl implements CouponService {
      * @param event 이벤트 객체
      * @author 이준혁
      */
-    @Override
     @TransactionalEventListener
-    public void handleSignupEvent(SignupEvent event) {
+    private void handleSignupEvent(SignupEvent event) {
 
         CouponRequest couponRequest = CouponRequest.builder()
                 .userId(event.getUserId())
@@ -102,6 +101,8 @@ public class CouponServiceImpl implements CouponService {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponRequest={}", couponRequest);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+
+        // TODO: 쿠폰 발급 이벤트 발행 필요
     }
 
     /**
@@ -118,6 +119,8 @@ public class CouponServiceImpl implements CouponService {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponBatchRequest={}", couponBatchRequest);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+
+        // TODO: 쿠폰 발급 이벤트 발행 필요
     }
 
     /**
