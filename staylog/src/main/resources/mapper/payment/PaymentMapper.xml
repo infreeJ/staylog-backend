@@ -2,5 +2,94 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.payment.mapper.PaymentMapper">
+<mapper namespace="com.staylog.staylog.domain.payment.mapper.PaymentMapper">
+
+    <!-- 결제 생성 -->
+    <insert id="insertPayment" useGeneratedKeys="true" keyProperty="paymentId" keyColumn="PAYMENT_ID">
+        INSERT INTO TEAM404F.PAYMENT (
+            STATUS,
+            AMOUNT,
+            METHOD,
+            BOOKING_ID,
+            PAYMENT_KEY,
+            REQUESTED_AT
+        ) VALUES (
+            #{status},
+            #{amount},
+            #{method},
+            #{bookingId},
+            #{paymentKey, jdbcType=VARCHAR},
+            SYSTIMESTAMP
+        )
+    </insert>
+
+    <!-- 결제 조회 (ID) -->
+    <select id="findPaymentById" resultType="map">
+        SELECT
+            PAYMENT_ID AS paymentId,
+            STATUS AS status,
+            AMOUNT AS amount,
+            METHOD AS method,
+            BOOKING_ID AS bookingId,
+            PAYMENT_KEY AS paymentKey,
+            REQUESTED_AT AS requestedAt,
+            APPROVED_AT AS approvedAt,
+            REFUNDED_AT AS refundedAt,
+            REFUND_ID AS refundId,
+            REFUND_AMOUNT AS refundAmount
+        FROM TEAM404F.PAYMENT
+        WHERE PAYMENT_ID = #{paymentId}
+    </select>
+
+    <!-- 결제 조회 (bookingId) -->
+    <select id="findPaymentByBookingId" resultType="map">
+        SELECT
+            PAYMENT_ID AS paymentId,
+            STATUS AS status,
+            AMOUNT AS amount,
+            METHOD AS method,
+            BOOKING_ID AS bookingId,
+            PAYMENT_KEY AS paymentKey,
+            REQUESTED_AT AS requestedAt,
+            APPROVED_AT AS approvedAt,
+            REFUNDED_AT AS refundedAt,
+            REFUND_ID AS refundId,
+            REFUND_AMOUNT AS refundAmount
+        FROM TEAM404F.PAYMENT
+        WHERE BOOKING_ID = #{bookingId}
+        ORDER BY PAYMENT_ID DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 결제 조회 (paymentKey) -->
+    <select id="findPaymentByPaymentKey" resultType="map">
+        SELECT
+            PAYMENT_ID AS paymentId,
+            STATUS AS status,
+            AMOUNT AS amount,
+            METHOD AS method,
+            BOOKING_ID AS bookingId,
+            PAYMENT_KEY AS paymentKey,
+            REQUESTED_AT AS requestedAt,
+            APPROVED_AT AS approvedAt
+        FROM TEAM404F.PAYMENT
+        WHERE PAYMENT_KEY = #{paymentKey}
+    </select>
+
+    <!-- 결제 상태 업데이트 (승인 성공 시) -->
+    <update id="updatePaymentStatus">
+        UPDATE TEAM404F.PAYMENT
+        SET STATUS = #{status},
+            PAYMENT_KEY = #{paymentKey},
+            APPROVED_AT = SYSTIMESTAMP
+        WHERE PAYMENT_ID = #{paymentId}
+    </update>
+
+    <!-- 결제 실패 정보 업데이트 -->
+    <update id="updatePaymentFailure">
+        UPDATE TEAM404F.PAYMENT
+        SET STATUS = #{status}
+        WHERE PAYMENT_ID = #{paymentId}
+    </update>
+
 </mapper>

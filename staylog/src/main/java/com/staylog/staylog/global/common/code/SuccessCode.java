@@ -50,7 +50,7 @@ public enum SuccessCode {
     // ==================== 결제 관련 성공 (6xxx) ====================
     PAYMENT_PREPARED(200, "S6001", "success.payment.prepared"),
     PAYMENT_COMPLETED(200, "S6002", "success.payment.completed"),
-    REFUND_COMPLETED(200, "S6003", "success.payment.refunded"),
+    WEBHOOK_PROCESSED(200, "S6003", "success.payment.webhook.processed"),
 
     // ==================== 게시판 관련 성공 (7xxx) ====================
     BOARD_LIST_FETCHED(200, "S7004", "success.board.list"),
@@ -78,11 +78,15 @@ public enum SuccessCode {
 	COMMENTS_UPDATED(200, "S11003", "success.comments.updated"),
 	COMMENTS_DELETED(200, "S11004", "success.comments.deleted"),
 
-    // ==================== 쿠폰 관련 성공 (12xxx) ====================
-    COUPON_LIST_FIND(200, "S12001", "success.coupon.list.find"),
-    COUPON_CREATE(201, "S12002", "success.coupon.created"),
-    COUPON_USED(201, "S12003", "success.coupon.used"),
-    COUPON_DELETED(201, "S12003", "success.coupon.deleted");
+	//===================== 환불 관련 성공 (12xxx)=====================
+	REFUND_REQUEST_SUCCESS(201, "S12001", "success.refund.request"),
+	REFUND_PROCESS_SUCCESS(200, "S12002", "success.refund.process"),
+  
+  // ==================== 쿠폰 관련 성공 (13xxx) ====================
+  COUPON_LIST_FIND(200, "S13001", "success.coupon.list.find"),
+  COUPON_CREATE(201, "S13002", "success.coupon.created"),
+  COUPON_USED(201, "S13003", "success.coupon.used"),
+  COUPON_DELETED(201, "S13004", "success.coupon.deleted");
 
 
 
