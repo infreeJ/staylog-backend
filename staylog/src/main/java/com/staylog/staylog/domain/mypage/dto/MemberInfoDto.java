@@ -1,10 +1,21 @@
 package com.staylog.staylog.domain.mypage.dto;
 
-import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.staylog.staylog.domain.mypage.dto.response.BookingInfoResponse;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * 마이페이지 회원정보 DTO (조회 + 수정 통합)
+ * + 숙소 예약목록 포함
+ * 
  * @Author 오미나
  */
 @Getter
@@ -28,4 +39,6 @@ public class MemberInfoDto {
     private String profileImage;  // 프로필 이미지 PROFILE_IMAGE
     private LocalDateTime createdAt; // 가입일
     private LocalDateTime updatedAt; // 수정일
+    
+    private List<BookingInfoResponse> bookingList; // 본인 예약목록
 }
