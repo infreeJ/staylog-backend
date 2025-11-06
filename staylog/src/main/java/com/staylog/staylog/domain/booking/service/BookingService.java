@@ -38,4 +38,11 @@ public interface BookingService {
      * @param status 변경할 상태
      */
     void updateBookingStatus(Long bookingId, String status);
+
+    /**
+     * 만료된 예약 자동 취소 (스케줄러용)
+     * - 5분 이상 경과한 PENDING 예약을 CANCELED로 변경
+     * @return 취소된 예약 건수
+     */
+    int cancelExpiredBookings();
 }

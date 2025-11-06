@@ -19,6 +19,7 @@ public class TossPaymentsConfig {
 
     private String clientKey;      // 클라이언트 키 (프론트엔드용)
     private String secretKey;      // 시크릿 키 (서버용)
+    private String webhookSecret;  // 웹훅 시그니처 검증용 보안 키
     private String apiUrl;         // 토스 API URL
     private String successUrl;     // 결제 성공 리다이렉트 URL
     private String failUrl;        // 결제 실패 리다이렉트 URL

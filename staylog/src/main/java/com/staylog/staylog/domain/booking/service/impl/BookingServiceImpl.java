@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -148,6 +149,37 @@ public class BookingServiceImpl implements BookingService {
     public void updateBookingStatus(Long bookingId, String status) {
         bookingMapper.updateBookingStatus(bookingId, status);
         log.info("예약 상태 업데이트: bookingId={}, status={}", bookingId, status);
+    }
+
+    /**
+     * 만료된 예약 자동 취소
+     * - 5분 이상 경과한 PENDING 예약을 CANCELED로 변경
+     */
+    @Override
+    @Transactional
+    public int cancelExpiredBookings() {
+        LocalDateTime expiresAt = LocalDateTime.now().minusMinutes(5);
+        List<Map<String, Object>> expiredBookings = bookingMapper.findExpiredBookings(expiresAt);
+
+        if (expiredBookings.isEmpty()) {
+            return 0;
+        }
+
+        int canceledCount = 0;
+        for (Map<String, Object> booking : expiredBookings) {
+            Long bookingId = ((Number) booking.get("bookingId")).longValue();
+            String bookingNum = (String) booking.get("bookingNum");
+
+            try {
+                bookingMapper.updateBookingStatus(bookingId, "RES_CANCELED");
+                log.info("만료된 예약 취소: bookingId={}, bookingNum={}", bookingId, bookingNum);
+                canceledCount++;
+            } catch (Exception e) {
+                log.error("예약 취소 실패: bookingId={}, error={}", bookingId, e.getMessage(), e);
+            }
+        }
+
+        return canceledCount;
     }
 
     /**

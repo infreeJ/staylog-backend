@@ -78,8 +78,9 @@ public enum SuccessCode {
 	COMMENTS_DELETED(200, "S11004", "success.comments.deleted"),
 
 	//===================== 환불 관련 성공 (12xxx)=====================
-	REFUND_REQUESTED(200, "S12001", "success.refund.requested"),
-	REFUND_COMPLETED(200, "S12002", "success.refund.completed");
+	REFUND_REQUEST_SUCCESS(201, "S12001", "success.refund.request"),
+	REFUND_PROCESS_SUCCESS(200, "S12002", "success.refund.process");
+
 
     private final int httpStatus;
     private final String code;

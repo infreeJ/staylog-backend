@@ -35,7 +35,7 @@ public class TossPaymentClient {
         HttpHeaders headers = createHeaders();
 
         //멱등키 추가하기 (결제용)
-        headers.set("IdemtPotency-Key", generatePaymentIdempotencyKey(request.getPaymentKey()));
+        headers.set("Idemtpotency-Key", generatePaymentIdempotencyKey(request.getPaymentKey()));
 
         HttpEntity<TossConfirmRequest> entity = new HttpEntity<>(request, headers);
 

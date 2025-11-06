@@ -41,3 +41,13 @@ kakao:
 file:
   image-location: ${IMAGE_LOCATION}
   file-location: ${FILE_LOCATION}
+
+
+# =====================================
+# Toss Payments Keys
+# =====================================
+toss:
+  payments:
+    client-key: ${TOSS_CLIENT_KEY}
+    secret-key: ${TOSS_SECRET_KEY}
+    webhook-secret: ${TOSS_WEBHOOK_SECRET}
