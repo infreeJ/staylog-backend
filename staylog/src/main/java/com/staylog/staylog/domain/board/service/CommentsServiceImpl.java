@@ -75,7 +75,7 @@ public class CommentsServiceImpl implements CommentsService {
 		
 		log.info("댓글 등록 성공 : commentId = {}", commentsDto.getCommentId());
 		
-		// =================== 댓글 작성 이벤트 발행 (알림에서 사용) ======================
+		// =================== 댓글 작성 이벤트 발행 (알림 전송) ======================
 		CommentCreatedEvent event = new CommentCreatedEvent(commentsDto.getCommentId(), commentsDto.getUserId(), commentsDto.getBoardId());
 		eventPublisher.publishEvent(event);
 	}
