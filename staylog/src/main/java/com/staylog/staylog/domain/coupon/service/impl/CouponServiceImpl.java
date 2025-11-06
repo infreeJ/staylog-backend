@@ -91,6 +91,9 @@ public class CouponServiceImpl implements CouponService {
      */
     @Override
     public void saveCoupon(CouponRequest couponRequest) {
+        if(couponRequest.getExpiredAt() == null) {
+            couponRequest.setExpiredAt(LocalDate.now().plusYears(100));
+        }
         int isSuccess = couponMapper.saveCoupon(couponRequest);
         if (isSuccess == 0) {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponRequest={}", couponRequest);
