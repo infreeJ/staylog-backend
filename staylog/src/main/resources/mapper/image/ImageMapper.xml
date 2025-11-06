@@ -3,10 +3,11 @@
 								 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.staylog.staylog.domain.image.mapper.ImageMapper">
 
+<!-- 이미지 업로드 관련 SQL 쿼리 -->
 	<insert id="insertImage" parameterType="imageDto">
-        <selectKey keyProperty="imageId" resultType="long" order="BEFORE">
-            SELECT seq_image_id.NEXTVAL FROM DUAL
-        </selectKey>
+		<selectKey keyProperty="imageId" resultType="long" order="BEFORE">
+		    SELECT seq_image_id.NEXTVAL FROM DUAL
+		</selectKey>
 		INSERT INTO image_file (
 		    image_id,
 			image_type, target_type, target_id,
@@ -20,26 +21,61 @@
 			#{mimeType}, #{displayOrder}, SYSDATE
 		)
 	</insert>
-	
-	<select id="selectMaxDisplayOrder" resultType="long">
-        SELECT NVL(MAX(display_order), 0) + 1
-        FROM image_file
-        WHERE target_type = #{targetType} AND target_id = #{targetId}
-    </select>
 
-	<select id="selectImagesByTarget" resultType="imageDto">
-        SELECT
-            image_id, image_type, target_type, target_id,
-            saved_url, original_name, file_size,
-            mime_type, display_order, upload_date
-        FROM image_file
-        WHERE target_type = #{targetType} AND target_id = #{targetId}
-        ORDER BY display_order ASC
-    </select>
-
-	<select id="selectImageByTarget">
-		
+	<!-- 행을 비관적 잠금으로 조회 -->
+	<select id="selectForUpdate" resultType="long">
+		SELECT next_display_order
+		FROM image_target_counter
+		WHERE target_type = #{targetType} AND target_id = #{targetId}
+		FOR UPDATE
 	</select>
+	
+	<!-- 카운터 값을 업데이트 -->
+	<update id="updateCounter">
+		UPDATE image_target_counter
+		SET next_display_order = #{nextDisplayOrder}
+		WHERE target_type = #{targetType} AND target_id = #{targetId}
+	</update>
+	
+	<!-- 새로운 카운터 레코드를 생성 -->
+	<insert id="createCounter" parameterType="map">
+		INSERT INTO image_target_counter(target_type, target_id, next_display_order)
+		VALUES (#{targetType}, #{targetId}, #{nextDisplayOrder})
+	</insert>
+
+
+<!-- 이미지 불러오기 관련 SQL 쿼리 -->
+	<select id="selectImagesByTarget" resultType="imageDto">
+		SELECT
+			image_id, image_type, target_type, target_id,
+			saved_url, original_name, file_size,
+			mime_type, display_order, upload_date
+		FROM image_file
+		WHERE target_type = #{targetType} AND target_id = #{targetId}
+		ORDER BY display_order ASC
+	</select>
+	
+	
+<!-- 이미지 삭제 관련 SQL 쿼리 -->	
+	<!-- 특정 이미지를 imageId로 삭제 -->
+	<delete id="deleteImage" parameterType="long">
+		DELETE FROM image_file WHERE image_id = #{imageId}		
+	</delete>
+
+	<!-- 삭제된 이미지보다 displayOrder가 뒤에 있는 이미지들의 순서를 1씩 앞당김 -->
+	<update id="updateDisplayOrderAfterDelete" parameterType="map">
+		UPDATE image_file
+    SET display_order = display_order - 1
+    WHERE target_type = #{targetType} AND target_id = #{targetId} AND display_order > #{deletedDisplayOrder}
+	</update>
+
+	<!-- 지정된 target 의 카운터를 1 감소 -->
+	<update id="decrementCounter">
+		UPDATE image_target_counter
+		SET next_display_order = next_display_order - 1
+		WHERE target_type = #{targetType} AND target_id = #{targetId}
+	</update>
+	
 	
 	<select id="getNextBoardId" resultType="long">
 		SELECT seq_board_id.NEXTVAL FROM DUAL
