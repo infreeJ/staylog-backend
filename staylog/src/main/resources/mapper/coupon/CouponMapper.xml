@@ -9,6 +9,7 @@
         SELECT *
         FROM coupon
         WHERE user_id = #{userID} AND is_used = 'N' AND (expired_at IS NULL OR expired_at > SYSTIMESTAMP)
+        ORDER BY expired_at ASC
     </select>
 
     <!-- 특정 유저의 사용 불가능한 모든 쿠폰 조회 -->
@@ -17,10 +18,11 @@
         SELECT *
         FROM coupon
         WHERE user_id = #{userID} AND (is_used = 'Y' OR (expired_at IS NOT NULL AND expired_at <= SYSTIMESTAMP))
+        ORDER BY expired_at ASC
         ]]>
     </select>
 
-    <!-- 쿠폰 추가 -->
+    <!-- 쿠폰 발급 -->
     <insert id="saveCoupon" parameterType="couponRequest">
         <selectKey keyProperty="couponId" resultType="long" order="BEFORE">
             SELECT seq_coupon_id.NEXTVAL
@@ -28,6 +30,13 @@
         </selectKey>
         INSERT INTO coupon(coupon_id, user_id, name, discount, expired_at)
         VALUES(#{couponId}, #{userId}, #{name}, #{discount}, #{expiredAt})
+    </insert>
+
+    <!-- 모든 유저에게 쿠폰 발급 -->
+    <insert id="saveCouponToAllUsers" parameterType="couponBatchRequest">
+        INSERT INTO coupon(coupon_id, user_id, name, discount, expired_at)
+        SELECT seq_coupon_id.NEXTVAL, user_id, #{name}, #{discount}, #{expiredAt}
+        FROM users
     </insert>
 
     <!-- 쿠폰 사용 가능 여부 확인 -->

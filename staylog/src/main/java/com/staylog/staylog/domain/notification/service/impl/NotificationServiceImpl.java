@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
+import java.time.format.DateTimeFormatter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,9 +56,9 @@ public class NotificationServiceImpl implements NotificationService {
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
                 .imageUrl("https://picsum.photos/id/10/200/300")
-                .date(String.valueOf(LocalDateTime.now()))
-                .title(nickname)
-                .message(accommodationName + "의 새로운 리뷰")
+                .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .title(nickname) // 리뷰 작성자 닉네임
+                .message( "[" + accommodationName + "]" + " 신규 리뷰")
                 .typeName("Review")
                 .build();
 
@@ -69,26 +70,12 @@ public class NotificationServiceImpl implements NotificationService {
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(recipientId)
                     .notiType("NOTI_REVIEW_CREATE")
-                    .targetId(event.getBoardId())
+                    .targetId(event.getBoardId()) // 이동할 페이지 PK
                     .details(detailsObject)
                     .build();
 
-            // DB 저장
-            int success = notificationMapper.notiSave(notificationRequest);
-
-            if (success == 1) {
-                // 클라이언트에게 SSE로 푸시하기위한 객체 구성
-                NotificationResponse notificationResponse = NotificationResponse.builder()
-                        .notiId(notificationRequest.getNotiId()) // selectKey로 채워진 알림 PK
-                        .targetId(notificationRequest.getTargetId()) // 페이지 이동을 위한 PK
-                        .details(detailsResponse)
-                        .isRead("N")
-                        .createdAt(LocalDateTime.now())
-                        .build();
-
-                // SSE Push 메서드 호출
-                sseService.sendNotification(recipientId, notificationResponse);
-            }
+            // DB 저장 후 SSE 요청 메서드 호출
+            saveAndPushNotification(notificationRequest, detailsResponse);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -110,7 +97,7 @@ public class NotificationServiceImpl implements NotificationService {
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
                 .imageUrl("https://picsum.photos/id/10/200/300")
-                .date(String.valueOf(LocalDateTime.now()))
+                .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                 .title("회원가입을 축하합니다!")
                 .message("웰컴 쿠폰이 발급되었습니다.")
                 .typeName("Signup")
@@ -124,26 +111,13 @@ public class NotificationServiceImpl implements NotificationService {
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(recipientId)
                     .notiType("NOTI_SIGNUP")
-                    .targetId(recipientId)
+                    .targetId(recipientId) // 이동할 페이지 PK
                     .details(detailsObject)
                     .build();
 
-            // DB 저장
-            int success = notificationMapper.notiSave(notificationRequest);
+            // DB 저장 후 SSE 요청하는 메서드 호출
+            saveAndPushNotification(notificationRequest, detailsResponse);
 
-            if (success == 1) {
-                // 클라이언트에게 SSE로 푸시하기위한 객체 구성
-                NotificationResponse notificationResponse = NotificationResponse.builder()
-                        .notiId(notificationRequest.getNotiId()) // selectKey로 채워진 알림 PK
-                        .targetId(notificationRequest.getTargetId()) // 페이지 이동을 위한 PK
-                        .details(detailsResponse)
-                        .isRead("N")
-                        .createdAt(LocalDateTime.now())
-                        .build();
-
-                // SSE Push 메서드 호출
-                sseService.sendNotification(recipientId, notificationResponse);
-            }
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -169,8 +143,8 @@ public class NotificationServiceImpl implements NotificationService {
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
                 .imageUrl("https://picsum.photos/id/10/200/300")
-                .date(String.valueOf(LocalDateTime.now()))
-                .title(nickname)
+                .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .title(nickname) // 댓글 작성자 닉네임
                 .message(commentsDto.getContent())
                 .typeName("Comment")
                 .build();
@@ -183,26 +157,12 @@ public class NotificationServiceImpl implements NotificationService {
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(recipientId)
                     .notiType("NOTI_COMMENT_CREATE")
-                    .targetId(commentsDto.getBoardId())
+                    .targetId(commentsDto.getBoardId()) // 이동할 페이지 PK
                     .details(detailsObject)
                     .build();
 
-            // DB 저장
-            int success = notificationMapper.notiSave(notificationRequest);
-            
-            if (success == 1) {
-                // 클라이언트에게 SSE로 푸시하기위한 객체 구성
-                NotificationResponse notificationResponse = NotificationResponse.builder()
-                        .notiId(notificationRequest.getNotiId()) // selectKey로 채워진 알림 PK
-                        .targetId(notificationRequest.getTargetId()) // 페이지 이동을 위한 PK
-                        .details(detailsResponse)
-                        .isRead("N")
-                        .createdAt(LocalDateTime.now())
-                        .build();
-
-                // SSE Push 메서드 호출
-                sseService.sendNotification(recipientId, notificationResponse);
-            }
+            // DB 저장 후 SSE 요청하는 메서드 호출
+            saveAndPushNotification(notificationRequest, detailsResponse);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -215,8 +175,8 @@ public class NotificationServiceImpl implements NotificationService {
      * 알림 데이터 저장 및 푸시
      *
      * @param notificationRequest 알림 데이터 + JSON 형태의 String Type 데이터
-     * @param detailsResponse     반복적인 직렬화, 역직렬화를 막기 위한 온전한 Details 객체
-     * @apiNote 알림 별로 필요한 상세데이터는 해당하는 서비스 로직에서
+     * @param detailsResponse     반복적인 직렬화, 역직렬화를 막기 위한 온전한 Details 객체(프론트에 그대로 출력 가능)
+     * @apiNote 알림 별로 필요한 상세데이터는 해당하는 이벤트리스너에서
      * JSON 형식으로 각 타입별 데이터에 맞게 notificationRequest.details 필드에 담아 가져온다.
      * notificationRequest를 사용해서 DB에 저장 후 details 필드의 값을 사용해,
      * NotificationResponse를 구성하여 사용자에게 PUSH한다.
@@ -225,38 +185,22 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void saveAndPushNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse) {
 
-        // Details가 String으로 구성된 객체로 DB 저장
-        int isSuccess = notificationMapper.notiSave(notificationRequest);
+        // DB 저장
+        int success = notificationMapper.notiSave(notificationRequest);
 
-        if (isSuccess == 0) {
-            log.warn("알림 데이터 저장 실패: 잘못된 알림 데이터 - notificationRequest={}", notificationRequest);
-            // 여기서 throw를 던지면 롤백 발생하므로 X
-            // throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+        if (success == 1) {
+            // 클라이언트에게 SSE로 푸시하기위한 객체 구성
+            NotificationResponse notificationResponse = NotificationResponse.builder()
+                    .notiId(notificationRequest.getNotiId()) // selectKey로 채워진 알림 PK
+                    .targetId(notificationRequest.getTargetId()) // 페이지 이동을 위한 PK
+                    .details(detailsResponse)
+                    .isRead("N")
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            // SSE Push 메서드 호출
+            sseService.sendNotification(notificationRequest.getUserId(), notificationResponse);
         }
-
-//        // DetailsResponse 타입으로 역직렬화
-//        DetailsResponse detailsObject;
-//        try {
-//            detailsObject = objectMapper.readValue(
-//                    notificationRequest.getDetails(),
-//                    DetailsResponse.class
-//            );
-//        } catch (Exception e) {
-//            log.error("PUSH용 JSON 역직렬화 실패: {}", notificationRequest.getDetails(), e);
-//            detailsObject = null; // (혹은 new DetailsResponse() 빈 객체)
-//        }
-
-        // NotificationResponse 구성 (호출한 메서드에서 전달받은 온전한 DetailsResponse 객체 사용)
-        NotificationResponse notificationResponse = NotificationResponse.builder()
-                .notiId(notificationRequest.getNotiId()) // selectKey로 가져온 PK
-                .targetId(notificationRequest.getTargetId())
-                .isRead("N")
-                .createdAt(LocalDateTime.now())
-                .details(detailsResponse) // 변환된 객체
-                .build();
-
-        // Sse 푸시 메서드 호출
-        sseService.sendNotification(notificationRequest.getUserId(), notificationResponse);
     }
 
 

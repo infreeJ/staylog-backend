@@ -1,11 +1,13 @@
 package com.staylog.staylog.domain.coupon.service.impl;
 
+import com.staylog.staylog.domain.coupon.dto.request.CouponBatchRequest;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
 import com.staylog.staylog.domain.coupon.dto.request.UseCouponRequest;
 import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
+import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
@@ -24,6 +26,7 @@ import java.util.List;
 public class CouponServiceImpl implements CouponService {
 
     private final CouponMapper couponMapper;
+    private final UserMapper userMapper;
 
 
     /**
@@ -83,16 +86,36 @@ public class CouponServiceImpl implements CouponService {
     }
 
     /**
-     * 쿠폰 추가
+     * 쿠폰 발급
      *
      * @param couponRequest (userId, couponType)
      * @author 이준혁
      */
     @Override
     public void saveCoupon(CouponRequest couponRequest) {
+
+        if(couponRequest.getExpiredAt() == null) {
+            couponRequest.setExpiredAt(LocalDate.now().plusYears(100));
+        }
         int isSuccess = couponMapper.saveCoupon(couponRequest);
         if (isSuccess == 0) {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponRequest={}", couponRequest);
+            throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
+        }
+    }
+
+    /**
+     * 모든 유저에게 쿠폰 일괄 발급
+     *
+     * @param couponBatchRequest couponBatchRequest Dto
+     * @author 이준혁
+     */
+    @Override
+    public void saveCouponToAllUsers(CouponBatchRequest couponBatchRequest) {
+        int isSuccess = couponMapper.saveCouponToAllUsers(couponBatchRequest);
+
+        if (isSuccess == 0) {
+            log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponBatchRequest={}", couponBatchRequest);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
     }

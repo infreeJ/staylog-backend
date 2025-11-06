@@ -1,5 +1,6 @@
 package com.staylog.staylog.domain.coupon.mapper;
 
+import com.staylog.staylog.domain.coupon.dto.request.CouponBatchRequest;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
 import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
@@ -27,12 +28,20 @@ public interface CouponMapper {
     public List<CouponResponse> getUnavailableCouponList(long userId);
 
     /**
-     * 쿠폰 추가
+     * 쿠폰 발급
      * @author 이준혁
-     * @param couponRequest (userId, couponType)
+     * @param couponRequest couponRequest Dto
      * @return 성공 시 1, 실패 시 0 반환
      */
     public int saveCoupon(CouponRequest couponRequest);
+
+    /**
+     * 모든 유저에게 쿠폰 일괄 발급
+     * @author 이준혁
+     * @param couponBatchRequest couponBatchRequest Dto
+     * @return 성공 시 1, 실패 시 0 반환
+     */
+    public int saveCouponToAllUsers(CouponBatchRequest couponBatchRequest);
 
     /**
      * 쿠폰 사용 여부 확인

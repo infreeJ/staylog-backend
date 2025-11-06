@@ -1,5 +1,6 @@
 package com.staylog.staylog.domain.coupon.controller;
 
+import com.staylog.staylog.domain.coupon.dto.request.CouponBatchRequest;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
 import com.staylog.staylog.domain.coupon.dto.request.UseCouponRequest;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
@@ -59,14 +60,30 @@ public class CouponController {
     }
 
     /**
-     * 쿠폰 생성
+     * 쿠폰 발급
      * @param couponRequest (userId, couponType)
      * @author 이준혁
      */
-    @Operation(summary = "쿠폰 생성", description = "쿠폰을 생성합니다. \n * 시퀀스로 PK를 생성하기 때문에 couponId는 빼고 입력해주세요. \n * expiredAt을 생략하면 무기한 쿠폰이 됩니다.")
+    @Operation(summary = "쿠폰 발급", description = "쿠폰을 발급합니다. \n * 시퀀스로 PK를 생성하기 때문에 couponId는 빼고 입력해주세요. \n * expiredAt을 생략하면 무기한 쿠폰이 됩니다.")
     @PostMapping("/coupon")
     public ResponseEntity<SuccessResponse<Void>> saveCoupon(@RequestBody CouponRequest couponRequest) {
         couponService.saveCoupon(couponRequest);
+
+        String message = messageUtil.getMessage(SuccessCode.COUPON_CREATE.getMessageKey());
+        String code = SuccessCode.COUPON_CREATE.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
+    }
+
+    /**
+     * 모든 유저에게 쿠폰 일괄 발급
+     *
+     * @param couponBatchRequest couponBatchRequest Dto
+     * @author 이준혁
+     */
+    @Operation(summary = "모든 사용자 쿠폰 일괄 발급", description = "모든 사용자에게 쿠폰을 일괄 발급합니다. \n * expiredAt을 생략하면 무기한 쿠폰이 됩니다.")
+    @PostMapping("/coupon/all")
+    public ResponseEntity<SuccessResponse<Void>> saveCouponToAllUsers(@RequestBody CouponBatchRequest couponBatchRequest) {
+        couponService.saveCouponToAllUsers(couponBatchRequest);
 
         String message = messageUtil.getMessage(SuccessCode.COUPON_CREATE.getMessageKey());
         String code = SuccessCode.COUPON_CREATE.name();
