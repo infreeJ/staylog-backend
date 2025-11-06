@@ -1,5 +1,7 @@
 package com.staylog.staylog.domain.admin.room.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -7,8 +9,6 @@ import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomSearchRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest;
 import com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse;
-
-import java.util.List;
 
 @Mapper
 public interface AdminRoomMapper {
@@ -19,6 +19,13 @@ public interface AdminRoomMapper {
      * @return 객실 목록
      */
     List<AdminRoomDetailResponse> selectRoomListByAccommodation(AdminRoomSearchRequest searchRequest);
+
+    /**
+     * 전체 객실 개수 조회
+     * @param searchRequest 검색 조건 (숙소ID, 객실타입, 객실명, 삭제여부)
+     * @return 전체 게시글 
+     */
+    int countRoomList(AdminRoomSearchRequest searchRequest);
 
     /**
      * 객실 상세 조회

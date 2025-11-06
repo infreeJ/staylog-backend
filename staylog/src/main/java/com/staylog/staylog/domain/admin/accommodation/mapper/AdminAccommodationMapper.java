@@ -19,6 +19,13 @@ public interface AdminAccommodationMapper {
      * @return 숙소 목록
      */
     List<AdminAccommodationDetailResponse> selectAccommodationList(AdminAccommodationSearchRequest searchRequest);
+    
+    /**
+     * 전체 숙소 개수 조회
+     * @param searchRequest 검색 조건 (지역, 숙소타입, 키워드, 삭제여부)
+     * @return 전체 게시글
+     */
+    int countAccommodationList(AdminAccommodationSearchRequest searchRequest);
 
     /**
      * 숙소 상세 조회

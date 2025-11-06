@@ -1,7 +1,9 @@
 package com.staylog.staylog.domain.admin.accommodation.service.impl;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -17,6 +19,7 @@ import com.staylog.staylog.domain.admin.accommodation.dto.response.KakaoResponse
 import com.staylog.staylog.domain.admin.accommodation.mapper.AdminAccommodationMapper;
 import com.staylog.staylog.domain.admin.accommodation.service.AdminAccommodationService;
 import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.common.response.PageResponse;
 import com.staylog.staylog.global.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
@@ -45,9 +48,27 @@ public class AdminAccommodationServiceImpl implements AdminAccommodationService 
 	 * @return 검색 조건에 맞는 숙소 목록
 	 */
 	@Override
-	public List<AdminAccommodationDetailResponse> getList(AdminAccommodationSearchRequest searchRequest) {
+	public Map<String, Object> getList(AdminAccommodationSearchRequest searchRequest) {
 		
-		return mapper.selectAccommodationList(searchRequest);
+		//숙소 목록 조회
+		List<AdminAccommodationDetailResponse> accommodations = mapper.selectAccommodationList(searchRequest);
+		
+        //전체 숙소 개수 조회
+        int totalCount = mapper.countAccommodationList(searchRequest);
+        
+        //페이지 정보 계산
+        PageResponse pageResponse = new PageResponse();
+        pageResponse.calculate(searchRequest, totalCount);
+        
+        //결과를 Map 에 담아 반환
+        Map<String, Object> result = new HashMap<>();
+        result.put("accommodations", accommodations);
+        result.put("page", pageResponse);
+        
+        log.info("숙소 목록 조회 완료 - 총 {}건, 현재 페이지: {}/{}", 
+                 totalCount, searchRequest.getPageNum(), pageResponse.getTotalPage());
+        
+        return result;
 	}
 	
 	/**

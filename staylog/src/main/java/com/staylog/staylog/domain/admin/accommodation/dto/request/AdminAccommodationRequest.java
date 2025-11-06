@@ -1,5 +1,7 @@
 package com.staylog.staylog.domain.admin.accommodation.dto.request;
 
+import org.apache.ibatis.type.Alias;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +15,7 @@ import lombok.Setter;
  * @author StayLog Team
  * @since 1.0
  */
+@Alias("AdminAccommodationRequest")
 @Getter
 @Setter
 @Builder
