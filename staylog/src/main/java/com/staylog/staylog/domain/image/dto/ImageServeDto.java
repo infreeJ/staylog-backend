@@ -14,7 +14,7 @@ import lombok.Setter;
 public class ImageServeDto {
 	private long imageId;
 	private String targetType;
-	private Long targetId;
-	private Long displayOrder;
+	private long targetId;
+	private long displayOrder;
 	private String imageUrl;
 }
