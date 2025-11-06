@@ -35,8 +35,10 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public List<ImageServeDto> saveImages(List<MultipartFile> files, String targetType, long targetId){
+    	log.info("ImageService.saveImages 호출됨 - targetType: {}, targetId: {}", targetType, targetId);
+    	String prefixedTargetType = "IMG_FROM_"+targetType;
         if (files == null || files.isEmpty()) {
-            throw new IllegalArgumentException("Files are empty");
+            throw new IllegalArgumentException("파일이 비어있습니다.");
         }
         for (MultipartFile file : files) {
             if (file.isEmpty()) {
@@ -64,7 +66,7 @@ public class ImageServiceImpl implements ImageService {
 
             ImageDto imageDto = ImageDto.builder()
                     .imageType("IMG_ORIGINAL")
-                    .targetType(targetType)
+                    .targetType(prefixedTargetType)
                     .targetId(targetId)
                     .savedUrl(fileUploadDto.getRelativePath()) // savedUrl 필드에 FileUtil에서 반환된 상대 경로 저장
                     .originalName(fileUploadDto.getOriginalName())
@@ -77,20 +79,28 @@ public class ImageServiceImpl implements ImageService {
         }
         
         // 이미지가 DB에 저장된 후 해당 타겟에 맞는 이미지를 다시 Select 해서 리턴해준다.
-        return this.getImagesByTarget(targetType, targetId);
+        List<ImageServeDto> returnData = this.getImagesByTarget(targetType, targetId);
+        log.info("이미지 삽입 완료: {}"+returnData);
+        return returnData;
     }
 
     @Override
     public List<ImageServeDto> getImagesByTarget(String targetType, long targetId) {
-        List<ImageDto> images = imageMapper.selectImagesByTarget(targetType, targetId);
+    	String prefixedTargetType = "IMG_FROM_"+targetType;
+        List<ImageDto> images = imageMapper.selectImagesByTarget(prefixedTargetType, targetId);
         // 각 이미지 DTO에 imageUrl 필드 추가
         List<ImageServeDto> imagesServe = new ArrayList<>();
         for (ImageDto image : images) {
+        	// 프론트로 반환하기 전에 'IMG_FROM_' 접두사 제거
+            String cleanTargetType = image.getTargetType();
+            if (cleanTargetType != null && cleanTargetType.startsWith("IMG_FROM_")) {
+                cleanTargetType = cleanTargetType.substring("IMG_FROM_".length());
+            }
             imagesServe.add(
 	    		ImageServeDto.builder()
 	    					 .imageId(image.getImageId())
 			       			 .imageUrl("/images/" + image.getSavedUrl())
-			       			 .targetType(image.getTargetType())
+			       			 .targetType(cleanTargetType)
 			       			 .targetId(image.getTargetId())
 			       			 .displayOrder(image.getDisplayOrder())
 			       			 .build());
