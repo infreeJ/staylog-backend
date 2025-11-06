@@ -1,6 +1,8 @@
 package com.staylog.staylog.domain.admin.room.service.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -10,8 +12,10 @@ import com.staylog.staylog.domain.admin.room.dto.request.RoomUpdateStatusRequest
 import com.staylog.staylog.domain.admin.room.dto.response.AdminRoomDetailResponse;
 import com.staylog.staylog.domain.admin.room.mapper.AdminRoomMapper;
 import com.staylog.staylog.domain.admin.room.service.AdminRoomService;
+import com.staylog.staylog.global.common.response.PageResponse;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 관리자 객실 서비스 구현체
@@ -19,6 +23,7 @@ import lombok.RequiredArgsConstructor;
  *
  * @author 천승현
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminRoomServiceImpl implements AdminRoomService {
@@ -32,8 +37,27 @@ public class AdminRoomServiceImpl implements AdminRoomService {
 	 * @return 검색 조건에 맞는 객실 목록
 	 */
 	@Override
-	public List<AdminRoomDetailResponse> getRoomList(AdminRoomSearchRequest searchRequest) {
-		return mapper.selectRoomListByAccommodation(searchRequest);
+	public Map<String, Object> getRoomList(AdminRoomSearchRequest searchRequest) {
+
+		//객실 목록 조회
+		List<AdminRoomDetailResponse> rooms = mapper.selectRoomListByAccommodation(searchRequest);
+		
+        //전체 객실 개수 조회
+        int totalCount = mapper.countRoomList(searchRequest);
+        
+        //페이지 정보 계산
+        PageResponse pageResponse = new PageResponse();
+        pageResponse.calculate(searchRequest, totalCount);
+        
+        //결과를 Map 에 담아 반환
+        Map<String, Object> result = new HashMap<>();
+        result.put("rooms", rooms);
+        result.put("page", pageResponse);
+        
+        log.info("객실 목록 조회 완료 - 총 {}건, 현재 페이지: {}/{}", 
+                 totalCount, searchRequest.getPageNum(), pageResponse.getTotalPage());
+        
+        return result;
 	}
 
 	/**

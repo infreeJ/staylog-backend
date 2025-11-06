@@ -1,6 +1,6 @@
 package com.staylog.staylog.domain.admin.accommodation.controller;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,12 +53,16 @@ public class AdminAccommodationController {
         description = "검색 조건에 맞는 숙소 목록을 조회합니다. 모든 파라미터는 선택사항입니다."
     )
     @GetMapping("/admin/accommodations")
-    public ResponseEntity<SuccessResponse<List<AdminAccommodationDetailResponse>>> list(
-            @Parameter(description = "숙소 검색 조건") AdminAccommodationSearchRequest searchRequest) {
-        List<AdminAccommodationDetailResponse> list = accomService.getList(searchRequest);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+    public ResponseEntity<SuccessResponse<Map<String, Object>>> list(
+			@Parameter(description = "숙소 검색 조건") AdminAccommodationSearchRequest searchRequest) {
+		
+    	// Service 에서 Map 반환(accommodations + page 정보 포함)
+    	Map<String, Object> result = accomService.getList(searchRequest);
+    	
+		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
-        SuccessResponse<List<AdminAccommodationDetailResponse>> success = SuccessResponse.of(code, message, list);
+        SuccessResponse<Map<String, Object>> success = SuccessResponse.of(code, message, result);
+		
         return ResponseEntity.ok(success);
     }
 

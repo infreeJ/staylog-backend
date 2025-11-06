@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.admin.room.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomRequest;
 import com.staylog.staylog.domain.admin.room.dto.request.AdminRoomSearchRequest;
@@ -21,7 +22,7 @@ public interface AdminRoomService {
      * @param searchRequest 검색 조건 (숙소ID, 객실타입, 객실명, 삭제여부)
      * @return 검색 조건에 맞는 객실 목록
      */
-    List<AdminRoomDetailResponse> getRoomList(AdminRoomSearchRequest searchRequest);
+	Map<String, Object> getRoomList(AdminRoomSearchRequest searchRequest);
     
     /**
      * 객실 상세 정보 조회
