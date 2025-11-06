@@ -4,9 +4,9 @@ import com.staylog.staylog.domain.admin.user.dto.AdminUserDetailDto;
 import com.staylog.staylog.domain.admin.user.dto.request.AdminUserListRequest;
 import com.staylog.staylog.domain.admin.user.dto.request.AdminUpdateRoleRequest;
 import com.staylog.staylog.domain.admin.user.dto.request.AdminUpdateStatusRequest;
-import com.staylog.staylog.domain.admin.user.dto.response.AdminGetUserDetailResponse;
 import com.staylog.staylog.domain.admin.user.dto.response.AdminUpdateRoleResponse;
 import com.staylog.staylog.domain.admin.user.dto.response.AdminUpdateStatusResponse;
+import com.staylog.staylog.domain.admin.user.dto.response.AdminUserListResponse;
 import com.staylog.staylog.domain.admin.user.service.AdminUserService;
 import com.staylog.staylog.domain.user.dto.UserDto;
 import com.staylog.staylog.global.common.code.SuccessCode;
@@ -40,12 +40,12 @@ public class AdminUserController {
      */
     @Operation(summary = "모든 유저 목록", description = "모든 유저 목록 조회")
     @GetMapping("/admin/users")
-    public ResponseEntity<SuccessResponse<AdminGetUserDetailResponse>> getAllUsers(@RequestParam(defaultValue = "1")int pageNum, AdminUserListRequest req) {
+    public ResponseEntity<SuccessResponse<AdminUserListResponse>> getAllUsers(@ModelAttribute AdminUserListRequest req) {
 
-        AdminGetUserDetailResponse response = adminUserService.getUsers(pageNum, req);
+        AdminUserListResponse response = adminUserService.getUsers( req);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
-        SuccessResponse<AdminGetUserDetailResponse> success = SuccessResponse.of(code,message,response);
+        SuccessResponse<AdminUserListResponse> success = SuccessResponse.of(code,message,response);
         return ResponseEntity.ok(success);
     }
     /**
