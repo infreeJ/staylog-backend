@@ -76,8 +76,8 @@
 	        cr.code_name AS regionName,
 	        a.latitude,
 	        a.longitude,
-	        a.check_in_time AS checkInTime,
-	        a.check_out_time AS checkOutTime,
+			TO_CHAR(a.check_in_time, 'HH24:MI') AS checkInTime,
+			TO_CHAR(a.check_out_time, 'HH24:MI') AS checkOutTime,
 	        TO_CHAR(a.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 	        TO_CHAR(a.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS updatedAt
 	    FROM accommodation a
@@ -98,8 +98,8 @@
 	        region_code = #{regionCode},
 	        latitude = #{latitude},
 	        longitude = #{longitude},
-	        check_in_time = #{checkInTime},
-	        check_out_time = #{checkOutTime},
+	        check_in_time = TO_TIMESTAMP(#{checkInTime}, 'HH24:MI'),
+	        check_out_time = TO_TIMESTAMP(#{checkOutTime}, 'HH24:MI'),
 	        updated_at = SYSTIMESTAMP
 	    WHERE accommodation_id = #{accommodationId}
 	</update>
@@ -136,7 +136,8 @@
 	        #{accommodationId}, #{name}, #{description},
 	        #{acType}, #{regionCode},
 	        #{address}, #{latitude}, #{longitude},
-	        #{checkInTime}, #{checkOutTime},
+	        TO_TIMESTAMP(#{checkInTime}, 'HH24:MI'),
+	        TO_TIMESTAMP(#{checkOutTime}, 'HH24:MI'),
 	        SYSTIMESTAMP
 	    )
 	</insert>

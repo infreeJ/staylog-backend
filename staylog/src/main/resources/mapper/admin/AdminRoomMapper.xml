@@ -73,8 +73,8 @@
 	        r.max_adult,
 	        r.max_children,
 	        r.max_infant,
-	        r.check_in,
-	        r.check_out,
+	        TO_CHAR(r.check_in, 'HH24:MI') AS checkIn,
+			TO_CHAR(r.check_out, 'HH24:MI') AS checkOut,
 	        r.area,
 	        r.deleted_yn,
 	        r.single_bed,
@@ -99,8 +99,8 @@
 	        max_adult = #{maxAdult},
 	        max_children = #{maxChildren},
 	        max_infant = #{maxInfant},
-	        check_in = #{checkIn},
-	        check_out = #{checkOut},
+	        check_in = TO_TIMESTAMP(#{checkIn}, 'HH24:MI'),
+	        check_out = TO_TIMESTAMP(#{checkOut}, 'HH24:MI'),
 	        area = #{area},
 	        single_bed = #{singleBed},
 	        double_bed = #{doubleBed},
@@ -133,7 +133,9 @@
 	    ) VALUES (
 	        #{roomId}, #{accommodationId}, #{name}, #{rmType},
 	        #{price}, #{maxAdult}, #{maxChildren}, #{maxInfant},
-	        #{checkIn}, #{checkOut}, #{area},
+	        TO_TIMESTAMP(#{checkIn}, 'HH24:MI'),
+	        TO_TIMESTAMP(#{checkOut}, 'HH24:MI'),
+	        #{area},
 	        #{singleBed}, #{doubleBed}, #{queenBed}, #{kingBed}, #{description}
 	        SYSTIMESTAMP
 	    )
