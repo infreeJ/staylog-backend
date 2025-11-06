@@ -21,7 +21,7 @@ public class AccommodationDetailResponse {
 
 	// DB 에서 NUMBER 타입의 type 컬럼을 COMMON_CODE 테이블과 조인하여 변환하는 값
 	private String typeNameEn; // 숙소 유형명 영어 (code_name_en : ACCOM_HOTEL 등)
-	private String typeName; // 숙소 유형명 (code_name : 호텔, 민박 등)
+	private String typeName; // 숙소 유형명 (code_name : 호텔, 민박 등)z
 	
 	private String description; // 숙소 상세 설명
 	private String address; // 숙소 상세 주소

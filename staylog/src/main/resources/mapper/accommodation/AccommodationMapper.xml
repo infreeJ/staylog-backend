@@ -21,6 +21,7 @@
 		JOIN COMMON_CODE cc_type ON ac.ac_type = cc_type.code_id
 		JOIN COMMON_CODE cc_region ON ac.region_code = cc_region.code_id
 		WHERE ac.accommodation_id = #{accommodationId}
+		AND deleted_yn = 'N'
 	</select>
 	
 	<!-- 
