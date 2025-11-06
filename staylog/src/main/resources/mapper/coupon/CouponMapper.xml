@@ -9,6 +9,7 @@
         SELECT *
         FROM coupon
         WHERE user_id = #{userID} AND is_used = 'N' AND (expired_at IS NULL OR expired_at > SYSTIMESTAMP)
+        ORDER BY expired_at ASC
     </select>
 
     <!-- 특정 유저의 사용 불가능한 모든 쿠폰 조회 -->
@@ -17,6 +18,7 @@
         SELECT *
         FROM coupon
         WHERE user_id = #{userID} AND (is_used = 'Y' OR (expired_at IS NOT NULL AND expired_at <= SYSTIMESTAMP))
+        ORDER BY expired_at ASC
         ]]>
     </select>
 

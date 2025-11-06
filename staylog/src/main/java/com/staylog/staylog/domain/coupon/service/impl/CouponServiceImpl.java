@@ -7,6 +7,7 @@ import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
+import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
@@ -25,6 +26,7 @@ import java.util.List;
 public class CouponServiceImpl implements CouponService {
 
     private final CouponMapper couponMapper;
+    private final UserMapper userMapper;
 
 
     /**
@@ -91,6 +93,7 @@ public class CouponServiceImpl implements CouponService {
      */
     @Override
     public void saveCoupon(CouponRequest couponRequest) {
+
         if(couponRequest.getExpiredAt() == null) {
             couponRequest.setExpiredAt(LocalDate.now().plusYears(100));
         }

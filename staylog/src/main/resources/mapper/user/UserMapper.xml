@@ -40,4 +40,11 @@
         WHERE user_id = #{userId}
     </select>
 
+    <!-- loginId로 userId 조회 -->
+    <select id="findUserIdByLoginId" parameterType="String" resultType="long">
+        SELECT user_id
+        FROM users
+        WHERE login_id = #{loginId}
+    </select>
+
 </mapper>
