@@ -2,6 +2,7 @@ package com.staylog.staylog.domain.admin.reservation.mapper;
 
 import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
+import com.staylog.staylog.domain.admin.reservation.dto.response.AdminReservationListResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

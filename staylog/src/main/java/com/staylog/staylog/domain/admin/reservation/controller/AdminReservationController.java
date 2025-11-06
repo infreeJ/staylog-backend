@@ -2,8 +2,8 @@ package com.staylog.staylog.domain.admin.reservation.controller;
 
 import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
+import com.staylog.staylog.domain.admin.reservation.dto.response.AdminReservationListResponse;
 import com.staylog.staylog.domain.admin.reservation.service.AdminReservationService;
-import com.staylog.staylog.domain.admin.user.dto.response.AdminGetUserDetailResponse;
 import com.staylog.staylog.global.common.code.SuccessCode;
 import com.staylog.staylog.global.common.response.SuccessResponse;
 import com.staylog.staylog.global.common.util.MessageUtil;
@@ -35,11 +35,11 @@ public class AdminReservationController {
      */
     @Operation(summary = "모든 예약 목록", description = "모든 예약 목록 조회")
     @GetMapping("/admin/reservations")
-    public ResponseEntity<SuccessResponse<List<AdminReservationDto>>> getReservationList(AdminReservationListRequest req) {
-        List<AdminReservationDto> list = reservationService.getReservationList(req);
+    public ResponseEntity<SuccessResponse<AdminReservationListResponse>> getReservationList(@ModelAttribute  AdminReservationListRequest req) {
+        AdminReservationListResponse data = reservationService.getReservationList(req);
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();
-        SuccessResponse<List<AdminReservationDto>> success = SuccessResponse.of(code, message, list);
+        SuccessResponse<AdminReservationListResponse> success = SuccessResponse.of(code, message, data);
         return ResponseEntity.ok(success);
     }
 
