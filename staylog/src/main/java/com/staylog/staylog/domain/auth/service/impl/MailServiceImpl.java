@@ -140,7 +140,7 @@ public class MailServiceImpl implements MailService {
      * @author 이준혁
      */
     @Scheduled(cron = "0 0 4 * * *") // 매일 새벽 4시
-    private void deleteExpiredEmail() {
+    public void deleteExpiredEmail() {
         emailMapper.deleteExpiredEmail(LocalDateTime.now());
     }
 }

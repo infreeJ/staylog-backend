@@ -8,6 +8,7 @@ import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import com.staylog.staylog.global.security.jwt.JwtTokenValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -87,4 +88,32 @@ public class SseServiceImpl implements SseService {
             }
         }
     }
+
+    /**
+     * SSE 연결 타임아웃 방지용 Heartbeat 전송
+     * @author 이준혁
+     * 20초마다 주석(comment)를 전송하여 타임아웃을 방지
+     */
+    @Scheduled(fixedRate = 20000) // 20초
+    public void sendHeartbeat() {
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event().comment("keep-alive"));
+                System.out.println("SSE의 심장이 도키도키..");
+            } catch (IOException e) {
+                emitters.remove(userId);
+                System.out.println("Heartbeat 전송 실패로 SSE 연결 종료");
+                throw new RuntimeException(e);
+            }
+        });
+    }
 }
+
+
+
+
+
+
+
+
+
