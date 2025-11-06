@@ -2,5 +2,136 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.booking.mapper.BookingMapper">
+<mapper namespace="com.staylog.staylog.domain.booking.mapper.BookingMapper">
+
+    <!-- 객실 가용성 체크 -->
+    <select id="checkRoomAvailability" resultType="int">
+        SELECT COUNT(*)
+        FROM TEAM404F.RESERVATION
+        WHERE ROOM_ID = #{roomId}
+          AND STATUS IN ('RES_PENDING', 'RES_CONFIRMED')
+          AND (
+              (#{checkIn} BETWEEN CHECK_IN AND CHECK_OUT - 1)
+              OR (#{checkOut} - 1 BETWEEN CHECK_IN AND CHECK_OUT - 1)
+              OR (CHECK_IN BETWEEN #{checkIn} AND #{checkOut} - 1)
+          )
+    </select>
+
+    <!-- 예약 생성 -->
+    <insert id="insertBooking" useGeneratedKeys="true" keyProperty="bookingId" keyColumn="BOOKING_ID">
+        INSERT INTO TEAM404F.RESERVATION (
+            USER_ID,
+            ROOM_ID,
+            BOOKING_NUM,
+            AMOUNT,
+            CHECK_IN,
+            CHECK_OUT,
+            STATUS,
+            GUEST_NAME,
+            ADULTS,
+            CHILDREN,
+            INFANTS,
+            TOTAL_GUEST_COUNT,
+            CREATED_AT,
+            EXPIRES_AT,
+            IS_WRITED
+        ) VALUES (
+            #{userId},
+            #{roomId},
+            #{bookingNum},
+            #{amount},
+            #{checkIn},
+            #{checkOut},
+            #{status},
+            #{guestName},
+            #{adults, jdbcType=INTEGER},
+            #{children, jdbcType=INTEGER},
+            #{infants, jdbcType=INTEGER},
+            #{totalGuestCount, jdbcType=INTEGER},
+            SYSTIMESTAMP,
+            #{expiresAt},
+            'N'
+        )
+    </insert>
+
+    <!-- 예약 조회 (ID) -->
+    <select id="findBookingById" resultType="map">
+        SELECT
+            r.BOOKING_ID AS bookingId,
+            r.BOOKING_NUM AS bookingNum,
+            r.USER_ID AS userId,
+            r.ROOM_ID AS roomId,
+            r.AMOUNT AS amount,
+            r.CHECK_IN AS checkIn,
+            r.CHECK_OUT AS checkOut,
+            r.STATUS AS status,
+            r.GUEST_NAME AS guestName,
+            r.ADULTS AS adults,
+            r.CHILDREN AS children,
+            r.INFANTS AS infants,
+            r.TOTAL_GUEST_COUNT AS totalGuestCount,
+            r.CREATED_AT AS createdAt,
+            r.UPDATED_AT AS updatedAt,
+            r.EXPIRES_AT AS expiresAt,
+            rm.NAME AS roomName,
+            a.NAME AS accommodationName,
+            r.PAY_ID AS paymentId
+        FROM TEAM404F.RESERVATION r
+        LEFT JOIN TEAM404F.ROOM rm ON r.ROOM_ID = rm.ROOM_ID
+        LEFT JOIN TEAM404F.ACCOMMODATION a ON rm.ACCOMMODATION_ID = a.ACCOMMODATION_ID
+        WHERE r.BOOKING_ID = #{bookingId}
+    </select>
+
+    <!-- 예약 조회 (bookingNum) -->
+    <select id="findBookingByBookingNum" resultType="map">
+        SELECT
+            r.BOOKING_ID AS bookingId,
+            r.BOOKING_NUM AS bookingNum,
+            r.USER_ID AS userId,
+            r.ROOM_ID AS roomId,
+            r.AMOUNT AS amount,
+            r.CHECK_IN AS checkIn,
+            r.CHECK_OUT AS checkOut,
+            r.STATUS AS status,
+            r.GUEST_NAME AS guestName,
+            r.ADULTS AS adults,
+            r.CHILDREN AS children,
+            r.INFANTS AS infants,
+            r.TOTAL_GUEST_COUNT AS totalGuestCount,
+            r.CREATED_AT AS createdAt,
+            r.UPDATED_AT AS updatedAt,
+            r.EXPIRES_AT AS expiresAt,
+            r.PAY_ID AS paymentId
+        FROM TEAM404F.RESERVATION r
+        WHERE r.BOOKING_NUM = #{bookingNum}
+    </select>
+
+    <!-- 예약 상태 업데이트 -->
+    <update id="updateBookingStatus">
+        UPDATE TEAM404F.RESERVATION
+        SET STATUS = #{status},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE BOOKING_ID = #{bookingId}
+    </update>
+
+    <!-- 예약 만료 시간 업데이트 -->
+    <update id="updateExpiresAt">
+        UPDATE TEAM404F.RESERVATION
+        SET EXPIRES_AT = #{expiresAt},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE BOOKING_ID = #{bookingId}
+    </update>
+
+    <!-- 만료된 예약 조회 (EXPIRES_AT이 현재 시간보다 이전인 PENDING 예약) -->
+    <select id="findExpiredBookings" resultType="map">
+        SELECT
+            BOOKING_ID AS bookingId,
+            BOOKING_NUM AS bookingNum,
+            STATUS AS status,
+            EXPIRES_AT AS expiresAt
+        FROM TEAM404F.RESERVATION
+        WHERE STATUS = 'RES_PENDING'
+          AND EXPIRES_AT <![CDATA[<]]> #{now}
+    </select>
+
 </mapper>
