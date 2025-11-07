@@ -56,18 +56,19 @@ public class AdminReservationController {
         return ResponseEntity.ok(success);
     }
 
-//    /**
-//     * 예약 상태 변경
-//     */
-//    @PatchMapping("/admin/reservations/{bookingId}/status")
-//    public ResponseEntity<SuccessResponse<Void>> updateReservationStatus(
-//            @PathVariable Long bookingId,
-//            @RequestParam("status") String status) {
-//        reservationService.updateReservationStatus(bookingId, status);
-//        String message = messageUtil.getMessage(SuccessCode.BOOKING_STATUS_UPDATED.getMessageKey());
-//        String code = SuccessCode.BOOKING_STATUS_UPDATED.name();
-//        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
-//        return ResponseEntity.ok(success);
-//    }
+    /**
+     * 예약 상태 변경 (미사용)
+     * @deprecated
+     */
+    @PatchMapping("/admin/reservations/{bookingId}/status")
+    public ResponseEntity<SuccessResponse<Void>> updateReservationStatus(
+            @PathVariable Long bookingId,
+            @RequestParam("status") String status) {
+        reservationService.updateReservationStatus(bookingId, status);
+        String message = messageUtil.getMessage(SuccessCode.BOOKING_STATUS_UPDATED.getMessageKey());
+        String code = SuccessCode.BOOKING_STATUS_UPDATED.name();
+        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
+        return ResponseEntity.ok(success);
+    }
 
 }
