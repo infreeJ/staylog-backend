@@ -24,5 +24,4 @@ public class AdminReservationListRequest extends PageRequest {
     private String startDate; // 조회 시작일
     private String endDate; // 조회 종료일
 
-    private Boolean export = false;
 }

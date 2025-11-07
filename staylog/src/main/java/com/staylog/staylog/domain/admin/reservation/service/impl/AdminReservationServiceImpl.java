@@ -29,13 +29,6 @@ public class AdminReservationServiceImpl implements AdminReservationService {
 
     @Override
     public AdminReservationListResponse getReservationList(AdminReservationListRequest req) {
-        if (Boolean.TRUE.equals(req.getExport())) {
-            List<AdminReservationDto> all = mapper.findAllReservations(req); // ROWNUM/LIMIT 없는 SQL
-            AdminReservationListResponse resp = new AdminReservationListResponse();
-            resp.setReservations(all);
-            resp.setPage(null);
-            return resp;
-        }
 
         int totalCount = mapper.countReservations(req);
 
