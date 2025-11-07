@@ -12,4 +12,5 @@ public class AdminUserListRequest extends PageRequest {
         private String role; // 권한
         private String status; // 상태
 
+        private String keyword;
 }

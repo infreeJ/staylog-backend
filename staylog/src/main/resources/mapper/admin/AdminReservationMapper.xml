@@ -71,13 +71,13 @@
         LEFT JOIN users u         ON u.user_id = r.user_id
         LEFT JOIN room rm         ON rm.room_id = r.room_id
         LEFT JOIN accommodation a ON a.accommodation_id = rm.accommodation_id
-        LEFT JOIN common_code c   ON c.code_id = r.status   <!-- ✅ 일관된 조인 -->
+        LEFT JOIN common_code c   ON c.code_id = r.status
         <include refid="resWhere"/>
         ORDER BY r.created_at DESC
         ) inner_t
-        WHERE ROWNUM &lt;= #{endRow}          <!-- ✅ endRow -->
+        WHERE ROWNUM &lt;= #{endRow}          <!-- endRow -->
         )
-        WHERE rn &gt;= #{startRow}               <!-- ✅ startRow -->
+        WHERE rn &gt;= #{startRow}               <!-- startRow -->
     </select>
 
     <!-- 예약 상세 조회 (조인키 통일) -->
@@ -108,7 +108,7 @@
         LEFT JOIN users u         ON u.user_id = r.user_id
         LEFT JOIN room rm         ON rm.room_id = r.room_id
         LEFT JOIN accommodation a ON a.accommodation_id = rm.accommodation_id
-        LEFT JOIN common_code c   ON c.code_id = r.status     <!-- ✅ 통일 -->
+        LEFT JOIN common_code c   ON c.code_id = r.status
         WHERE r.booking_id = #{bookingId}
     </select>
 
@@ -129,9 +129,26 @@
         LEFT JOIN users u         ON u.user_id = r.user_id
         LEFT JOIN room rm         ON rm.room_id = r.room_id
         LEFT JOIN accommodation a ON a.accommodation_id = rm.accommodation_id
-        LEFT JOIN common_code c   ON c.code_id = r.status     <!-- ✅ 통일 -->
+        LEFT JOIN common_code c   ON c.code_id = r.status
         <include refid="resWhere"/>
     </select>
 
+    <!-- 이번 달 예약/매출 요약 -->
+    <select id="getMonthlyStats"
+            resultType="com.staylog.staylog.domain.admin.reservation.dto.AdminMonthlyStatsDto">
+        SELECT
+        COUNT(1) AS totalCount,
+        SUM(CASE WHEN status IN ('CONFIRM','CONFIRMED') THEN 1 ELSE 0 END) AS confirmedCount,
+        SUM(CASE WHEN status IN ('CANCEL','CANCELED','CANCELLED') THEN 1 ELSE 0 END) AS canceledCount,
+        NVL(SUM(
+        CASE WHEN status IN ('CONFIRM','CONFIRMED')
+        THEN NVL(amount, 0)
+        ELSE 0
+        END
+        ), 0) AS monthlyRevenue
+        FROM reservation
+        WHERE created_at >= TRUNC(SYSDATE, 'MM')
+        AND created_at &lt;  ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
+    </select>
 
 </mapper>

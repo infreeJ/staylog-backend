@@ -1,5 +1,6 @@
 package com.staylog.staylog.domain.admin.reservation.mapper;
 
+import com.staylog.staylog.domain.admin.reservation.dto.AdminMonthlyStatsDto;
 import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
 import com.staylog.staylog.domain.admin.reservation.dto.response.AdminReservationListResponse;
@@ -40,5 +41,10 @@ public interface AdminReservationMapper {
      * @return 전체 예약 건수
      */
     int countReservations (AdminReservationListRequest req);
+    /**
+     * 이번달 매출 요약
+     */
+    AdminMonthlyStatsDto getMonthlyStats();
+
 
 }
