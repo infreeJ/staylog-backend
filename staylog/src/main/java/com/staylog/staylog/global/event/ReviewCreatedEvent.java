@@ -3,13 +3,11 @@ package com.staylog.staylog.global.event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * 리뷰게시글 작성 이벤트 객체
  * @author 이준혁
  */
-@Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

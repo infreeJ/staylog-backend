@@ -70,7 +70,6 @@ public class CouponServiceImpl implements CouponService {
      * @param couponRequest (userId, couponType)
      * @author 이준혁
      */
-    // TODO: 리스너 메서드들을 다른 패키지로 분리하고 @Transactional 붙여서 관리
     @Override
     @Transactional
     public void saveCoupon(CouponRequest couponRequest) {

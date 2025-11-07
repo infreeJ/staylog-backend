@@ -41,7 +41,6 @@ public class NotificationEventListener {
      * @param event 쿠폰 발급 이벤트 객체
      * @author 이준혁
      */
-    // TODO: 리스너 메서드들을 다른 패키지로 분리하고 @TransactionalEventListener로 변경
     @TransactionalEventListener
     private void handleCouponCreatedEvent(CouponCreatedEvent event) {
         System.out.println("쿠폰 발급 이벤트 확인");
