@@ -26,6 +26,11 @@ public class AdminAccommodationDetailResponse {
     
     private String name;
     
+    /** 평균 별점 */
+    private double avgRating;
+    /** 리뷰 개수 */
+    private long reviewCount;
+    
     /** 숙소 타입 ID (FK - common_code) */
     private String acType;
     /** 숙소 타입명 (호텔, 리조트 등) */
