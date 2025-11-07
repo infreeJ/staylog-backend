@@ -90,22 +90,6 @@ public class CouponController {
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 
-    /**
-     * 쿠폰 사용 처리
-     * @param useCouponRequest 쿠폰 PK
-     * @author 이준혁
-     */
-    @Operation(summary = "쿠폰 사용 처리", description = "쿠폰의 사용 여부를 Y로 변경합니다.")
-    @PatchMapping("/coupon")
-    public ResponseEntity<SuccessResponse<Void>> useCoupon(@RequestBody UseCouponRequest useCouponRequest) {
-        couponService.useCoupon(useCouponRequest);
-
-        String message = messageUtil.getMessage(SuccessCode.COUPON_USED.getMessageKey());
-        String code = SuccessCode.COUPON_USED.name();
-        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
-    }
-
-
 
     /**
      * 쿠폰 삭제

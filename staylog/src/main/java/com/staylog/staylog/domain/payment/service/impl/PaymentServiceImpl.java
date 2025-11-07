@@ -173,8 +173,8 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("결제 승인 성공: paymentId={}, bookingId={}", paymentId, bookingId);
 
             // ============ 결제 완료 이벤트 발행(알림 전송 / 쿠폰 사용처리) =============
-            // TODO: couponId 추가되면 PaymentConfirmEvent에 추가
-            PaymentConfirmEvent event = new PaymentConfirmEvent(paymentId, bookingId, tossResponse.getTotalAmount());
+            // TODO: couponId 추가되면 4번째 인자 전달값 수정
+            PaymentConfirmEvent event = new PaymentConfirmEvent(paymentId, bookingId, tossResponse.getTotalAmount(), 0);
             eventPublisher.publishEvent(event);
             // ==========================================================
 

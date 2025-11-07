@@ -42,14 +42,6 @@ public interface CouponService {
     public void saveCouponToAllUsers(CouponBatchRequest couponBatchRequest);
 
     /**
-     * 쿠폰 사용 처리
-     * @author 이준혁
-     * @param useCouponRequest 쿠폰 PK
-     * @return 성공 시 1, 실패 시 0 반환
-     */
-    public void useCoupon(UseCouponRequest useCouponRequest);
-
-    /**
      * 쿠폰 삭제
      * @author 이준혁
      * @param couponId 쿠폰 PK

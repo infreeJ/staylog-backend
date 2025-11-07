@@ -9,6 +9,7 @@ import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.event.PaymentConfirmEvent;
 import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -124,14 +125,15 @@ public class CouponServiceImpl implements CouponService {
     }
 
     /**
-     * 쿠폰 사용 처리
+     * 쿠폰 사용 처리 이벤트리스너 메서드
      *
-     * @param useCouponRequest 쿠폰 PK
+     * @param event 결제 이벤트 객체
      * @author 이준혁
      */
-    @Override
-    public void useCoupon(UseCouponRequest useCouponRequest) {
-        long couponId = useCouponRequest.getCouponId();
+    @TransactionalEventListener
+    private void useCoupon(PaymentConfirmEvent event) {
+
+        long couponId = event.getCouponId();
         CouponCheckDto couponCheckDto = couponMapper.checkAvailableCoupon(couponId);
 
         LocalDateTime now = LocalDateTime.now();
