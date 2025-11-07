@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface BoardService {
 
-    BoardListResponse getByBoardType(BoardListRequest boardListRequest, PageRequest pageRequest);
+    BoardListResponse getByBoardType(BoardListRequest boardListRequest);
     BoardDto getByBoardId(long boardId);
 
     BoardDto insert(BoardDto boardDto);

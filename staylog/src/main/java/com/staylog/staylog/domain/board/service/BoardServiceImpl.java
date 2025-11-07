@@ -24,7 +24,7 @@ public class BoardServiceImpl implements BoardService {
 
 
     @Override
-    public BoardListResponse getByBoardType(BoardListRequest boardListRequest, PageRequest pageRequest) {
+    public BoardListResponse getByBoardType(BoardListRequest boardListRequest) {
 
 
 
@@ -37,7 +37,7 @@ public class BoardServiceImpl implements BoardService {
 
         // 페이지 계산 결과
         PageResponse pageResponse = new PageResponse();
-        pageResponse.calculate(pageRequest, totalCount);
+        pageResponse.calculate(boardListRequest, totalCount);
 
 
 

@@ -55,12 +55,14 @@
             u.nickname AS userNickName,
             b.title,
             b.rating,
-            b.views_count AS viewsCount,
+            (
+            SELECT COUNT(*) FROM views v WHERE v.board_id = b.board_id
+            ) AS viewsCount,
             TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
             TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
             (
                 SELECT COUNT(*) FROM likes l WHERE l.board_id = b.board_id
-            ) AS likes_count,
+            ) AS likes,
             b.deleted
             FROM board b
             LEFT JOIN accommodation a
@@ -88,10 +90,11 @@
             <!-- 정렬 -->
             <choose>
                 <when test="sort == 'likes'">
-                    ORDER BY (SELECT COUNT(*) FROM likes l2 WHERE l2.board_id = b.board_id)
+                    ORDER BY (SELECT COUNT(*) FROM likes l2 WHERE l2.board_id = b.board_id) DESC,
+                    b.created_at DESC
                 </when>
                 <when test="sort == 'views'">
-                    ORDER BY b.views_count DESC
+                    ORDER BY b.views_count DESC, b.created_at DESC
                 </when>
                 <otherwise>
                     ORDER BY b.created_at DESC

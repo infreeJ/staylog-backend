@@ -23,9 +23,15 @@ public class ViewsServiceImpl implements ViewsService {
 
     @Override
     @Transactional
-    public void addView(Long boardId, Long userId) {
-        if (viewsMapper.existsRecentView(boardId, userId)==0) {
-            viewsMapper.addView(boardId, userId);
+    public void addView(String viewToken, Long boardId) {
+        // 최근 1시간 내 조회기록 확인
+        int alreadyViewed = viewsMapper.existsRecentView(viewToken, boardId);
+
+        if (alreadyViewed == 0) {
+            // views 테이블에 insert
+            viewsMapper.addView(viewToken, boardId);
+
+            // board 테이블에 조회수 증가
             boardMapper.increaseViewsCount(boardId);
         }
     }
