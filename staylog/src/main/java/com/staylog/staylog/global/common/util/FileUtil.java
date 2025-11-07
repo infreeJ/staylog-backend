@@ -1,6 +1,9 @@
 package com.staylog.staylog.global.common.util;
 
 import com.staylog.staylog.global.common.dto.FileUploadDto;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -10,8 +13,15 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+/**
+ * 파일 처리 관련 메서드
+ * 주로 이미지 처리에서 사용함
+ * @author 고윤제
+ */
+@Slf4j
 public class FileUtil {
 
+	// 파일 저장
     public static FileUploadDto saveFile(MultipartFile file, String uploadPath) throws IOException {
         if (file == null || file.isEmpty()) {
             return null;
@@ -36,10 +46,15 @@ public class FileUtil {
         return new FileUploadDto(destinationFile.getName(), originalName, savedPath); // savedPath는 YYYY/MM/DD/UUID_OriginalName // savedPath는 YYYY/MM/DD/UUID_OriginalName
     }
 
+    // 파일 물리삭제
     public static void deleteFile(String filePath) {
         File file = new File(filePath);
         if (file.exists()) {
-            file.delete();
+            if(!file.delete()) {
+            	log.warn("파일 삭제 실패: "+filePath);
+            }
+        } else {
+        	log.warn("삭제할 파일이 존재하지 않음: "+filePath);
         }
     }
 }

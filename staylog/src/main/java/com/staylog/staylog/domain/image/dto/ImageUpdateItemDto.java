@@ -11,10 +11,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ImageServeDto {
-	private long imageId;
-	private String targetType;
-	private long targetId;
-	private long displayOrder;
-	private String imageUrl;
+public class ImageUpdateItemDto {
+	private Long imageId;
+	private int displayOrder;
 }
