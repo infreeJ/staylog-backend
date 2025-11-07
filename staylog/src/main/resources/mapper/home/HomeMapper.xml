@@ -2,5 +2,68 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.staylog.domain.home.mapper.HomeMapper">
+<mapper namespace="com.staylog.staylog.domain.home.mapper.HomeMapper">
+		
+		<select id="selectAccommodationMain"
+		        parameterType="map"
+		        resultType="com.staylog.staylog.domain.home.dto.response.HomeAccommodationListResponse">
+		
+		  SELECT *
+		  FROM ( SELECT t.*, ROWNUM rn
+		    FROM (
+		      SELECT
+		        ac.accommodation_id,
+		        ac.name,
+		        ac.region_code,
+		        ac.ac_type,
+		        NVL(m.rating_avg, 0)  AS ratingAvg,
+		        NVL(m.review_cnt, 0)  AS reviewCnt,
+		        NVL(mp.min_price, 0)  AS minPrice,
+		        ac.address,
+		        ac.created_at AS createdAt,
+		        cc.code_name AS regionName
+		      FROM ACCOMMODATION ac
+		      LEFT JOIN (
+		        SELECT accommodation_id,
+		               ROUND(AVG(rating), 1) AS rating_avg,
+		               COUNT(*)              AS review_cnt
+		        FROM BOARD
+		        WHERE board_type = 'BOARD_REVIEW'
+		        GROUP BY accommodation_id
+		      ) m ON m.accommodation_id = ac.accommodation_id
+		      LEFT JOIN (
+		        SELECT accommodation_id, MIN(price) AS min_price
+		        FROM ROOM
+		        GROUP BY accommodation_id
+		      ) mp ON mp.accommodation_id = ac.accommodation_id
+		      LEFT JOIN COMMON_CODE cc
+       			 ON ac.region_code = cc.CODE_ID
+		      WHERE ac.deleted_yn = 'N'
+		      <if test="regionCode != null and regionCode != ''">
+		        AND ac.region_code = #{regionCode}
+		      </if>
+		
+		      <choose>
+		        <when test="sort == 'rating'">
+		          ORDER BY NVL(m.rating_avg, 0) DESC, ac.created_at DESC, ac.accommodation_id ASC
+		        </when>
+		        <when test="sort == 'review'">
+		          ORDER BY NVL(m.review_cnt, 0) DESC, ac.created_at DESC, ac.accommodation_id ASC
+		        </when>
+		        <when test="sort == 'price'">
+		          ORDER BY NVL(mp.min_price, 0) ASC, ac.accommodation_id ASC
+		        </when>
+		        <when test="sort == 'latest'">
+		          ORDER BY ac.created_at DESC, ac.accommodation_id ASC
+		        </when>
+		        <otherwise>
+		          ORDER BY NVL(m.rating_avg, 0) DESC, ac.created_at DESC, ac.accommodation_id ASC
+		        </otherwise>
+		      </choose>
+		    ) t
+		    WHERE ROWNUM &lt;= #{offset} + #{limit}
+		  )
+		  WHERE rn &gt; #{offset}
+		</select>
+
 </mapper>

@@ -35,10 +35,16 @@
         </if>
 
     </select>
-    
-    <!-- 해당 카테고리 게시판 목록 조회 (삭제된 게시글 제외) -->
+
+
+    <!-- 게시판 목록 조회 (ROWNUM 기반 페이징) -->
     <select id="getByBoardType" parameterType="BoardListRequest" resultType="BoardDto">
-        SELECT b.board_type AS boardType,
+        SELECT *
+        FROM (
+            SELECT inner_query.*, ROWNUM AS rn
+            FROM (
+            SELECT
+            b.board_type AS boardType,
             b.region_code AS regionCode,
             cc.code_name AS regionName,
             b.board_id AS boardId,
@@ -49,23 +55,19 @@
             u.nickname AS userNickName,
             b.title,
             b.rating,
-            b.views_count,
+            b.views_count AS viewsCount,
             TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
             TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
-            COUNT(l.like_id) AS likes,
+            b.likes_count AS likesCount,
             b.deleted
-        FROM board b
-        JOIN accommodation a
+            FROM board b
+            LEFT JOIN accommodation a
             ON b.accommodation_id = a.accommodation_id
-        LEFT JOIN users u
+            LEFT JOIN users u
             ON b.user_id = u.user_id
-        LEFT JOIN common_code cc
+            LEFT JOIN common_code cc
             ON b.region_code = cc.code_id
-        LEFT JOIN likes l
-            ON b.board_id = l.board_id
-
-        WHERE
-            b.deleted = 'N'
+            WHERE b.deleted = 'N'
             AND b.board_type = #{boardType}
 
             <!-- 지역 필터 (다중) -->
@@ -76,26 +78,31 @@
                 </foreach>
             </if>
 
-        GROUP BY
-            b.board_type, b.region_code, cc.code_name, b.board_id,
-            b.accommodation_id, a.name, b.booking_id, b.user_id, u.nickname,
-            b.title, b.rating, b.views_count, b.created_at, b.updated_at, b.deleted
+    <!--        GROUP BY-->
+    <!--        b.board_type, b.region_code, cc.code_name, b.board_id,-->
+    <!--        b.accommodation_id, a.name, b.booking_id, b.user_id, u.nickname,-->
+    <!--        b.title, b.rating, b.views_count, b.created_at, b.updated_at, b.deleted-->
 
-
-        <!-- 정렬 옵션 -->
-        <choose>
-            <when test="sort == 'likes'">
-                ORDER BY b.likes_count DESC
-            </when>
-            <when test="sort == 'views'">
-                ORDER BY b.views_count DESC
-            </when>
-            <otherwise>
-                ORDER BY b.created_at DESC
-            </otherwise>
-        </choose>
-
+            <!-- 정렬 -->
+            <choose>
+                <when test="sort == 'likes'">
+                    ORDER BY
+                        b.likes_count DESC,
+                        b.created_at DESC
+                </when>
+                <when test="sort == 'views'">
+                    ORDER BY b.views_count DESC, b.created_at DESC
+                </when>
+                <otherwise>
+                    ORDER BY b.created_at DESC
+                </otherwise>
+            </choose>
+        ) inner_query
+        )
+        WHERE rn BETWEEN (#{pageNum}-1) * #{pageSize} + 1 AND #{pageNum} * #{pageSize}
     </select>
+
+
 
 
 
@@ -117,11 +124,7 @@
             TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
             TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
             b.deleted,
-            (
-                SELECT NVL(COUNT(*), 0)
-                FROM likes l
-                WHERE b.board_id = l.board_id
-            ) AS likes
+            b.likes_count AS likesCount
         FROM board b
         JOIN users u
             ON b.user_id = u.user_id
@@ -129,7 +132,7 @@
     </select>
 
 
-        
+
     <!-- 게시글 수정 -->
     <update id="update" parameterType="BoardDto">
         UPDATE board
@@ -210,9 +213,21 @@
         WHERE board_id = #{boardId}
     </update>
 
+    <!--  조회수 증가  -->
     <update id="increaseViewsCount" parameterType="long">
         UPDATE board SET views_count = views_count + 1
         WHERE board_id = #{boardId}
+    </update>
+
+    <!-- 조회수 update / +1 / -1 -->
+    <update id="updateViewsCount" parameterType="long">
+        UPDATE board b
+        SET b.views_count = (
+            SELECT COUNT(*)
+            FROM views v
+            WHERE v.board_id = b.board_id
+        )
+        WHERE b.board_id = #{boardId}
     </update>
 
 
@@ -237,7 +252,7 @@
 
     CREATE TABLE board (
         board_id           NUMBER PRIMARY KEY,
-        accommodation_id   NUMBER NOT NULL,
+        accommodation_id   NUMBER ,
         booking_id         NUMBER ,
         user_id            NUMBER NOT NULL,
 

@@ -24,35 +24,41 @@ public class BoardServiceImpl implements BoardService {
 
 
     @Override
-    public BoardListResponse getByBoardType(BoardListRequest boardListRequest, PageRequest pageRequest) {
+    public BoardListResponse getByBoardType(BoardListRequest boardListRequest) {
 
 
 
         // 전체 게시글 수
         int totalCount = boardMapper.countByBoardType(boardListRequest.getBoardType());
 
+        int totalPage = (int) Math.ceil((double) totalCount / boardListRequest.getPageSize());
 
 
 
         // 페이지 계산 결과
         PageResponse pageResponse = new PageResponse();
-        pageResponse.calculate(pageRequest, totalCount);
+        pageResponse.calculate(boardListRequest, totalCount);
+
+
 
         // 게시글 목록
         List<BoardDto> boardList = boardMapper.getByBoardType(boardListRequest);
 
         // 4️⃣ BoardListResponse로 묶어서 반환
-        return BoardListResponse.builder()
-                .boardList(boardList)
-                .pageResponse(pageResponse)
-                .build();
+        BoardListResponse boardListResponse = new BoardListResponse();
+        boardListResponse.setBoardList(boardList);
+        boardListResponse.setPageResponse(pageResponse);
+
+
+        return boardListResponse;
 
     }
 
     // 게시글 상세보기
     @Override
     public BoardDto getByBoardId(long boardId) {
-
+        boardMapper.updateLikeCount(boardId);
+        boardMapper.updateViewsCount(boardId);
         return boardMapper.getByBoardId(boardId);
     }
 

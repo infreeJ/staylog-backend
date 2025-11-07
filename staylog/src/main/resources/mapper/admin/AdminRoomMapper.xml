@@ -8,36 +8,38 @@
 	<select id="selectRoomListByAccommodation" parameterType="AdminRoomSearchRequest" resultType="AdminRoomDetailResponse">
 		SELECT *
 	    FROM (
-		    SELECT
-		    	r.accommodation_id,
-		    	a.name AS accommodationName,
-		        r.room_id,
-		        r.name,
-		        r.rm_type,
-		        ct.code_name AS typeName,
-		        r.price,
-		        r.max_adult,
-		        r.deleted_yn,
-			    ROWNUM AS rn,
-		        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt
-		    FROM room r
-		    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
-		    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
-		    <where>
-		    	r.accommodation_id = #{accommodationId}
-	            <if test="rmType != null and rmType != ''">
-	            	AND r.rm_type = #{rmType}
-	        	</if>
-				<if test="keyword != null and keyword != ''">
-		            AND r.name LIKE '%' || #{keyword} || '%'
-		        </if>
-	        	<if test="deletedYn != null and deletedYn != ''">
-		           AND r.deleted_yn = #{deletedYn}
-		        </if>
-	        </where>
-		    ORDER BY r.deleted_yn ASC, r.created_at DESC
-		) t
-		WHERE t.rn BETWEEN #{startRow} AND #{endRow}
+		    SELECT t.*, ROWNUM AS rn
+			FROM (
+			    SELECT
+			    	r.accommodation_id,
+			    	a.name AS accommodationName,
+			        r.room_id,
+			        r.name,
+			        r.rm_type,
+			        ct.code_name AS typeName,
+			        r.price,
+			        r.max_adult,
+			        r.deleted_yn,
+			        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt
+			    FROM room r
+			    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
+			    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
+			    <where>
+			    	r.accommodation_id = #{accommodationId}
+		            <if test="rmType != null and rmType != ''">
+		            	AND r.rm_type = #{rmType}
+		        	</if>
+					<if test="keyword != null and keyword != ''">
+			            AND r.name LIKE '%' || #{keyword} || '%'
+			        </if>
+		        	<if test="deletedYn != null and deletedYn != ''">
+			           AND r.deleted_yn = #{deletedYn}
+			        </if>
+		        </where>
+			    ORDER BY r.deleted_yn ASC, r.created_at DESC
+			) t
+		)
+		WHERE rn BETWEEN #{startRow} AND #{endRow}
 	</select>
 	
 	<!-- 전체 게시글 수 조회 -->

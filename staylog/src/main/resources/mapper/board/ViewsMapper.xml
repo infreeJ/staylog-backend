@@ -10,7 +10,7 @@
         SELECT COUNT(*)
         FROM views
         WHERE board_id = #{boardId}
-            AND user_id = #{userId}
+            AND view_token = #{viewToken}
             AND viewed_at > SYSTIMESTAMP - INTERVAL '1' HOUR
     </select>
 
@@ -18,9 +18,9 @@
     <!-- 조회 기록 추가 -->
     <insert id="addView" parameterType="map">
         INSERT INTO views
-            (board_id, user_id, viewed_at)
+            (view_id, board_id, view_token, viewed_at)
         VALUES(
-            seq_views_id.NEXTVAL, #{userId}, SYSTIMESTAMP
+            seq_views_id.NEXTVAL, #{boardId}, #{viewToken}, SYSTIMESTAMP
         )
     </insert>
 
@@ -44,7 +44,7 @@ CREATE TABLE views (
 -->
 
 <!-- view_id 시퀀스 생성
-CREATE SEQUENCE seq_view_id
+CREATE SEQUENCE seq_views_id
     START WITH 1
     INCREMENT BY 1;
 

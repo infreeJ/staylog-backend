@@ -12,11 +12,17 @@ import com.staylog.staylog.global.common.dto.PageRequest;
 import com.staylog.staylog.global.common.response.SuccessResponse;
 import com.staylog.staylog.global.common.util.MessageUtil;
 import com.staylog.staylog.global.exception.BusinessException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * 게시판 컨트롤러
@@ -34,10 +40,9 @@ public class BoardController {
 
     // 게시판 카테고리별 목록 조회
     @GetMapping("/boards")
-    public ResponseEntity<SuccessResponse<BoardListResponse>> boardList(@ModelAttribute BoardListRequest boardListRequest,
-                                                                        @ModelAttribute PageRequest pageRequest) {
+    public ResponseEntity<SuccessResponse<BoardListResponse>> boardList(@ModelAttribute BoardListRequest boardListRequest) {
 
-        BoardListResponse response = boardService.getByBoardType(boardListRequest, pageRequest);
+        BoardListResponse response = boardService.getByBoardType(boardListRequest);
         String message = messageUtil.getMessage(SuccessCode.BOARD_LIST_FETCHED.getMessageKey());
         String code = SuccessCode.BOARD_LIST_FETCHED.name();
 
@@ -107,12 +112,41 @@ public class BoardController {
 
     // 게시글 상세정보 불러오기
     @GetMapping("/boards/{boardId}")
-    public ResponseEntity<SuccessResponse<BoardDto>> getByBoardId(@PathVariable Long boardId, @RequestParam(value = "userId", required = false) Long userId) {
+    public ResponseEntity<SuccessResponse<BoardDto>> getByBoardId(
+            @PathVariable Long boardId,
+            @RequestParam(value = "userId", required = false) Long userId,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         // 조회 기록 처리
+        String viewToken;
+
+        // 로그인 사용자
         if(userId != null) {
-            viewsService.addView(userId, boardId);
+            viewToken = "USER_" + userId;
         }
+        // 비로그인 사용자
+        else {
+            Cookie[] cookies = request.getCookies();
+            Cookie tokenCookie = Arrays.stream(Optional.ofNullable(cookies).orElse(new Cookie[0]))
+                    .filter(c -> "view_token".equals(c.getName()))
+                    .findFirst()
+                    .orElse(null);
+
+            if(tokenCookie == null){
+                //랜덤 UUID 쿠키 생성 (비로그인 사용자용)
+                viewToken = UUID.randomUUID().toString();
+                Cookie newCookie = new Cookie("view_token", viewToken);
+                newCookie.setMaxAge(60*60); // 1시간 유지
+                newCookie.setPath("/");
+                response.addCookie(newCookie);
+            } else {
+                viewToken = tokenCookie.getValue();
+            }
+        }
+
+        // 조회수 처리 (1시간 내 중복 방지)
+        viewsService.addView(viewToken, boardId);
 
         BoardDto board = boardService.getByBoardId(boardId);
 

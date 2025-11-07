@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ViewsMapper {
 
-    public void addView(Long boardId, Long userId);
-    public int existsRecentView(Long boardId, Long userId);
+    public void addView(String viewToken, Long boardId);
+    public int existsRecentView(String viewToken, Long boardId);
     public int countByBoardId(Long boardId);
 }
