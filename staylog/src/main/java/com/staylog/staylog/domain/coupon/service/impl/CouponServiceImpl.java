@@ -2,19 +2,21 @@ package com.staylog.staylog.domain.coupon.service.impl;
 
 import com.staylog.staylog.domain.coupon.dto.request.CouponBatchRequest;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
-import com.staylog.staylog.domain.coupon.dto.request.UseCouponRequest;
 import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.event.CouponCreatedEvent;
 import com.staylog.staylog.global.event.PaymentConfirmEvent;
 import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
@@ -27,7 +29,7 @@ import java.util.List;
 public class CouponServiceImpl implements CouponService {
 
     private final CouponMapper couponMapper;
-    private final UserMapper userMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     /**
@@ -91,6 +93,7 @@ public class CouponServiceImpl implements CouponService {
      * @param couponRequest (userId, couponType)
      * @author 이준혁
      */
+    // TODO: 리스너 메서드들을 다른 패키지로 분리하고 @Transactional 붙여서 관리
     @Override
     public void saveCoupon(CouponRequest couponRequest) {
 
@@ -103,7 +106,11 @@ public class CouponServiceImpl implements CouponService {
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
 
-        // TODO: 쿠폰 발급 이벤트 발행 필요
+        // =========== 쿠폰 발급 이벤트 발행(알림 전송) ==============
+        CouponCreatedEvent event = new CouponCreatedEvent(couponRequest.getCouponId(), couponRequest.getUserId(), couponRequest.getName(), couponRequest.getDiscount());
+        System.out.println("쿠폰 발급 이벤트 전송");
+        eventPublisher.publishEvent(event);
+
     }
 
     /**
