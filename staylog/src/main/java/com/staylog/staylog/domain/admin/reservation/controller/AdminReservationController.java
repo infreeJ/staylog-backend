@@ -58,8 +58,10 @@ public class AdminReservationController {
     }
 
     /**
-     * 매출 요약
+     * 월 매출 조회
+     *
      */
+    @Operation(summary = "월 매 조회", description = "이번 달 매출, 예약 건 정보 조회")
     @GetMapping("/admin/reservations/stats/monthly")
     public ResponseEntity<SuccessResponse<AdminMonthlyStatsDto>> getMonthlyStats() {
         AdminMonthlyStatsDto stats = reservationService.getMonthlyStats();
