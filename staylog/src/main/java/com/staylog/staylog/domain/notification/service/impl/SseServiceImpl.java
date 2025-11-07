@@ -89,6 +89,28 @@ public class SseServiceImpl implements SseService {
         }
     }
 
+
+    /**
+     * 현재 접속된 전체 사용자에게 알림을 보내는 메서드
+     * @author 이준혁
+     * @param notificationResponse 알림 데이터
+     */
+    @Override
+    public void broadcast(NotificationResponse notificationResponse) {
+        System.out.println("broadcast 메서드로 진입");
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("new-notification")
+                        .data(notificationResponse));
+            } catch (IOException e) {
+                emitters.remove(userId);
+                log.warn("Broadcast 중 유효하지 않은 Emitter 발견 - userId={}", userId);
+            }
+        });
+    }
+
+
     /**
      * SSE 연결 타임아웃 방지용 Heartbeat 전송
      * @author 이준혁

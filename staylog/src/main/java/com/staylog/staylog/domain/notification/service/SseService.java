@@ -16,4 +16,6 @@ public interface SseService {
 
 
     public void sendNotification(Long userId, NotificationResponse data);
+
+    public void broadcast(NotificationResponse notificationResponse);
 }

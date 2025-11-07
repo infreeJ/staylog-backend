@@ -14,6 +14,13 @@
         VALUES(#{notiId}, #{userId}, #{notiType}, #{targetId}, #{details})
     </insert>
 
+    <!-- 전체 사용자에게 알림 일괄 발송 -->
+    <insert id="notiSaveBroadcast" parameterType="notificationRequest">
+        INSERT INTO notification(noti_id, user_id, noti_type, target_id, details)
+        SELECT seq_notification_id.NEXTVAL, u.user_id, #{notiType}, u.user_id, #{details}
+        FROM users u
+    </insert>
+
     <!-- 알림 데이터 조회 -->
     <select id="findNotificationsByUserId" parameterType="long" resultType="NotificationSelectRequest">
         SELECT *

@@ -6,6 +6,7 @@ import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.event.CouponCreatedAllEvent;
 import com.staylog.staylog.global.event.CouponCreatedEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -85,7 +86,6 @@ public class CouponServiceImpl implements CouponService {
 
         // =========== 쿠폰 발급 이벤트 발행(알림 전송) ==============
         CouponCreatedEvent event = new CouponCreatedEvent(couponRequest.getCouponId(), couponRequest.getUserId(), couponRequest.getName(), couponRequest.getDiscount());
-        System.out.println("쿠폰 발급 이벤트 전송");
         eventPublisher.publishEvent(event);
 
     }
@@ -97,6 +97,7 @@ public class CouponServiceImpl implements CouponService {
      * @author 이준혁
      */
     @Override
+    @Transactional
     public void saveCouponToAllUsers(CouponBatchRequest couponBatchRequest) {
         int isSuccess = couponMapper.saveCouponToAllUsers(couponBatchRequest);
 
@@ -105,7 +106,9 @@ public class CouponServiceImpl implements CouponService {
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
 
-        // TODO: 쿠폰 발급 이벤트 발행 필요
+        // =========== 쿠폰 발급 이벤트 발행(알림 전송) ==============
+        CouponCreatedAllEvent event = new CouponCreatedAllEvent(couponBatchRequest.getName(), couponBatchRequest.getDiscount());
+        eventPublisher.publishEvent(event);
     }
 
 

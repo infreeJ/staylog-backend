@@ -43,7 +43,6 @@ public class NotificationEventListener {
      */
     @TransactionalEventListener
     private void handleCouponCreatedEvent(CouponCreatedEvent event) {
-        System.out.println("쿠폰 발급 이벤트 확인");
         long recipientId = event.getUserId(); // 수신자 PK
 
         // 알림 카드에 출력할 데이터 구성
@@ -63,12 +62,50 @@ public class NotificationEventListener {
             NotificationRequest notificationRequest = NotificationRequest.builder()
                     .userId(recipientId)
                     .notiType("NOTI_COUPON_CREATE")
-                    .targetId(event.getUserId()) // 이동할 페이지 PK
+                    .targetId(recipientId) // 이동할 페이지 PK
                     .details(detailsObject)
                     .build();
 
             // DB 저장 후 SSE 요청하는 메서드 호출
-            notificationService.saveAndPushNotification(notificationRequest, detailsResponse);
+            notificationService.saveNotification(notificationRequest, detailsResponse);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 전체 사용자 일괄 쿠폰 발급 이벤트리스너 메서드
+     *
+     * @param event 쿠폰 발급 이벤트 객체
+     * @author 이준혁
+     */
+    @TransactionalEventListener
+    private void handleCouponCreatedAllEvent(CouponCreatedAllEvent event) {
+
+        // 알림 카드에 출력할 데이터 구성
+        DetailsResponse detailsResponse = DetailsResponse.builder()
+                .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
+                .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .title("쿠폰이 발급되었습니다!")
+                .message("쿠폰함을 확인해주세요")
+                .typeName("Coupon")
+                .build();
+
+        try {
+            // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성
+            String detailsObject = objectMapper.writeValueAsString(detailsResponse);
+
+            // INSERT의 parameterType 객체 구성
+            NotificationRequest notificationRequest = NotificationRequest.builder()
+                    .userId(null)
+                    .notiType("NOTI_COUPON_CREATE")
+                    .targetId(null) // 이동할 페이지 PK
+                    .details(detailsObject)
+                    .build();
+
+            // DB 저장 후 SSE 요청하는 메서드 호출
+            notificationService.saveAllNotification(notificationRequest, detailsResponse);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -113,7 +150,7 @@ public class NotificationEventListener {
                     .build();
 
             // DB 저장 후 SSE 요청하는 메서드 호출
-            notificationService.saveAndPushNotification(notificationRequest, detailsResponse);
+            notificationService.saveNotification(notificationRequest, detailsResponse);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -167,7 +204,7 @@ public class NotificationEventListener {
                     .build();
 
             // DB 저장 후 SSE 요청 메서드 호출
-            notificationService.saveAndPushNotification(notificationRequest, detailsResponse);
+            notificationService.saveNotification(notificationRequest, detailsResponse);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -210,7 +247,7 @@ public class NotificationEventListener {
                     .build();
 
             // DB 저장 후 SSE 요청하는 메서드 호출
-            notificationService.saveAndPushNotification(notificationRequest, detailsResponse);
+            notificationService.saveNotification(notificationRequest, detailsResponse);
 
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -252,7 +289,7 @@ public class NotificationEventListener {
                     .build();
 
             // DB 저장 후 SSE 요청하는 메서드 호출
-            notificationService.saveAndPushNotification(notificationRequest, detailsResponse);
+            notificationService.saveNotification(notificationRequest, detailsResponse);
 
 
         } catch (JsonProcessingException e) {
