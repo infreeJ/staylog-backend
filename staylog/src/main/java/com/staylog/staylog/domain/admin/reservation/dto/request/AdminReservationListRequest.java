@@ -23,4 +23,6 @@ public class AdminReservationListRequest extends PageRequest {
     private String  statusGroupId; // 상태 코드 그룹
     private String startDate; // 조회 시작일
     private String endDate; // 조회 종료일
+
+    private Boolean export = false;
 }

@@ -45,4 +45,6 @@ public interface AdminReservationMapper {
      * 이번달 매출 요약
      */
     AdminMonthlyStatsDto getMonthlyStats();
+    List<AdminReservationDto> findAllReservations(AdminReservationListRequest req);
+
 }

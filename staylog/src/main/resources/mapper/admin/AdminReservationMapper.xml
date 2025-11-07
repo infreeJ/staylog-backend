@@ -150,4 +150,35 @@
         WHERE created_at >= TRUNC(SYSDATE, 'MM')
         AND created_at &lt;  ADD_MONTHS(TRUNC(SYSDATE, 'MM'), 1)
     </select>
+    <!--전체 조회용 쿼리-->
+    <select id="findAllReservations"
+            parameterType="com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest"
+            resultType="com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto">
+        SELECT
+        r.booking_id,
+        r.booking_num,
+        r.guest_name,
+        u.name AS user_name,
+        a.name AS accommodation_name,
+        rm.name AS room_name,
+        r.check_in,
+        r.check_out,
+        r.adults,
+        r.children,
+        r.infants,
+        r.total_guest_count,
+        r.amount,
+        r.status,
+        c.code_name AS status_name,
+        c.attr1     AS status_color,
+        r.created_at
+        FROM reservation r
+        LEFT JOIN users u         ON u.user_id = r.user_id
+        LEFT JOIN room rm         ON rm.room_id = r.room_id
+        LEFT JOIN accommodation a ON a.accommodation_id = rm.accommodation_id
+        LEFT JOIN common_code c   ON c.code_id = r.status
+        <include refid="resWhere"/>   <!-- 목록과 동일한 WHERE 공용 사용 -->
+        ORDER BY r.created_at DESC
+    </select>
+
 </mapper>
