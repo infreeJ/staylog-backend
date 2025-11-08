@@ -28,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/v1")
 public class AdminReservationController {
+
     private final AdminReservationService reservationService;
     private final MessageUtil messageUtil;
 
@@ -61,7 +62,7 @@ public class AdminReservationController {
      * 월 매출 조회
      *
      */
-    @Operation(summary = "월 매 조회", description = "이번 달 매출, 예약 건 정보 조회")
+    @Operation(summary = "월 매출 조회", description = "이번 달 매출, 예약 건 정보 조회")
     @GetMapping("/admin/reservations/stats/monthly")
     public ResponseEntity<SuccessResponse<AdminMonthlyStatsDto>> getMonthlyStats() {
         AdminMonthlyStatsDto stats = reservationService.getMonthlyStats();

@@ -24,11 +24,12 @@ public class AdminReservationDto {
     private Integer children;        // 어린이 수
     private Integer infants;         // 유아 수
     private Integer totalGuestCount; // 총 인원수
-    private Integer amount;          // 결제 금액
+    private Integer amount;          //  금액
+    private Integer finalAmount;          // 결제 금액
     private String status;           // 예약 상태 코드
     private String statusName;       // 예약 상태명
     private String statusColor;      // 상태 색상
-    private LocalDateTime createdAt; // 예약일 (결제일)
+    private LocalDateTime createdAt; // 예약일
     private LocalDateTime updatedAt;
 
 

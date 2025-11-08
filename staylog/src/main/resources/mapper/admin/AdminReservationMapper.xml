@@ -63,6 +63,7 @@
         r.infants,
         r.total_guest_count,
         r.amount,
+        r.final_amount,
         r.status,
         c.code_name AS status_name,
         c.attr1     AS status_color,
@@ -99,6 +100,7 @@
         r.infants,
         r.total_guest_count,
         r.amount,
+        r.final_amount,
         r.status,
         c.code_name AS status_name,
         c.attr1     AS status_color,
@@ -138,11 +140,11 @@
             resultType="com.staylog.staylog.domain.admin.reservation.dto.AdminMonthlyStatsDto">
         SELECT
         COUNT(1) AS totalCount,
-        SUM(CASE WHEN status IN ('CONFIRM','CONFIRMED') THEN 1 ELSE 0 END) AS confirmedCount,
-        SUM(CASE WHEN status IN ('CANCEL','CANCELED','CANCELLED') THEN 1 ELSE 0 END) AS canceledCount,
+        SUM(CASE WHEN status IN ('RES_CONFIRM','RES_CONFIRMED') THEN 1 ELSE 0 END) AS confirmedCount,
+        SUM(CASE WHEN status IN ('RES_CANCEL','RES_CANCELED','RES_CANCELLED') THEN 1 ELSE 0 END) AS canceledCount,
         NVL(SUM(
-        CASE WHEN status IN ('CONFIRM','CONFIRMED')
-        THEN NVL(amount, 0)
+        CASE WHEN status IN ('RES_CONFIRM','RES_CONFIRMED')
+        THEN NVL(final_amount, 0)
         ELSE 0
         END
         ), 0) AS monthlyRevenue
