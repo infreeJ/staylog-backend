@@ -1,6 +1,9 @@
 package com.staylog.staylog.domain.accommodation.service;
 
+import java.util.List;
+
 import com.staylog.staylog.domain.accommodation.dto.response.AccommodationDetailResponse;
+import com.staylog.staylog.domain.accommodation.dto.response.ReviewResponse;
 
 public interface AccommodationService {
 	
@@ -11,6 +14,11 @@ public interface AccommodationService {
      */
     public AccommodationDetailResponse getAcDetail(Long accommodationId);
     
-    
-    
+    /**
+     * 해당 숙소의 전체 리뷰 목록 조회
+     * 
+     * @param accommodationId 조회할 숙소의 기본키
+     * @return 숙소 리뷰 리스트
+     */
+    List<ReviewResponse> getAcRvList(Long accommodationId);
 }
