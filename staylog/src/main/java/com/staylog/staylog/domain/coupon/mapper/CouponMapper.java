@@ -2,7 +2,6 @@ package com.staylog.staylog.domain.coupon.mapper;
 
 import com.staylog.staylog.domain.coupon.dto.request.CouponBatchRequest;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
-import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -43,13 +42,14 @@ public interface CouponMapper {
      */
     public int saveCouponToAllUsers(CouponBatchRequest couponBatchRequest);
 
+
     /**
-     * 쿠폰 사용 여부 확인
-     * @author 이준혁
+     * 특정 쿠폰 정보 상세 조회
+     *
      * @param couponId 쿠폰 PK
-     * @return CouponCheckDto is_used, expiredAt 반환
+     * @author 이준혁
      */
-    public CouponCheckDto checkAvailableCoupon(long couponId);
+    public CouponResponse getByCouponId(long couponId);
 
     /**
      * 쿠폰 사용 처리

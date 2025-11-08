@@ -1,7 +1,7 @@
 package com.staylog.staylog.domain.coupon.listener;
 
+import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
-import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.global.common.code.ErrorCode;
@@ -11,11 +11,11 @@ import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +24,7 @@ public class CouponEventListener {
 
     private final CouponMapper couponMapper;
     private final CouponService couponService;
+    private final BookingMapper bookingMapper;
 
 
     /**
@@ -31,8 +32,9 @@ public class CouponEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handleReviewCreatedEvent(ReviewCreatedEvent event) {
+    public void handleReviewCreatedEvent(ReviewCreatedEvent event) {
 
         CouponRequest couponRequest = CouponRequest.builder()
                 .userId(event.getUserId())
@@ -50,8 +52,9 @@ public class CouponEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handleSignupEvent(SignupEvent event) {
+    public void handleSignupEvent(SignupEvent event) {
 
         CouponRequest couponRequest = CouponRequest.builder()
                 .userId(event.getUserId())
@@ -65,30 +68,37 @@ public class CouponEventListener {
 
 
     /**
-     * 결제완료 이벤트리스너 메서드(쿠폰 사용 처리)
-     *
-     * @param event 결제 이벤트 객체
+     * 결제완료 이벤트리스너 메서드
      * @author 이준혁
+     * @param event 결제 이벤트 객체
      */
+    // 결제 트랜잭션에 포함시키기 위해 BEFORE_COMMIT를 사용해서 결제와 쿠폰 사용의 원자성 보장하려 했으나
+    // 쿠폰 사용이 실패해도 결제는 완료되는 것이 비즈니스 로직상 더 올바른 구조
+    // AFTER_COMMIT에 @Retryable을 사용해서 재시도할 예정이니 @Async로 비동기 처리 가능
+    // TODO: @Retryable로 쿠폰 사용이 실패하더라도 재시도하도록 수정 필요
+    @Async
     @TransactionalEventListener
-    private void handlePaymentConfirmEvent(PaymentConfirmEvent event) {
-
-        long couponId = event.getCouponId();
-        CouponCheckDto couponCheckDto = couponMapper.checkAvailableCoupon(couponId);
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiredAt = couponCheckDto.getExpiredAt();
-        boolean isNotExpired = (expiredAt == null) || (expiredAt.isAfter(now));
-
-        int isSuccess = 0;
-        if (couponCheckDto.getIsUsed().equals("N") && isNotExpired) {
-            isSuccess = couponMapper.useCoupon(couponId);
+    public void handlePaymentConfirmEvent(PaymentConfirmEvent event) {
+        if(event.getCouponId() == null) {
+            log.warn("쿠폰 미사용 결제 건: paymentId={}", event.getPaymentId());
+            return;
         }
+
+        long userId = bookingMapper.findUserIdByBookingId(event.getBookingId());
+        long couponId = event.getCouponId();
+        
+        // 쿠폰 검증
+        couponService.validateCoupon(userId, couponId);
+
+        // 쿠폰 사용 처리
+        int isSuccess = couponMapper.useCoupon(couponId);
 
         if (isSuccess == 0) {
-            log.warn("쿠폰 사용 실패: 만료 기간이 지났거나 이미 사용된 쿠폰입니다. - couponId={}", couponId);
+            log.error("쿠폰 사용 처리 실패 (결제는 성공): couponId={}", couponId);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+
+        log.info("쿠폰 사용 처리 완료: couponId={}", couponId);
     }
     
 
