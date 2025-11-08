@@ -4,6 +4,7 @@ import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
+import com.staylog.staylog.global.annotation.CommonRetryable;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.event.PaymentConfirmEvent;
 import com.staylog.staylog.global.event.ReviewCreatedEvent;
@@ -11,10 +12,14 @@ import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 
 @Slf4j
@@ -29,11 +34,13 @@ public class CouponEventListener {
 
     /**
      * 리뷰글 작성 이벤트리스너 메서드(리뷰 쿠폰 발급)
+     *
      * @param event 이벤트 객체
      * @author 이준혁
      */
     @Async
     @TransactionalEventListener
+    @CommonRetryable // 실패시 재시도
     public void handleReviewCreatedEvent(ReviewCreatedEvent event) {
 
         CouponRequest couponRequest = CouponRequest.builder()
@@ -49,11 +56,13 @@ public class CouponEventListener {
 
     /**
      * 회원가입 이벤트리스너 메서드(환영 쿠폰 발급)
+     *
      * @param event 이벤트 객체
      * @author 이준혁
      */
     @Async
     @TransactionalEventListener
+    @CommonRetryable // 실패시 재시도
     public void handleSignupEvent(SignupEvent event) {
 
         CouponRequest couponRequest = CouponRequest.builder()
@@ -69,24 +78,26 @@ public class CouponEventListener {
 
     /**
      * 결제완료 이벤트리스너 메서드
-     * @author 이준혁
+     *
      * @param event 결제 이벤트 객체
+     * @author 이준혁
      */
     // 결제 트랜잭션에 포함시키기 위해 BEFORE_COMMIT를 사용해서 결제와 쿠폰 사용의 원자성 보장하려 했으나
     // 쿠폰 사용이 실패해도 결제는 완료되는 것이 비즈니스 로직상 더 올바른 구조
     // AFTER_COMMIT에 @Retryable을 사용해서 재시도할 예정이니 @Async로 비동기 처리 가능
-    // TODO: @Retryable로 쿠폰 사용이 실패하더라도 재시도하도록 수정 필요
     @Async
     @TransactionalEventListener
+    @CommonRetryable // 실패시 재시도
+    // TODO: @Recover 메서드 정의 필요
     public void handlePaymentConfirmEvent(PaymentConfirmEvent event) {
-        if(event.getCouponId() == null) {
+        if (event.getCouponId() == null) {
             log.warn("쿠폰 미사용 결제 건: paymentId={}", event.getPaymentId());
             return;
         }
 
         long userId = bookingMapper.findUserIdByBookingId(event.getBookingId());
         long couponId = event.getCouponId();
-        
+
         // 쿠폰 검증
         couponService.validateCoupon(userId, couponId);
 
@@ -100,7 +111,7 @@ public class CouponEventListener {
 
         log.info("쿠폰 사용 처리 완료: couponId={}", couponId);
     }
-    
+
 
     // TODO: 결제 취소 시 쿠폰 미사용 처리 리스너 구현 필요
 }
