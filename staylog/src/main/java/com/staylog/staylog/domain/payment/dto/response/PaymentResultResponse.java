@@ -1,5 +1,6 @@
 package com.staylog.staylog.domain.payment.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +21,9 @@ public class PaymentResultResponse {
 
     private Long paymentId;
     private String paymentKey;
+
+    @JsonProperty("bookingId")
+    private Long bookingId;
     private String orderId;
     private Long amount;
     private String method;
