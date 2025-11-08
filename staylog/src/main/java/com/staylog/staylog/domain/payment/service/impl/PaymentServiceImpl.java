@@ -1,11 +1,16 @@
 package com.staylog.staylog.domain.payment.service.impl;
 
+import com.staylog.staylog.domain.booking.dto.response.BookingDetailResponse;
+import com.staylog.staylog.domain.booking.entity.Booking;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.booking.service.BookingService;
+import com.staylog.staylog.domain.coupon.dto.response.CouponDiscountResult;
+import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.domain.payment.dto.request.ConfirmPaymentRequest;
 import com.staylog.staylog.domain.payment.dto.request.PreparePaymentRequest;
 import com.staylog.staylog.domain.payment.dto.response.PaymentResultResponse;
 import com.staylog.staylog.domain.payment.dto.response.PreparePaymentResponse;
+import com.staylog.staylog.domain.payment.entity.Payment;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
 import com.staylog.staylog.domain.payment.service.PaymentCompensationService;
 import com.staylog.staylog.domain.payment.service.PaymentService;
@@ -13,6 +18,8 @@ import com.staylog.staylog.external.toss.client.TossPaymentClient;
 import com.staylog.staylog.external.toss.config.TossPaymentsConfig;
 import com.staylog.staylog.external.toss.dto.request.TossConfirmRequest;
 import com.staylog.staylog.external.toss.dto.response.TossPaymentResponse;
+import com.staylog.staylog.global.constant.PaymentStatus;
+import com.staylog.staylog.global.constant.ReservationStatus;
 import com.staylog.staylog.global.exception.custom.booking.BookingNotFoundException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentAmountMismatchException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentFailedException;
@@ -24,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final TossPaymentClient tossPaymentClient;
     private final TossPaymentsConfig tossConfig;
     private final PaymentCompensationService compensationService;
+    private final CouponService couponService;
 
     /**
      * 결제 준비
@@ -59,14 +68,15 @@ public class PaymentServiceImpl implements PaymentService {
         bookingService.validateBookingPending(request.getBookingId());
 
         // 2. 예약 정보 조회
-        Map<String, Object> booking = bookingMapper.findBookingById(request.getBookingId());
+        BookingDetailResponse booking = bookingMapper.findBookingById(request.getBookingId());
         if (booking == null) {
             throw new BookingNotFoundException(request.getBookingId());
         }
 
-        Long bookingAmount = ((Number) booking.get("amount")).longValue();
-        String bookingNum = (String) booking.get("bookingNum");
-        String guestName = (String) booking.get("guestName");
+        Long bookingAmount = booking.getAmount();
+        String bookingNum = booking.getBookingNum();
+        String guestName = booking.getGuestName();
+        Long userId = booking.getUserId();
 
         // 3. 금액 검증
         if (!bookingAmount.equals(request.getAmount())) {
@@ -74,33 +84,65 @@ public class PaymentServiceImpl implements PaymentService {
             throw new PaymentAmountMismatchException(bookingAmount, request.getAmount());
         }
 
-        // 4. 계좌이체인 경우 만료 시간 연장 (5분 → 7일)
+        // 4. 🆕 쿠폰 할인 계산 (couponId가 있는 경우)
+        Long originalAmount = request.getAmount();  // 할인 전 금액
+        Long discountAmount = 0L;
+        Long finalAmount = originalAmount;
+        Long couponId = request.getCouponId();
+
+        if (couponId != null) {
+            // CouponService에 검증 및 할인 계산 위임
+            CouponDiscountResult discountResult = couponService.validateAndCalculateDiscount(
+                    userId,
+                    couponId,
+                    originalAmount
+            );
+
+            discountAmount = discountResult.getDiscountAmount();
+            finalAmount = discountResult.getFinalAmount();
+
+            // ✅ RESERVATION.FINAL_AMOUNT 업데이트
+            bookingMapper.updateFinalAmount(request.getBookingId(), finalAmount);
+
+            log.info("쿠폰 할인 적용: 쿠폰ID={}, 할인율={}%, 원래금액={}, 할인액={}, 최종금액={}",
+                    couponId, discountResult.getDiscountPercent(), originalAmount, discountAmount, finalAmount);
+        } else {
+            // 쿠폰 미사용 시에도 FINAL_AMOUNT 업데이트 (AMOUNT와 동일)
+            bookingMapper.updateFinalAmount(request.getBookingId(), finalAmount);
+        }
+
+        // 5. 계좌이체인 경우 만료 시간 연장 (5분 → 7일)
         if ("TRANSFER".equals(request.getMethod())) {
             LocalDateTime newExpiresAt = LocalDateTime.now().plusDays(7);
             bookingMapper.updateExpiresAt(request.getBookingId(), newExpiresAt);
             log.info("계좌이체 예약 만료 시간 연장: bookingId={}, expiresAt={}", request.getBookingId(), newExpiresAt);
         }
 
-        // 5. 결제 생성 (READY 상태)
-        Map<String, Object> params = new HashMap<>();
-        params.put("status", "PAY_READY");  // READY 상태
-        params.put("amount", request.getAmount());
-        params.put("method", request.getMethod());
-        params.put("bookingId", request.getBookingId());
-        params.put("paymentKey", "");  // 아직 없음 (Toss 승인 시 업데이트)
+        // 6. 결제 생성 (READY 상태, 쿠폰 정보 포함)
+        Payment payment = Payment.builder()
+                .status(PaymentStatus.PAY_READY.getCode())
+                .amount(finalAmount) //할인 후 최종금액
+                .method(request.getMethod())
+                .bookingId(request.getBookingId())
+                .paymentKey(null) // READY상태일 떄는 토스에서 보내주는 결제 키 없음 (Toss 승인하면 업데이트)
+                .couponId(couponId) // 쿠폰
+                .originalAmount(originalAmount) //할인 전 금액
+                .discountAmount(discountAmount) // 할인 금액
+                .requestedAt(OffsetDateTime.now())
+                .build();
 
-        paymentMapper.insertPayment(params);
+        paymentMapper.insertPayment(payment);
+        
 
         // 6. 생성된 결제 조회
-        Long paymentId = (Long) params.get("paymentId");
-        Map<String, Object> payment = paymentMapper.findPaymentById(paymentId);
+        Long paymentId = payment.getPaymentId();
 
         log.info("결제 준비 완료: paymentId={}, orderId={}, method={}", paymentId, bookingNum, request.getMethod());
 
         return PreparePaymentResponse.builder()
                 .paymentId(paymentId)
                 .orderId(bookingNum)  // Toss에 전달할 주문번호
-                .amount(request.getAmount())
+                .amount(finalAmount)  // ✅ 할인 후 최종 금액 반환
                 .method(request.getMethod())
                 .clientKey(tossConfig.getClientKey())  // 프론트엔드용
                 .customerName(guestName)
@@ -120,31 +162,31 @@ public class PaymentServiceImpl implements PaymentService {
                 request.getPaymentKey(), request.getOrderId(), request.getAmount());
 
         // 1. 예약 조회 (orderId = bookingNum)
-        Map<String, Object> booking = bookingMapper.findBookingByBookingNum(request.getOrderId());
+        Booking booking = bookingMapper.findBookingByBookingNum(request.getOrderId());
         if (booking == null) {
             throw new PaymentFailedException("예약을 찾을 수 없습니다: " + request.getOrderId());
         }
 
-        Long bookingId = ((Number) booking.get("bookingId")).longValue();
-        Long bookingAmount = ((Number) booking.get("amount")).longValue();
+        Long bookingId = booking.getBookingId();
 
-        // 2. 금액 검증
-        if (!bookingAmount.equals(request.getAmount())) {
-            log.error("결제 금액 불일치: 예약금액={}, 요청금액={}", bookingAmount, request.getAmount());
-
-            // 보상 트랜잭션 실행 (독립 트랜잭션)
-            compensationService.compensateFailedPayment(bookingId, "결제 금액 불일치");
-
-            throw new PaymentAmountMismatchException(bookingAmount, request.getAmount());
-        }
-
-        // 3. 결제 조회
-        Map<String, Object> payment = paymentMapper.findPaymentByBookingId(bookingId);
+        // 2. 결제 조회 (금액 검증 전에 먼저 조회)
+        Payment payment = paymentMapper.findPaymentByBookingId(bookingId);
         if (payment == null) {
             throw new PaymentFailedException("결제 정보를 찾을 수 없습니다");
         }
 
-        Long paymentId = ((Number) payment.get("paymentId")).longValue();
+        // 3. ✅ 금액 검증 (PAYMENT.AMOUNT와 비교 - 할인 후 최종 금액)
+        if (!payment.getAmount().equals(request.getAmount())) {
+            log.error("결제 금액 불일치: 결제금액(할인후)={}, Toss요청금액={}",
+                    payment.getAmount(), request.getAmount());
+
+            // 보상 트랜잭션 실행 (독립 트랜잭션)
+            compensationService.compensateFailedPayment(bookingId, "결제 금액 불일치");
+
+            throw new PaymentAmountMismatchException(payment.getAmount(), request.getAmount());
+        }
+
+        Long paymentId = payment.getPaymentId();
 
         try {
             // 4. Toss API 결제 승인 호출
@@ -156,15 +198,28 @@ public class PaymentServiceImpl implements PaymentService {
 
             TossPaymentResponse tossResponse = tossPaymentClient.confirm(tossRequest);
 
-            // 5. 성공: PAYMENT(PAID) + RESERVATION(CONFIRMED)
-            paymentMapper.updatePaymentStatus(
+            // 5. 성공: PAYMENT(PAID) + RESERVATION(CONFIRMED) + COUPON(사용 처리)
+            paymentMapper.updatePaymentApproved(
                     paymentId,
-                    "PAY_PAID",  // PAID 상태
+                    PaymentStatus.PAY_PAID.getCode(),  // PAID 상태
                     tossResponse.getPaymentKey(),
                     tossResponse.getLastTransactionKey()
             );
 
-            bookingMapper.updateBookingStatus(bookingId, "RES_CONFIRMED");  // CONFIRMED 상태
+            bookingMapper.updateBookingStatus(bookingId, ReservationStatus.RES_CONFIRMED.getCode());  // CONFIRMED 상태
+
+            // 🆕 쿠폰 사용 처리 (결제 승인 성공 시)
+            Long couponId = payment.getCouponId();
+            if (couponId != null) {
+                try {
+                    couponService.applyCouponUsage(couponId);
+                    log.info("쿠폰 사용 처리 완료: couponId={}", couponId);
+                } catch (Exception e) {
+                    // 쿠폰 사용 처리 실패는 로그만 남기고 결제는 성공 처리
+                    // (이미 Toss 결제가 성공했으므로 롤백 불가)
+                    log.error("쿠폰 사용 처리 실패 (결제는 성공): couponId={}, error={}", couponId, e.getMessage(), e);
+                }
+            }
 
             log.info("결제 승인 성공: paymentId={}, bookingId={}", paymentId, bookingId);
 
@@ -174,9 +229,9 @@ public class PaymentServiceImpl implements PaymentService {
                     .orderId(tossResponse.getOrderId())
                     .amount(tossResponse.getTotalAmount())
                     .method(tossResponse.getMethod())
-                    .paymentStatus("PAY_PAID")
-                    .reservationStatus("RES_CONFIRMED")
-                    .requestedAt((LocalDateTime) payment.get("requestedAt"))
+                    .paymentStatus(PaymentStatus.PAY_PAID.getCode())
+                    .reservationStatus(ReservationStatus.RES_CONFIRMED.getCode())
+                    .requestedAt(payment.getRequestedAt())
                     .approvedAt(tossResponse.getApprovedAt())
                     .build();
 

@@ -11,12 +11,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum PaymentStatus {
 
-    READY("PAY_READY", "결제 준비"),
-    PAID("PAY_PAID", "결제 완료"),
-    WAITING_DEPOSIT("PAY_WAITING_DEPOSIT", "무통장 입금 대기"),
-    FAILED("PAY_FAILED", "결제 실패"),
-    EXPIRED("PAY_EXPIRED", "결제 만료"),
-    REFUND("PAY_REFUND", "환불 완료");
+    PAY_READY("PAY_READY", "결제 준비"),
+    PAY_PAID("PAY_PAID", "결제 완료"),
+    PAY_WAITING_DEPOSIT("PAY_WAITING_DEPOSIT", "무통장 입금 대기"),
+    PAY_FAILED("PAY_FAILED", "결제 실패"),
+    PAY_EXPIRED("PAY_EXPIRED", "결제 만료"),
+    PAY_REFUND("PAY_REFUND", "환불 완료");
 
     private final String code;
     private final String description;

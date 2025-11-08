@@ -1,6 +1,8 @@
 package com.staylog.staylog.domain.refund.service.impl;
 
+import com.staylog.staylog.domain.booking.dto.response.BookingDetailResponse;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
+import com.staylog.staylog.domain.payment.entity.Payment;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
 import com.staylog.staylog.domain.refund.dto.request.RequestRefundRequest;
 import com.staylog.staylog.domain.refund.dto.response.RefundDetailResponse;
@@ -11,6 +13,7 @@ import com.staylog.staylog.external.toss.client.TossPaymentClient;
 import com.staylog.staylog.external.toss.dto.request.TossCancelRequest;
 import com.staylog.staylog.external.toss.dto.response.TossPaymentResponse;
 import com.staylog.staylog.global.constant.RefundType;
+import com.staylog.staylog.global.constant.ReservationStatus;
 import com.staylog.staylog.global.exception.custom.booking.BookingNotFoundException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentNotFoundException;
 import com.staylog.staylog.global.exception.custom.refund.RefundFailedException;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,34 +53,36 @@ public class RefundServiceImpl implements RefundService {
         log.info("환불 요청 시작: userId={}, bookingId={}", userId, request.getBookingId());
 
         // 1. 예약 조회 및 검증
-        Map<String, Object> booking = bookingMapper.findBookingById(request.getBookingId());
+        BookingDetailResponse booking = bookingMapper.findBookingById(request.getBookingId());
         if (booking == null) {
             throw new BookingNotFoundException(request.getBookingId());
         }
 
-        Long bookingUserId = ((Number) booking.get("userId")).longValue();
-        String bookingStatus = (String) booking.get("status");
-        LocalDate checkInDate = (LocalDate) booking.get("checkIn");
+        Long bookingUserId = booking.getAmount();
+        String bookingStatus = booking.getStatus();
+        LocalDate checkInDate = booking.getCheckIn();
 
         // 본인 예약 확인
         if (!bookingUserId.equals(userId)) {
             throw new RefundPolicyViolationException("본인의 예약만 취소할 수 있습니다");
         }
 
+        ReservationStatus status = ReservationStatus.fromCode(booking.getStatus());
+
         // 예약 상태 확인 (CONFIRMED만 환불 가능)
-        if (!"RES_CONFIRMED".equals(bookingStatus)) {
+        if ((status != ReservationStatus.RES_CONFIRMED)) {
             throw new RefundPolicyViolationException("확정된 예약만 취소할 수 있습니다: " + bookingStatus);
         }
 
         // 2. 결제 정보 조회
-        Map<String, Object> payment = paymentMapper.findPaymentByBookingId(request.getBookingId());
+        Payment payment = paymentMapper.findPaymentByBookingId(request.getBookingId());
         if (payment == null) {
             throw new PaymentNotFoundException("bookingId", request.getBookingId());
         }
 
-        Long paymentId = ((Number) payment.get("paymentId")).longValue();
-        Long totalAmount = ((Number) payment.get("amount")).longValue();
-        String paymentStatus = (String) payment.get("status");
+        Long paymentId = payment.getPaymentId();
+        Long totalAmount = payment.getAmount();
+        String paymentStatus = payment.getStatus();
 
         // 결제 상태 확인 (PAID만 환불 가능)
         if (!"PAY_PAID".equals(paymentStatus)) {
@@ -153,7 +159,7 @@ public class RefundServiceImpl implements RefundService {
 
             // 3. 성공: REFUND(COMPLETED) + PAYMENT(PAY_REFUND) + RESERVATION(RES_REFUNDED)
             refundMapper.updateRefundCompletion(refundId, "REFUND_COMPLETED");
-            paymentMapper.updatePaymentStatus(paymentId, "PAY_REFUND", paymentKey, null);
+            paymentMapper.updatePaymentApproved(paymentId, "PAY_REFUND", paymentKey, null);
             bookingMapper.updateBookingStatus(bookingId, "RES_REFUNDED");
 
             log.info("환불 처리 성공: refundId={}, paymentKey={}", refundId, paymentKey);
@@ -168,8 +174,8 @@ public class RefundServiceImpl implements RefundService {
                     .refundStatus("REFUND_COMPLETED")
                     .paymentStatus("PAY_REFUND")
                     .bookingStatus("RES_REFUNDED")
-                    .requestedAt((LocalDateTime) refund.get("requestedAt"))
-                    .completedAt(LocalDateTime.now())
+                    .requestedAt((OffsetDateTime) refund.get("requestedAt"))
+                    .completedAt(OffsetDateTime.now())
                     .build();
 
         } catch (Exception e) {
@@ -218,9 +224,9 @@ public class RefundServiceImpl implements RefundService {
                 .paymentStatus((String) refund.get("paymentStatus"))
                 .bookingStatus((String) refund.get("bookingStatus"))
                 .checkInDate((LocalDate) refund.get("checkInDate"))
-                .requestedAt((LocalDateTime) refund.get("requestedAt"))
-                .approvedAt((LocalDateTime) refund.get("approvedAt"))
-                .completedAt((LocalDateTime) refund.get("completedAt"))
+                .requestedAt((OffsetDateTime) refund.get("requestedAt"))
+                .approvedAt((OffsetDateTime) refund.get("approvedAt"))
+                .completedAt((OffsetDateTime) refund.get("completedAt"))
                 .failureReason((String) refund.get("failureReason"))
                 .policyMessage(policyMessage)
                 .build();

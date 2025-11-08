@@ -4,86 +4,134 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.staylog.staylog.domain.payment.mapper.PaymentMapper">
 
+    <!-- Payment Entity ResultMap -->
+    <resultMap id="PaymentResultMap" type="com.staylog.staylog.domain.payment.entity.Payment">
+        <id property="paymentId" column="PAYMENT_ID"/>
+        <result property="status" column="STATUS"/>
+        <result property="amount" column="AMOUNT"/>
+        <result property="method" column="METHOD"/>
+        <result property="bookingId" column="BOOKING_ID"/>
+        <result property="paymentKey" column="PAYMENT_KEY"/>
+        <result property="couponId" column="COUPON_ID"/>
+        <result property="originalAmount" column="ORIGINAL_AMOUNT"/>
+        <result property="discountAmount" column="DISCOUNT_AMOUNT"/>
+        <result property="requestedAt" column="REQUESTED_AT" typeHandler="com.staylog.staylog.global.config.OffsetDateTimeTypeHandler"/>
+        <result property="approvedAt" column="APPROVED_AT" typeHandler="com.staylog.staylog.global.config.OffsetDateTimeTypeHandler"/>
+        <result property="refundedAt" column="REFUNDED_AT" typeHandler="com.staylog.staylog.global.config.OffsetDateTimeTypeHandler"/>
+        <result property="refundId" column="REFUND_ID"/>
+        <result property="refundAmount" column="REFUND_AMOUNT"/>
+    </resultMap>
+
+
     <!-- 결제 생성 -->
-    <insert id="insertPayment" useGeneratedKeys="true" keyProperty="paymentId" keyColumn="PAYMENT_ID">
+    <insert id="insertPayment" parameterType="com.staylog.staylog.domain.payment.entity.Payment">
+        <selectKey keyProperty="paymentId" resultType="Long" order="BEFORE">
+            SELECT SEQ_PAYMENT_ID.NEXTVAL FROM DUAL
+        </selectKey>
+
         INSERT INTO TEAM404F.PAYMENT (
+            PAYMENT_ID,
             STATUS,
             AMOUNT,
-            METHOD,
+            "METHOD",
             BOOKING_ID,
             PAYMENT_KEY,
+            COUPON_ID,
+            ORIGINAL_AMOUNT,
+            DISCOUNT_AMOUNT,
             REQUESTED_AT
-        ) VALUES (
+        )
+        VALUES (
+            #{paymentId},
             #{status},
             #{amount},
             #{method},
             #{bookingId},
             #{paymentKey, jdbcType=VARCHAR},
-            SYSTIMESTAMP
+            #{couponId, jdbcType=NUMERIC},
+            #{originalAmount, jdbcType=NUMERIC},
+            #{discountAmount, jdbcType=NUMERIC},
+            #{requestedAt}
         )
     </insert>
 
-    <!-- 결제 조회 (ID) -->
-    <select id="findPaymentById" resultType="map">
+
+
+
+    <!-- 결제 조회 (ID) - Payment Entity 반환 -->
+    <select id="findPaymentById" resultMap="PaymentResultMap">
         SELECT
-            PAYMENT_ID AS paymentId,
-            STATUS AS status,
-            AMOUNT AS amount,
-            METHOD AS method,
-            BOOKING_ID AS bookingId,
-            PAYMENT_KEY AS paymentKey,
-            REQUESTED_AT AS requestedAt,
-            APPROVED_AT AS approvedAt,
-            REFUNDED_AT AS refundedAt,
-            REFUND_ID AS refundId,
-            REFUND_AMOUNT AS refundAmount
+            PAYMENT_ID,
+            STATUS,
+            AMOUNT,
+            "METHOD",
+            BOOKING_ID,
+            PAYMENT_KEY,
+            REQUESTED_AT,
+            APPROVED_AT,
+            REFUNDED_AT,
+            REFUND_ID,
+            REFUND_AMOUNT,
+            COUPON_ID,
+            ORIGINAL_AMOUNT,
+            DISCOUNT_AMOUNT
         FROM TEAM404F.PAYMENT
         WHERE PAYMENT_ID = #{paymentId}
     </select>
 
-    <!-- 결제 조회 (bookingId) -->
-    <select id="findPaymentByBookingId" resultType="map">
-        SELECT
-            PAYMENT_ID AS paymentId,
-            STATUS AS status,
-            AMOUNT AS amount,
-            METHOD AS method,
-            BOOKING_ID AS bookingId,
-            PAYMENT_KEY AS paymentKey,
-            REQUESTED_AT AS requestedAt,
-            APPROVED_AT AS approvedAt,
-            REFUNDED_AT AS refundedAt,
-            REFUND_ID AS refundId,
-            REFUND_AMOUNT AS refundAmount
-        FROM TEAM404F.PAYMENT
-        WHERE BOOKING_ID = #{bookingId}
-        ORDER BY PAYMENT_ID DESC
-        FETCH FIRST 1 ROWS ONLY
+    <!-- 결제 조회 (bookingId) - Payment Entity 반환 -->
+    <select id="findPaymentByBookingId" resultMap="PaymentResultMap">
+        SELECT * FROM (
+            SELECT
+                PAYMENT_ID,
+                STATUS,
+                AMOUNT,
+                "METHOD",
+                BOOKING_ID,
+                PAYMENT_KEY,
+                REQUESTED_AT,
+                APPROVED_AT,
+                REFUNDED_AT,
+                REFUND_ID,
+                REFUND_AMOUNT,
+                COUPON_ID,
+                ORIGINAL_AMOUNT,
+                DISCOUNT_AMOUNT
+            FROM TEAM404F.PAYMENT
+            WHERE BOOKING_ID = #{bookingId}
+            ORDER BY PAYMENT_ID DESC
+        )
+        WHERE ROWNUM &lt;= 1
     </select>
 
-    <!-- 결제 조회 (paymentKey) -->
-    <select id="findPaymentByPaymentKey" resultType="map">
+    <!-- 결제 조회 (paymentKey) - Payment Entity 반환 -->
+    <select id="findPaymentByPaymentKey" resultMap="PaymentResultMap">
         SELECT
-            PAYMENT_ID AS paymentId,
-            STATUS AS status,
-            AMOUNT AS amount,
-            METHOD AS method,
-            BOOKING_ID AS bookingId,
-            PAYMENT_KEY AS paymentKey,
-            REQUESTED_AT AS requestedAt,
-            APPROVED_AT AS approvedAt
+            PAYMENT_ID,
+            STATUS,
+            AMOUNT,
+            "METHOD",
+            BOOKING_ID,
+            PAYMENT_KEY,
+            REQUESTED_AT,
+            APPROVED_AT,
+            COUPON_ID,
+            ORIGINAL_AMOUNT,
+            DISCOUNT_AMOUNT
         FROM TEAM404F.PAYMENT
         WHERE PAYMENT_KEY = #{paymentKey}
     </select>
 
     <!-- 결제 상태 업데이트 (승인 성공 시) -->
-    <update id="updatePaymentStatus">
+    <update id="updatePaymentApproved">
         UPDATE TEAM404F.PAYMENT
-        SET STATUS = #{status},
+        SET
+            STATUS = #{status},
             PAYMENT_KEY = #{paymentKey},
             APPROVED_AT = SYSTIMESTAMP
         WHERE PAYMENT_ID = #{paymentId}
     </update>
+
 
     <!-- 결제 실패 정보 업데이트 -->
     <update id="updatePaymentFailure">

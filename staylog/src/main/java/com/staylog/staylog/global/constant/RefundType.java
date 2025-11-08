@@ -11,11 +11,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RefundType {
 
-    FULL("REFUND_FULL", 100, "전액 환불"),
-    EIGHTY("REFUND_EIGHTY", 80, "80% 환불"),
-    FIFTY("REFUND_FIFTY", 50, "50% 환불"),
-    THIRTY("REFUND_THIRTY", 30, "30% 환불"),
-    CUSTOM("REFUND_CUSTOM", 0, "커스텀 환불");
+    REFUND_FULL("REFUND_FULL", 100, "전액 환불"),
+    REFUND_EIGHTY("REFUND_EIGHTY", 80, "80% 환불"),
+    REFUND_FIFTY("REFUND_FIFTY", 50, "50% 환불"),
+    REFUND_THIRTY("REFUND_THIRTY", 30, "30% 환불"),
+    REFUND_CUSTOM("REFUND_CUSTOM", 0, "커스텀 환불");
 
     private final String code;
     private final int percentage;

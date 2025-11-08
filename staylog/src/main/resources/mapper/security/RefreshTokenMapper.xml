@@ -49,19 +49,21 @@
 
     <!-- 사용자 ID로 RefreshToken 조회 (최신 1개) -->
     <select id="findByUserId" parameterType="long" resultMap="RefreshTokenResultMap">
-        SELECT
-        token_id,
-        user_id,
-        token,
-        expires_at,
-        created_at,
-        updated_at
-        FROM refresh_token
-        WHERE user_id = #{userId}
-        AND is_revoked = 'N'
-        AND expires_at > CURRENT_TIMESTAMP
-        ORDER BY created_at DESC
-        FETCH FIRST 1 ROWS ONLY
+        SELECT * FROM (
+            SELECT
+            token_id,
+            user_id,
+            token,
+            expires_at,
+            created_at,
+            updated_at
+            FROM refresh_token
+            WHERE user_id = #{userId}
+            AND is_revoked = 'N'
+            AND expires_at > CURRENT_TIMESTAMP
+            ORDER BY created_at DESC
+        )
+        WHERE ROWNUM &lt; 1
     </select>
 
     <!-- RefreshToken 업데이트 (재발급 시 사용) -->

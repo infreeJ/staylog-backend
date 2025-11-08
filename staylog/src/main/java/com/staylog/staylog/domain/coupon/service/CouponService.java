@@ -3,6 +3,7 @@ package com.staylog.staylog.domain.coupon.service;
 import com.staylog.staylog.domain.coupon.dto.request.CouponBatchRequest;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
 import com.staylog.staylog.domain.coupon.dto.request.UseCouponRequest;
+import com.staylog.staylog.domain.coupon.dto.response.CouponDiscountResult;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.global.event.SignupEvent;
 
@@ -64,4 +65,40 @@ public interface CouponService {
      * @return 성공 시 1, 실패 시 0 반환
      */
     public void deleteCoupon(long couponId);
+
+    /**
+     * 쿠폰 검증 및 퍼센트 할인 계산
+     * - 쿠폰 소유자 검증
+     * - 쿠폰 사용 가능 여부 검증 (사용 여부, 만료일)
+     * - 퍼센트 할인 계산 (DISCOUNT 컬럼 값을 %로 해석)
+     *
+     * @param userId 사용자 ID
+     * @param couponId 쿠폰 ID
+     * @param originalAmount 할인 전 원래 금액
+     * @return CouponDiscountResult 할인 계산 결과 (원래 금액, 할인액, 최종 금액)
+     * @throws BusinessException 쿠폰을 찾을 수 없거나, 이미 사용되었거나, 만료된 경우
+     * @author danjae
+     */
+    public CouponDiscountResult validateAndCalculateDiscount(Long userId, Long couponId, Long originalAmount);
+
+    /**
+     * 쿠폰 사용 처리 (결제 승인 성공 시 호출)
+     * - is_used = 'Y'
+     * - used_at = 현재 시간
+     *
+     * @param couponId 쿠폰 ID
+     * @throws BusinessException 쿠폰 사용 처리 실패 시
+     * @author danjae
+     */
+    public void applyCouponUsage(Long couponId);
+
+    /**
+     * 쿠폰 복구 처리 (결제 실패/취소 시 호출)
+     * - is_used = 'N'
+     * - used_at = NULL
+     *
+     * @param couponId 쿠폰 ID
+     * @author danjae
+     */
+    public void revertCouponUsage(Long couponId);
 }

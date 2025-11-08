@@ -1,5 +1,7 @@
 package com.staylog.staylog.domain.payment.mapper;
 
+import com.staylog.staylog.domain.payment.dto.response.PreparePaymentResponse;
+import com.staylog.staylog.domain.payment.entity.Payment;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,28 +17,28 @@ public interface PaymentMapper {
      * 결제 생성
      * @param params 결제 정보 (status, amount, method, bookingId, paymentKey)
      */
-    void insertPayment(Map<String, Object> params);
+    void insertPayment(Payment params);
 
     /**
-     * 결제 조회 (paymentId)
+     * 결제 조회 (paymentId) - Payment Entity 반환
      * @param paymentId 결제 ID
      * @return 결제 정보
      */
-    Map<String, Object> findPaymentById(@Param("paymentId") Long paymentId);
+    PreparePaymentResponse findPaymentById(@Param("paymentId") Long paymentId);
 
     /**
-     * 결제 조회 (bookingId)
+     * 결제 조회 (bookingId) - Payment Entity 반환
      * @param bookingId 예약 ID
      * @return 결제 정보
      */
-    Map<String, Object> findPaymentByBookingId(@Param("bookingId") Long bookingId);
+    Payment findPaymentByBookingId(@Param("bookingId") Long bookingId);
 
     /**
-     * 결제 조회 (paymentKey)
+     * 결제 조회 (paymentKey) - Payment Entity 반환
      * @param paymentKey Toss 결제 키
      * @return 결제 정보
      */
-    Map<String, Object> findPaymentByPaymentKey(@Param("paymentKey") String paymentKey);
+    Payment findPaymentByPaymentKey(@Param("paymentKey") String paymentKey);
 
     /**
      * 결제 상태 업데이트 (승인 성공 시)
@@ -45,7 +47,7 @@ public interface PaymentMapper {
      * @param paymentKey Toss 결제 키
      * @param lastTransactionKey 마지막 트랜잭션 키
      */
-    void updatePaymentStatus(@Param("paymentId") Long paymentId,
+    void updatePaymentApproved(@Param("paymentId") Long paymentId,
                              @Param("status") String status,
                              @Param("paymentKey") String paymentKey,
                              @Param("lastTransactionKey") String lastTransactionKey);
