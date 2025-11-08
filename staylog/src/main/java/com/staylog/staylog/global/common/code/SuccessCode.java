@@ -41,6 +41,7 @@ public enum SuccessCode {
     ACCOMMODATION_UPDATED(200, "S4002", "success.accommodation.updated"),
     ACCOMMODATION_FOUND(200, "S4003", "success.accommodation.found"),
     ACCOMMODATION_LIST_FOUND(200, "S4004", "success.accommodation.list.found"),
+    ACCOMMODATION_REVIEW_LIST_FOUND(200,"S4005", "success.accommodation.review.list.found"),
 
     // ==================== 예약 관련 성공 (5xxx) ====================
     BOOKING_CREATED(201, "S5001", "success.booking.created"),

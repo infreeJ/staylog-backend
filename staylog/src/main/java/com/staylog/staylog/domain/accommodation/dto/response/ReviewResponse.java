@@ -20,6 +20,7 @@ public class ReviewResponse {
 	private String profileImage;
 	private Double rating;
 	private int reviewCount;
+	private String title;
 	private String content;
 	private Timestamp createdAt;
 }

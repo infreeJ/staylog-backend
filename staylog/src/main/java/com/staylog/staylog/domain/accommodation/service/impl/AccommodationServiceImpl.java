@@ -76,4 +76,13 @@ public class AccommodationServiceImpl implements AccommodationService {
         
         return accommodation;
 	}
+
+	@Override
+	public List<ReviewResponse> getAcRvList(Long accommodationId) {
+		List<ReviewResponse> reviewList = acMapper.selectReviewList(accommodationId);
+		if(reviewList == null) {
+			throw new BusinessException(ErrorCode.ACCOMMODATION_REVIEW_LIST_NOT_FOUND);
+	    }
+	    return reviewList;
+	}
 }

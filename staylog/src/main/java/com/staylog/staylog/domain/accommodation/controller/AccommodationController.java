@@ -1,5 +1,7 @@
 package com.staylog.staylog.domain.accommodation.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -7,12 +9,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.staylog.staylog.domain.accommodation.dto.response.AccommodationDetailResponse;
+import com.staylog.staylog.domain.accommodation.dto.response.ReviewResponse;
 import com.staylog.staylog.domain.accommodation.service.AccommodationService;
 import com.staylog.staylog.global.common.code.SuccessCode;
 import com.staylog.staylog.global.common.response.SuccessResponse;
 import com.staylog.staylog.global.common.util.MessageUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import com.staylog.staylog.global.common.util.MessageUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,21 @@ public class AccommodationController {
         String msg = messageUtil.getMessage(SuccessCode.ACCOMMODATION_FOUND.getMessageKey());
         String code = SuccessCode.ACCOMMODATION_FOUND.name();
         return ResponseEntity.ok(SuccessResponse.of(code, msg, data));
+    }
+    
+    /**
+     * 숙소 리뷰 전체 조회 컨트롤러
+     * @author 김채린
+     * @param accommodationId 숙소의 ID
+     * @return 해당 숙소의 전체 리뷰 목록
+     */ 
+    @GetMapping("/accommodations/{accommodationId}/reviews")
+    public ResponseEntity<SuccessResponse<List<ReviewResponse>>> getAccommodationReviews(
+            @PathVariable Long accommodationId) {
+        List<ReviewResponse> reviews = acService.getAcRvList(accommodationId);
+        String msg = messageUtil.getMessage(SuccessCode.ACCOMMODATION_REVIEW_LIST_FOUND.getMessageKey());
+        String code = SuccessCode.ACCOMMODATION_REVIEW_LIST_FOUND.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, msg, reviews));
     }
         
     // TODO: 객실 목록, 리뷰 목록 등이 추가될 예정
