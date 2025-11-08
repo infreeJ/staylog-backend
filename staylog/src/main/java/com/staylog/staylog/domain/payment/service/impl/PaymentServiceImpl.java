@@ -4,7 +4,6 @@ import com.staylog.staylog.domain.booking.dto.response.BookingDetailResponse;
 import com.staylog.staylog.domain.booking.entity.Booking;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.booking.service.BookingService;
-import com.staylog.staylog.domain.coupon.dto.response.CouponDiscountResult;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.domain.payment.dto.request.ConfirmPaymentRequest;
@@ -25,7 +24,6 @@ import com.staylog.staylog.global.event.PaymentConfirmEvent;
 import com.staylog.staylog.global.exception.custom.booking.BookingNotFoundException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentAmountMismatchException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentFailedException;
-import com.staylog.staylog.global.exception.custom.payment.PaymentNotFoundException;
 import com.staylog.staylog.global.exception.custom.payment.TossApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 결제 서비스 구현
@@ -181,6 +176,22 @@ public class PaymentServiceImpl implements PaymentService {
         if (payment == null) {
             throw new PaymentFailedException("결제 정보를 찾을 수 없습니다");
         }
+
+        // 이미 완료된 결제일 경우 결제 정보를 즉시 리턴
+//        if(!payment.getStatus().equals("PAY_READY")) {
+//            log.info("이미 완료된 결제입니다.: paymentId={}, bookingId={}, couponId={}", payment.getPaymentId(), payment.getBookingId(), payment.getCouponId());
+//            return PaymentResultResponse.builder()
+//                    .paymentId(paymentId)
+//                    .paymentKey(payment.getPaymentKey())
+//                    .orderId(tossResponse.getOrderId())
+//                    .amount(tossResponse.getTotalAmount())
+//                    .method(tossResponse.getMethod())
+//                    .paymentStatus(PaymentStatus.PAY_PAID.getCode())
+//                    .reservationStatus(ReservationStatus.RES_CONFIRMED.getCode())
+//                    .requestedAt(payment.getRequestedAt())
+//                    .approvedAt(tossResponse.getApprovedAt())
+//                    .build();
+//        }
 
         // 3. ✅ 금액 검증 (PAYMENT.AMOUNT와 비교 - 할인 후 최종 금액)
         if (!payment.getAmount().equals(request.getAmount())) {

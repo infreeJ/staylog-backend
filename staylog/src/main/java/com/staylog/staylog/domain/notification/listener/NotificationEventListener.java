@@ -16,6 +16,7 @@ import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.event.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -46,8 +47,9 @@ public class NotificationEventListener {
      * @param event 쿠폰 발급 이벤트 객체
      * @author 이준혁
      */
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT) // 트랜잭션 큐의 누락 방지를 위해 BEFORE_COMMIT 사용
-    private void handleCouponCreatedEvent(CouponCreatedEvent event) {
+    @Async
+    @TransactionalEventListener // (phase = TransactionPhase.BEFORE_COMMIT) // 트랜잭션 큐의 누락 방지를 위해 BEFORE_COMMIT 사용
+    public void handleCouponCreatedEvent(CouponCreatedEvent event) {
         long recipientId = event.getUserId(); // 수신자 PK
 
         // 알림 카드에 출력할 데이터 구성
@@ -87,8 +89,9 @@ public class NotificationEventListener {
      * @param event 쿠폰 발급 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handleCouponCreatedAllEvent(CouponCreatedAllEvent event) {
+    public void handleCouponCreatedAllEvent(CouponCreatedAllEvent event) {
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -126,14 +129,14 @@ public class NotificationEventListener {
      * @param event 결제 승인 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handlePaymentResultEvent(PaymentConfirmEvent event) {
+    public void handlePaymentResultEvent(PaymentConfirmEvent event) {
     	Payment payment = paymentMapper.findPaymentById(event.getPaymentId());
-        Map<String, Object> recipientIdAndAccommodationName = bookingMapper.findUserIdAndAccommodationNameByBookingId(event.getBookingId());
-        
-        long recipientId = (long) recipientIdAndAccommodationName.get("userId"); // 수신자(예약자) PK
-        String accommodationName = (String) recipientIdAndAccommodationName.get("accommodationName"); // 숙소명
-        OffsetDateTime approvedAt = (OffsetDateTime) payment.getApprovedAt() ; // 결제 승인 시간
+
+        long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
+        String accommodationName = bookingMapper.findAccommodationNameByBookingId(event.getBookingId()); // 숙소명
+        OffsetDateTime approvedAt = payment.getApprovedAt() ; // 결제 승인 시간
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -171,8 +174,9 @@ public class NotificationEventListener {
      * @param event 결제 취소 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handleRefundResultEvent(PaymentConfirmEvent event) {
+    public void handleRefundResultEvent(PaymentConfirmEvent event) {
         // TODO: 메서드 정의 필요
     }
 
@@ -183,8 +187,9 @@ public class NotificationEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handleReviewCreatedEvent(ReviewCreatedEvent event) {
+    public void handleReviewCreatedEvent(ReviewCreatedEvent event) {
         long recipientId = (long) 7;  // TODO: 원래 Admin에게 보내야하지만 개발 환경이라 infreeJ 아이디로 수취
         String nickname = userMapper.findNicknameByUserId(event.getUserId());
         String accommodationName = boardMapper.getAccommodationNameByBoardId(event.getBoardId());
@@ -226,8 +231,9 @@ public class NotificationEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handleCommentCreatedEvent(CommentCreatedEvent event) {
+    public void handleCommentCreatedEvent(CommentCreatedEvent event) {
 
         String nickname = userMapper.findNicknameByUserId(event.getUserId()); // 댓글 작성자 닉네임
         CommentsDto commentsDto = commentsMapper.getOneByCommentId(event.getCommentId()); // 댓글 데이터
@@ -270,8 +276,9 @@ public class NotificationEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
+    @Async
     @TransactionalEventListener
-    private void handleSignupEvent(SignupEvent event) {
+    public void handleSignupEvent(SignupEvent event) {
 
         long recipientId = event.getUserId();
         String nickname = userMapper.findNicknameByUserId(recipientId);

@@ -14,5 +14,5 @@ public class PaymentConfirmEvent {
     private long paymentId; // 결제 PK
     private long bookingId; // 예약 PK
     private long TotalAmount; // 총 결제 금액
-    private long couponId; // 사용된 쿠폰 PK
+    private Long couponId; // 사용된 쿠폰 PK
 }
