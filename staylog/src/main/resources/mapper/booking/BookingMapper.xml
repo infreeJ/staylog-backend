@@ -4,6 +4,54 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.staylog.staylog.domain.booking.mapper.BookingMapper">
 
+    <!-- Booking Entity ResultMap -->
+    <resultMap id="BookingResultMap" type="com.staylog.staylog.domain.booking.entity.Booking">
+        <id property="bookingId" column="bookingId"/>
+        <result property="userId" column="userId"/>
+        <result property="roomId" column="roomId"/>
+        <result property="bookingNum" column="bookingNum"/>
+        <result property="amount" column="amount"/>
+        <result property="finalAmount" column="finalAmount"/>
+        <result property="checkIn" column="checkIn"/>
+        <result property="checkOut" column="checkOut"/>
+        <result property="status" column="status"/>
+        <result property="guestName" column="guestName"/>
+        <result property="adults" column="adults"/>
+        <result property="children" column="children"/>
+        <result property="infants" column="infants"/>
+        <result property="totalGuestCount" column="totalGuestCount"/>
+        <result property="createdAt" column="createdAt" javaType="java.time.LocalDateTime"/>
+        <result property="updatedAt" column="updatedAt" javaType="java.time.LocalDateTime"/>
+        <result property="expiresAt" column="expiresAt" javaType="java.time.LocalDateTime"/>
+        <result property="paymentId" column="paymentId"/>
+        <result property="isWrited" column="isWrited"/>
+    </resultMap>
+
+    <!-- BookingDetailResponse ResultMap (JOIN 쿼리용) -->
+    <resultMap id="BookingDetailResultMap" type="com.staylog.staylog.domain.booking.dto.response.BookingDetailResponse">
+        <id property="bookingId" column="bookingId"/>
+        <result property="bookingNum" column="bookingNum"/>
+        <result property="userId" column="userId"/>
+        <result property="roomId" column="roomId"/>
+        <result property="roomName" column="roomName"/>
+        <result property="accommodationName" column="accommodationName"/>
+        <result property="checkIn" column="checkIn"/>
+        <result property="checkOut" column="checkOut"/>
+        <result property="amount" column="amount"/>
+        <result property="status" column="status"/>
+        <result property="guestName" column="guestName"/>
+        <result property="adults" column="adults"/>
+        <result property="children" column="children"/>
+        <result property="infants" column="infants"/>
+        <result property="totalGuestCount" column="totalGuestCount"/>
+        <result property="createdAt" column="createdAt" javaType="java.time.LocalDateTime"/>
+        <result property="updatedAt" column="updatedAt" javaType="java.time.LocalDateTime"/>
+        <result property="expiresAt" column="expiresAt" javaType="java.time.LocalDateTime"/>
+        <result property="paymentId" column="paymentId"/>
+        <result property="paymentStatus" column="paymentStatus"/>
+        <result property="isWrited" column="isWrited"/>
+    </resultMap>
+
     <!-- 객실 가용성 체크 -->
     <select id="checkRoomAvailability" resultType="int">
         SELECT COUNT(*)
@@ -18,90 +66,110 @@
     </select>
 
     <!-- 예약 생성 -->
-    <insert id="insertBooking" useGeneratedKeys="true" keyProperty="bookingId" keyColumn="BOOKING_ID">
+    <insert id="insertBooking"
+            parameterType="com.staylog.staylog.domain.booking.entity.Booking"
+            useGeneratedKeys="true"
+            keyProperty="bookingId"
+            keyColumn="BOOKING_ID">
+
+        <selectKey keyProperty="bookingId" resultType="long" order="BEFORE">
+            SELECT SEQ_BOOKING_ID.NEXTVAL FROM DUAL
+        </selectKey>
+
         INSERT INTO TEAM404F.RESERVATION (
-            USER_ID,
-            ROOM_ID,
-            BOOKING_NUM,
-            AMOUNT,
-            CHECK_IN,
-            CHECK_OUT,
-            STATUS,
-            GUEST_NAME,
-            ADULTS,
-            CHILDREN,
-            INFANTS,
-            TOTAL_GUEST_COUNT,
-            CREATED_AT,
-            EXPIRES_AT,
-            IS_WRITED
+        BOOKING_ID,
+        USER_ID,
+        ROOM_ID,
+        BOOKING_NUM,
+        AMOUNT,
+        FINAL_AMOUNT,
+        CHECK_IN,
+        CHECK_OUT,
+        STATUS,
+        GUEST_NAME,
+        ADULTS,
+        CHILDREN,
+        INFANTS,
+        TOTAL_GUEST_COUNT,
+        CREATED_AT,
+        EXPIRES_AT,
+        IS_WRITED
         ) VALUES (
-            #{userId},
-            #{roomId},
-            #{bookingNum},
-            #{amount},
-            #{checkIn},
-            #{checkOut},
-            #{status},
-            #{guestName},
-            #{adults, jdbcType=INTEGER},
-            #{children, jdbcType=INTEGER},
-            #{infants, jdbcType=INTEGER},
-            #{totalGuestCount, jdbcType=INTEGER},
-            SYSTIMESTAMP,
-            #{expiresAt},
-            'N'
+        #{bookingId},
+        #{userId},
+        #{roomId},
+        #{bookingNum},
+        #{amount},
+        #{finalAmount},
+        #{checkIn},
+        #{checkOut},
+        #{status},
+        #{guestName},
+        #{adults},
+        #{children},
+        #{infants},
+        #{totalGuestCount},
+        SYSTIMESTAMP,
+        #{expiresAt},
+        #{isWrited}
         )
     </insert>
 
-    <!-- 예약 조회 (ID) -->
-    <select id="findBookingById" resultType="map">
+
+
+
+    <!-- 예약 조회 (ID) - BookingDetailResponse 직접 매핑 -->
+    <select id="findBookingById" parameterType="long" resultMap="BookingDetailResultMap">
         SELECT
-            r.BOOKING_ID AS bookingId,
-            r.BOOKING_NUM AS bookingNum,
-            r.USER_ID AS userId,
-            r.ROOM_ID AS roomId,
-            r.AMOUNT AS amount,
-            r.CHECK_IN AS checkIn,
-            r.CHECK_OUT AS checkOut,
-            r.STATUS AS status,
-            r.GUEST_NAME AS guestName,
-            r.ADULTS AS adults,
-            r.CHILDREN AS children,
-            r.INFANTS AS infants,
-            r.TOTAL_GUEST_COUNT AS totalGuestCount,
-            r.CREATED_AT AS createdAt,
-            r.UPDATED_AT AS updatedAt,
-            r.EXPIRES_AT AS expiresAt,
-            rm.NAME AS roomName,
-            a.NAME AS accommodationName,
-            r.PAY_ID AS paymentId
+            r.BOOKING_ID AS "bookingId",
+            r.BOOKING_NUM AS "bookingNum",
+            r.USER_ID AS "userId",
+            r.ROOM_ID AS "roomId",
+            r.AMOUNT AS "amount",
+            r.FINAL_AMOUNT AS "finalAmount",
+            r.CHECK_IN AS "checkIn",
+            r.CHECK_OUT AS "checkOut",
+            r.STATUS AS "status",
+            r.GUEST_NAME AS "guestName",
+            r.ADULTS AS "adults",
+            r.CHILDREN AS "children",
+            r.INFANTS AS "infants",
+            r.TOTAL_GUEST_COUNT AS "totalGuestCount",
+            r.CREATED_AT AS "createdAt",
+            r.UPDATED_AT AS "updatedAt",
+            r.EXPIRES_AT AS "expiresAt",
+            r.IS_WRITED AS "isWrited",
+            rm.NAME AS "roomName",
+            a.NAME AS "accommodationName",
+            r.PAY_ID AS "paymentId"
         FROM TEAM404F.RESERVATION r
         LEFT JOIN TEAM404F.ROOM rm ON r.ROOM_ID = rm.ROOM_ID
         LEFT JOIN TEAM404F.ACCOMMODATION a ON rm.ACCOMMODATION_ID = a.ACCOMMODATION_ID
-        WHERE r.BOOKING_ID = #{bookingId}
+        WHERE r.BOOKING_ID = #{bookingId, jdbcType=NUMERIC}
     </select>
 
-    <!-- 예약 조회 (bookingNum) -->
-    <select id="findBookingByBookingNum" resultType="map">
+    <!-- 예약 조회 (bookingNum) - Booking Entity 반환 -->
+    <select id="findBookingByBookingNum" resultMap="BookingResultMap">
         SELECT
-            r.BOOKING_ID AS bookingId,
-            r.BOOKING_NUM AS bookingNum,
-            r.USER_ID AS userId,
-            r.ROOM_ID AS roomId,
-            r.AMOUNT AS amount,
-            r.CHECK_IN AS checkIn,
-            r.CHECK_OUT AS checkOut,
-            r.STATUS AS status,
-            r.GUEST_NAME AS guestName,
-            r.ADULTS AS adults,
-            r.CHILDREN AS children,
-            r.INFANTS AS infants,
-            r.TOTAL_GUEST_COUNT AS totalGuestCount,
-            r.CREATED_AT AS createdAt,
-            r.UPDATED_AT AS updatedAt,
-            r.EXPIRES_AT AS expiresAt,
-            r.PAY_ID AS paymentId
+            r.BOOKING_ID AS "bookingId",
+            r.BOOKING_NUM AS "bookingNum",
+            r.USER_ID AS "userId",
+            r.ROOM_ID AS "roomId",
+            r.AMOUNT AS "amount",
+            r.FINAL_AMOUNT AS "finalAmount",
+            r.CHECK_IN AS "checkIn",
+            r.CHECK_OUT AS "checkOut",
+            r.STATUS AS "status",
+            r.GUEST_NAME AS "guestName",
+            r.ADULTS AS "adults",
+            r.CHILDREN AS "children",
+            r.INFANTS AS "infants",
+            r.TOTAL_GUEST_COUNT AS "totalGuestCount",
+            r.CREATED_AT AS "createdAt",
+            r.UPDATED_AT AS "updatedAt",
+            r.EXPIRES_AT AS "expiresAt",
+            r.IS_WRITED AS "isWrited",
+            r.PAY_ID AS "paymentId"
         FROM TEAM404F.RESERVATION r
         WHERE r.BOOKING_NUM = #{bookingNum}
     </select>
@@ -122,13 +190,21 @@
         WHERE BOOKING_ID = #{bookingId}
     </update>
 
+    <!-- 예약 최종 금액 업데이트 (쿠폰 적용 후) -->
+    <update id="updateFinalAmount">
+        UPDATE TEAM404F.RESERVATION
+        SET FINAL_AMOUNT = #{finalAmount, jdbcType=NUMERIC},
+            UPDATED_AT = SYSTIMESTAMP
+        WHERE BOOKING_ID = #{bookingId}
+    </update>
+
     <!-- 만료된 예약 조회 (EXPIRES_AT이 현재 시간보다 이전인 PENDING 예약) -->
-    <select id="findExpiredBookings" resultType="map">
+    <select id="findExpiredBookings" resultMap="BookingResultMap">
         SELECT
-            BOOKING_ID AS bookingId,
-            BOOKING_NUM AS bookingNum,
-            STATUS AS status,
-            EXPIRES_AT AS expiresAt
+            BOOKING_ID AS "bookingId",
+            BOOKING_NUM AS "bookingNum",
+            STATUS AS "status",
+            EXPIRES_AT AS "expiresAt"
         FROM TEAM404F.RESERVATION
         WHERE STATUS = 'RES_PENDING'
           AND EXPIRES_AT <![CDATA[<]]> #{now}

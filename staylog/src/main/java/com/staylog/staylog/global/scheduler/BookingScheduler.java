@@ -1,8 +1,11 @@
 package com.staylog.staylog.global.scheduler;
 
 import com.staylog.staylog.domain.booking.service.BookingService;
+import com.staylog.staylog.global.common.code.ErrorCode;
+import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.SchedulingException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +37,9 @@ public class BookingScheduler {
                 log.info("만료된 예약 {} 건 자동 취소 완료", canceledCount);
             }
         } catch (Exception e) {
+
             log.error("만료된 예약 처리 중 오류 발생: {}", e.getMessage(), e);
+            throw new SchedulingException(ErrorCode.BOOKING_EXPIRED.getCode());
         }
     }
 }

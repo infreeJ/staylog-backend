@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 결제 결과 응답 DTO
@@ -28,8 +29,9 @@ public class PaymentResultResponse {
     private String reservationStatus;  // ReservationStatus code (RES_CONFIRMED, RES_CANCELED, etc.)
 
     // 타임스탬프
-    private LocalDateTime requestedAt;
-    private LocalDateTime approvedAt;
+    private OffsetDateTime requestedAt;
+    //2025-11-08T00:41:27+09:00 이런식으로 들어와서 OffsetDateTime 써야함
+    private OffsetDateTime approvedAt;
 
     // 실패 시 정보 (optional)
     private String failureReason;

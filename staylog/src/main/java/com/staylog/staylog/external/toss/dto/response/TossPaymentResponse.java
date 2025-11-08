@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
@@ -18,8 +19,8 @@ public class TossPaymentResponse {
     private Long totalAmount;       // 총 결제 금액
     private Long balanceAmount;     // 취소 가능 잔액
     private String status;          // READY, IN_PROGRESS, DONE, CANCELED
-    private LocalDateTime requestedAt;
-    private LocalDateTime approvedAt;
+    private OffsetDateTime requestedAt;
+    private OffsetDateTime approvedAt;
     private String lastTransactionKey;
     private List<Cancel> cancels;   // 취소 내역
     private Card card;              // 카드 결제 정보

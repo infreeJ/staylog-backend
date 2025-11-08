@@ -2,8 +2,10 @@ package com.staylog.staylog.domain.booking.service.impl;
 
 import com.staylog.staylog.domain.booking.dto.request.CreateBookingRequest;
 import com.staylog.staylog.domain.booking.dto.response.BookingDetailResponse;
+import com.staylog.staylog.domain.booking.entity.Booking;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.booking.service.BookingService;
+import com.staylog.staylog.global.constant.ReservationStatus;
 import com.staylog.staylog.global.exception.custom.booking.BookingExpiredException;
 import com.staylog.staylog.global.exception.custom.booking.BookingNotFoundException;
 import com.staylog.staylog.global.exception.custom.booking.BookingNotPendingException;
@@ -15,10 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 예약 서비스 구현
@@ -57,47 +56,48 @@ public class BookingServiceImpl implements BookingService {
             throw new RoomNotAvailableException();
         }
 
-        // 2. 주문번호 생성 (UUID 기반 - Toss에 전달)
+        // 2. 주문번호 생성
         String bookingNum = generateBookingNum();
 
-        // 3. 총 인원 수 계산
-        Integer adults = request.getAdults() != null ? request.getAdults() : 1;
-        Integer children = request.getChildren() != null ? request.getChildren() : 0;
-        Integer infants = request.getInfants() != null ? request.getInfants() : 0;
-        Integer totalGuestCount = adults + children + infants;
+        // 3. 인원 계산
+        int adults = Optional.ofNullable(request.getAdults()).orElse(1);
+        int children = Optional.ofNullable(request.getChildren()).orElse(0);
+        int infants = Optional.ofNullable(request.getInfants()).orElse(0);
+        int total = adults + children + infants;
 
-        // 4. 만료 시간 계산 (결제 수단에 따라 다름)
+        // 4. 만료 시간 계산
         LocalDateTime expiresAt = calculateExpiresAt(request.getPaymentMethod());
 
-        // 5. 예약 생성
-        Map<String, Object> params = new HashMap<>();
-        params.put("userId", userId);
-        params.put("roomId", request.getRoomId());
-        params.put("bookingNum", bookingNum);
-        params.put("amount", request.getAmount());
-        params.put("checkIn", request.getCheckIn());
-        params.put("checkOut", request.getCheckOut());
-        params.put("status", "RES_PENDING");  // PENDING 상태로 생성
-        params.put("guestName", guestName);  // JWT에서 가져온 닉네임
-        params.put("adults", adults);
-        params.put("children", children);
-        params.put("infants", infants);
-        params.put("totalGuestCount", totalGuestCount);
-        params.put("expiresAt", expiresAt);  // 만료 시간
+        // 5. 예약 엔티티 생성
+        Booking booking = Booking.builder()
+                .userId(userId)
+                .roomId(request.getRoomId())
+                .bookingNum(bookingNum)
+                .amount(request.getAmount())
+                .finalAmount(request.getAmount())
+                .checkIn(request.getCheckIn())
+                .checkOut(request.getCheckOut())
+                .status(ReservationStatus.RES_PENDING.getCode())
+                .guestName(guestName)
+                .adults(adults)
+                .children(children)
+                .infants(infants)
+                .totalGuestCount(total)
+                .expiresAt(expiresAt)
+                .isWrited("N")
+                .build();
 
-        bookingMapper.insertBooking(params);
+        // DB insert → bookingId 자동 채워짐
+        bookingMapper.insertBooking(booking);
 
-        // 5. 생성된 예약 조회 (useGeneratedKeys로 ID 받아옴)
-        Long bookingId = (Long) params.get("bookingId");
-        Map<String, Object> booking = bookingMapper.findBookingById(bookingId);
+        // 6. bookingId로 상세 조회
+        BookingDetailResponse result = bookingMapper.findBookingById(booking.getBookingId());
 
-        if (booking == null) {
+        if (result == null) {
             throw new RuntimeException("예약 생성 실패");
         }
 
-        log.info("예약 생성 완료: bookingId={}, bookingNum={}", bookingId, bookingNum);
-
-        return mapToBookingDetailResponse(booking);
+        return result;
     }
 
     /**
@@ -106,13 +106,13 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public BookingDetailResponse getBooking(Long bookingId) {
-        Map<String, Object> booking = bookingMapper.findBookingById(bookingId);
+        BookingDetailResponse booking = bookingMapper.findBookingById(bookingId);
 
         if (booking == null) {
             throw new BookingNotFoundException(bookingId);
         }
 
-        return mapToBookingDetailResponse(booking);
+        return booking;
     }
 
     /**
@@ -123,23 +123,24 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public void validateBookingPending(Long bookingId) {
-        Map<String, Object> booking = bookingMapper.findBookingById(bookingId);
+        BookingDetailResponse booking = bookingMapper.findBookingById(bookingId);
 
         if (booking == null) {
             throw new BookingNotFoundException(bookingId);
         }
 
-        String status = (String) booking.get("status");
+        // DB에서 조회한 상태 문자열을 ReservationStatus enum으로 변환함
+        ReservationStatus status = ReservationStatus.fromCode(booking.getStatus());
 
         // 만료 체크 (EXPIRES_AT 기준)
-        LocalDateTime expiresAt = (LocalDateTime) booking.get("expiresAt");
+        LocalDateTime expiresAt = booking.getExpiresAt();
         if (expiresAt.isBefore(LocalDateTime.now())) {
             log.warn("예약 만료: bookingId={}, expiresAt={}", bookingId, expiresAt);
             throw new BookingExpiredException(bookingId);
         }
 
-        // PENDING 상태 체크
-        if (!"RES_PENDING".equals(status)) {
+        // 예약 상태가 PENDING 상태 체크
+        if (status != ReservationStatus.RES_PENDING) {
             log.warn("예약이 PENDING 상태가 아님: bookingId={}, status={}", bookingId, status);
             throw new BookingNotPendingException(status);
         }
@@ -164,19 +165,19 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public int cancelExpiredBookings() {
         LocalDateTime now = LocalDateTime.now();
-        List<Map<String, Object>> expiredBookings = bookingMapper.findExpiredBookings(now);
+        List<Booking> expiredBookings = bookingMapper.findExpiredBookings(now);
 
         if (expiredBookings.isEmpty()) {
             return 0;
         }
 
         int canceledCount = 0;
-        for (Map<String, Object> booking : expiredBookings) {
-            Long bookingId = ((Number) booking.get("bookingId")).longValue();
-            String bookingNum = (String) booking.get("bookingNum");
+        for (Booking booking : expiredBookings) {
+            Long bookingId = booking.getBookingId();
+            String bookingNum = booking.getBookingNum();
 
             try {
-                bookingMapper.updateBookingStatus(bookingId, "RES_CANCELED");
+                bookingMapper.updateBookingStatus(bookingId, ReservationStatus.RES_CANCELED.getCode());
                 log.info("만료된 예약 취소: bookingId={}, bookingNum={}", bookingId, bookingNum);
                 canceledCount++;
             } catch (Exception e) {
@@ -209,34 +210,5 @@ public class BookingServiceImpl implements BookingService {
         // 모든 예약 5분으로 생성
         // 계좌이체는 결제 준비 시점에 7일로 연장
         return LocalDateTime.now().plusMinutes(5);
-    }
-
-    /**
-     * Map -> BookingDetailResponse 변환
-     */
-    private BookingDetailResponse mapToBookingDetailResponse(Map<String, Object> booking) {
-        LocalDateTime createdAt = (LocalDateTime) booking.get("createdAt");
-
-        return BookingDetailResponse.builder()
-                .bookingId(((Number) booking.get("bookingId")).longValue())
-                .bookingNum((String) booking.get("bookingNum"))
-                .userId(((Number) booking.get("userId")).longValue())
-                .roomId(((Number) booking.get("roomId")).longValue())
-                .roomName((String) booking.get("roomName"))
-                .accommodationName((String) booking.get("accommodationName"))
-                .checkIn((LocalDate) booking.get("checkIn"))
-                .checkOut((LocalDate) booking.get("checkOut"))
-                .amount(((Number) booking.get("amount")).longValue())
-                .status((String) booking.get("status"))
-                .guestName((String) booking.get("guestName"))
-                .adults(booking.get("adults") != null ? ((Number) booking.get("adults")).intValue() : null)
-                .children(booking.get("children") != null ? ((Number) booking.get("children")).intValue() : null)
-                .infants(booking.get("infants") != null ? ((Number) booking.get("infants")).intValue() : null)
-                .totalGuestCount(booking.get("totalGuestCount") != null ? ((Number) booking.get("totalGuestCount")).intValue() : null)
-                .createdAt(createdAt)
-                .updatedAt((LocalDateTime) booking.get("updatedAt"))
-                .expiresAt(createdAt.plusMinutes(5))  // 5분 타임아웃
-                .paymentId(booking.get("paymentId") != null ? ((Number) booking.get("paymentId")).longValue() : null)
-                .build();
     }
 }

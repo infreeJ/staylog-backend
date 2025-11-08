@@ -35,13 +35,18 @@ public class TossPaymentClient {
         HttpHeaders headers = createHeaders();
 
         //멱등키 추가하기 (결제용)
-        headers.set("Idemtpotency-Key", generatePaymentIdempotencyKey(request.getPaymentKey()));
+        headers.set("Idempotency-Key", generatePaymentIdempotencyKey(request.getPaymentKey()));
 
         HttpEntity<TossConfirmRequest> entity = new HttpEntity<>(request, headers);
 
         try {
             log.info("토스 결제 승인 요청: paymentKey={}, orderId={}, amount={}",
                      request.getPaymentKey(), request.getOrderId(), request.getAmount());
+
+            // 요청 바디 확인
+            log.info("Request Body: {}", entity.getBody());
+            // 요청 헤더 확인
+            entity.getHeaders().forEach((key, value) -> log.info("Header: {}={}", key, value));
 
             ResponseEntity<TossPaymentResponse> response = restTemplate.exchange(
                 url,

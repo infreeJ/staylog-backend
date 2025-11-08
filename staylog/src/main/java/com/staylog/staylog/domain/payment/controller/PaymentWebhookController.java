@@ -1,11 +1,15 @@
 package com.staylog.staylog.domain.payment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.staylog.staylog.domain.booking.entity.Booking;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
+import com.staylog.staylog.domain.payment.entity.Payment;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
 import com.staylog.staylog.external.toss.config.TossPaymentsConfig;
 import com.staylog.staylog.external.toss.dto.request.TossWebhookRequest;
 import com.staylog.staylog.external.toss.dto.response.TossPaymentResponse;
+import com.staylog.staylog.global.constant.PaymentStatus;
+import com.staylog.staylog.global.constant.ReservationStatus;
 import com.staylog.staylog.global.util.WebhookSignatureValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -77,39 +81,39 @@ public class PaymentWebhookController {
             }
 
             // 4. 예약 조회 (orderId = bookingNum)
-            Map<String, Object> booking = bookingMapper.findBookingByBookingNum(paymentData.getOrderId());
+            Booking booking = bookingMapper.findBookingByBookingNum(paymentData.getOrderId());
             if (booking == null) {
                 log.warn("예약을 찾을 수 없음: orderId={}", paymentData.getOrderId());
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Booking not found");
             }
 
-            Long bookingId = ((Number) booking.get("bookingId")).longValue();
+            Long bookingId = booking.getBookingId();
 
             // 5. 결제 조회
-            Map<String, Object> payment = paymentMapper.findPaymentByBookingId(bookingId);
+            Payment payment = paymentMapper.findPaymentByBookingId(bookingId);
             if (payment == null) {
                 log.warn("결제를 찾을 수 없음: bookingId={}", bookingId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payment not found");
             }
 
-            Long paymentId = ((Number) payment.get("paymentId")).longValue();
-            String currentStatus = (String) payment.get("status");
+            Long paymentId = payment.getPaymentId();
+            String currentStatus = payment.getStatus();
 
             // 6. 이미 처리된 결제인지 확인 (멱등성)
-            if ("PAY_PAID".equals(currentStatus)) {
+            if (PaymentStatus.PAY_PAID.getCode().equals(currentStatus)) {
                 log.info("이미 처리된 결제: paymentId={}", paymentId);
                 return ResponseEntity.ok("Already processed");
             }
 
             // 7. 결제 승인: PAYMENT(PAID) + RESERVATION(CONFIRMED)
-            paymentMapper.updatePaymentStatus(
+            paymentMapper.updatePaymentApproved(
                     paymentId,
-                    "PAY_PAID",
+                    PaymentStatus.PAY_PAID.getCode(),
                     paymentData.getPaymentKey(),
                     paymentData.getLastTransactionKey()
             );
 
-            bookingMapper.updateBookingStatus(bookingId, "RES_CONFIRMED");
+            bookingMapper.updateBookingStatus(bookingId, ReservationStatus.RES_CONFIRMED.getCode());
 
             log.info("웹훅 처리 완료: paymentId={}, bookingId={}", paymentId, bookingId);
 

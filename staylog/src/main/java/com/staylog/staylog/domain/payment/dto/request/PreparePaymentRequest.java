@@ -25,5 +25,12 @@ public class PreparePaymentRequest {
 
     @NotNull(message = "결제 금액은 필수입니다")
     @Positive(message = "결제 금액은 양수여야 합니다")
-    private Long amount;
+    private Long amount;  // 할인 전 원래 금액
+
+    /**
+     * 쿠폰 ID (선택 사항)
+     * - NULL: 쿠폰 미사용
+     * - 값 존재: 해당 쿠폰 적용
+     */
+    private Long couponId;
 }

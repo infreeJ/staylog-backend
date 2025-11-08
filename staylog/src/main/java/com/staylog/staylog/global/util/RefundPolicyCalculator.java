@@ -25,15 +25,15 @@ public class RefundPolicyCalculator {
         long daysUntilCheckIn = ChronoUnit.DAYS.between(requestDate, checkInDate);
 
         if (daysUntilCheckIn >= 7) {
-            return RefundType.FULL;      // 7일 이상: 100% 환불
+            return RefundType.REFUND_FULL;      // 7일 이상: 100% 환불
         } else if (daysUntilCheckIn >= 5) {
-            return RefundType.EIGHTY;    // 5~6일: 80% 환불
+            return RefundType.REFUND_EIGHTY;    // 5~6일: 80% 환불
         } else if (daysUntilCheckIn >= 3) {
-            return RefundType.FIFTY;     // 3~4일: 50% 환불
+            return RefundType.REFUND_FIFTY;     // 3~4일: 50% 환불
         } else if (daysUntilCheckIn >= 1) {
-            return RefundType.THIRTY;    // 1~2일: 30% 환불
+            return RefundType.REFUND_THIRTY;    // 1~2일: 30% 환불
         } else {
-            return RefundType.CUSTOM;    // 당일: 환불 불가 (0%)
+            return RefundType.REFUND_CUSTOM;    // 당일: 환불 불가 (0%)
         }
     }
 
@@ -44,7 +44,7 @@ public class RefundPolicyCalculator {
      * @return 환불 금액
      */
     public static Long calculateRefundAmount(Long totalAmount, RefundType refundType) {
-        if (refundType == RefundType.CUSTOM) {
+        if (refundType == RefundType.REFUND_CUSTOM) {
             return 0L;  // 당일 환불 불가
         }
 
@@ -69,11 +69,11 @@ public class RefundPolicyCalculator {
      */
     public static String getRefundPolicyMessage(RefundType refundType) {
         return switch (refundType) {
-            case FULL -> "체크인 7일 전까지 전액 환불됩니다.";
-            case EIGHTY -> "체크인 5~6일 전이므로 80% 환불됩니다.";
-            case FIFTY -> "체크인 3~4일 전이므로 50% 환불됩니다.";
-            case THIRTY -> "체크인 1~2일 전이므로 30% 환불됩니다.";
-            case CUSTOM -> "당일 취소는 환불이 불가능합니다.";
+            case REFUND_FULL -> "체크인 7일 전까지 전액 환불됩니다.";
+            case REFUND_EIGHTY -> "체크인 5~6일 전이므로 80% 환불됩니다.";
+            case REFUND_FIFTY -> "체크인 3~4일 전이므로 50% 환불됩니다.";
+            case REFUND_THIRTY -> "체크인 1~2일 전이므로 30% 환불됩니다.";
+            case REFUND_CUSTOM -> "당일 취소는 환불이 불가능합니다.";
         };
     }
 }

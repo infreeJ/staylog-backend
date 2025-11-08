@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 환불 상세 응답 DTO
@@ -32,9 +33,9 @@ public class RefundDetailResponse {
     private String bookingStatus;        // 예약 상태
 
     private LocalDate checkInDate;       // 체크인 날짜
-    private LocalDateTime requestedAt;   // 환불 요청 시각
-    private LocalDateTime approvedAt;    // 환불 승인 시각
-    private LocalDateTime completedAt;   // 환불 완료 시각
+    private OffsetDateTime requestedAt;   // 환불 요청 시각
+    private OffsetDateTime approvedAt;    // 환불 승인 시각
+    private OffsetDateTime completedAt;   // 환불 완료 시각
 
     private String failureReason;        // 실패 사유 (실패 시)
     private String policyMessage;        // 환불 정책 안내 메시지
