@@ -59,8 +59,8 @@ public class AdminAccommodationController {
     	// Service 에서 Map 반환(accommodations + page 정보 포함)
     	Map<String, Object> result = accomService.getList(searchRequest);
     	
-		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+		String message = messageUtil.getMessage(SuccessCode.ACCOMMODATION_LIST_FOUND.getMessageKey());
+        String code = SuccessCode.ACCOMMODATION_LIST_FOUND.name();
         SuccessResponse<Map<String, Object>> success = SuccessResponse.of(code, message, result);
 		
         return ResponseEntity.ok(success);
@@ -81,8 +81,8 @@ public class AdminAccommodationController {
             @Parameter(description = "숙소 ID") 
             @PathVariable Long accommodationId) {
         AdminAccommodationDetailResponse response = accomService.getAccommodation(accommodationId);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+        String message = messageUtil.getMessage(SuccessCode.ACCOMMODATION_FOUND.getMessageKey());
+        String code = SuccessCode.ACCOMMODATION_FOUND.name();
         SuccessResponse<AdminAccommodationDetailResponse> success = SuccessResponse.of(code, message, response);
         return ResponseEntity.ok(success);
     }
@@ -129,8 +129,8 @@ public class AdminAccommodationController {
         // accommodationId를 request 에 설정
     	request.setAccommodationId(accommodationId);
         accomService.updateAccommodation(request);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+        String message = messageUtil.getMessage(SuccessCode.ACCOMMODATION_UPDATED.getMessageKey());
+        String code = SuccessCode.ACCOMMODATION_UPDATED.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));
     }
 

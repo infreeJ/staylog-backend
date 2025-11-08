@@ -56,8 +56,8 @@ public class AdminBoardController {
 	    	// Service 에서 Map 반환 (boards + page 정보 포함)
 	    	Map<String, Object> result = boardService.selectBoardList(searchRequest);
 	    	
-	        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-	        String code = SuccessCode.SUCCESS.name();
+	        String message = messageUtil.getMessage(SuccessCode.BOARD_LIST_FETCHED.getMessageKey());
+	        String code = SuccessCode.BOARD_LIST_FETCHED.name();
 	        SuccessResponse<Map<String, Object>> success = SuccessResponse.of(code, message, result);
 	        
 	        return ResponseEntity.ok(success);
@@ -78,8 +78,8 @@ public class AdminBoardController {
 	            @Parameter(description = "게시글 ID") 
 	            @PathVariable Long boardId) {
 	    	BoardDto dto = boardService.selectBoardDetail(boardId);
-	        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-	        String code = SuccessCode.SUCCESS.name();
+	        String message = messageUtil.getMessage(SuccessCode.BOARD_DETAIL_FETCHED.getMessageKey());
+	        String code = SuccessCode.BOARD_DETAIL_FETCHED.name();
 	        SuccessResponse<BoardDto> success = SuccessResponse.of(code, message, dto);
 	        return ResponseEntity.ok(success);
 	    }

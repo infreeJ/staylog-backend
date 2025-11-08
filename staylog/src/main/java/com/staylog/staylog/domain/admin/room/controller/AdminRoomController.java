@@ -57,8 +57,8 @@ public class AdminRoomController {
     	// Service 에서 Map 반환(rooms + page 정보 포함)
     	Map<String, Object> result = roomService.getRoomList(searchRequest);
     	
-		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+		String message = messageUtil.getMessage(SuccessCode.ROOM_SUCCESS.getMessageKey());
+        String code = SuccessCode.ROOM_SUCCESS.name();
         SuccessResponse<Map<String, Object>> success = SuccessResponse.of(code, message, result);
 		
         return ResponseEntity.ok(success);
@@ -82,8 +82,8 @@ public class AdminRoomController {
 			@Parameter(description = "객실 ID") 
 			@PathVariable Long roomId) {
 		AdminRoomDetailResponse response = roomService.getRoomDetail(roomId);
-		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+		String message = messageUtil.getMessage(SuccessCode.ROOM_SUCCESS.getMessageKey());
+        String code = SuccessCode.ROOM_SUCCESS.name();
         SuccessResponse<AdminRoomDetailResponse> success = SuccessResponse.of(code, message, response);
 		return ResponseEntity.ok(success);
 	}
@@ -109,8 +109,8 @@ public class AdminRoomController {
 	        @RequestBody RoomUpdateStatusRequest request) {
 		request.setRoomId(roomId);
 		roomService.updateRoomStatus(request);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+        String message = messageUtil.getMessage(SuccessCode.ROOM_SUCCESS.getMessageKey());
+        String code = SuccessCode.ROOM_SUCCESS.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));
 	}
 
@@ -137,8 +137,8 @@ public class AdminRoomController {
 		request.setRoomId(roomId);
 		request.setAccommodationId(accommodationId);
 		roomService.updateRoom(request);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+        String message = messageUtil.getMessage(SuccessCode.ROOM_SUCCESS.getMessageKey());
+        String code = SuccessCode.ROOM_SUCCESS.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));
 	}
 
@@ -163,8 +163,8 @@ public class AdminRoomController {
 		// accommodationId를 request에 설정
 		request.setAccommodationId(accommodationId);
 		roomService.addRoom(request);
-        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-        String code = SuccessCode.SUCCESS.name();
+        String message = messageUtil.getMessage(SuccessCode.ROOM_SUCCESS.getMessageKey());
+        String code = SuccessCode.ROOM_SUCCESS.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, null));
 	}
 }
