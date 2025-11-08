@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.accommodation.service.impl;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -46,11 +47,17 @@ public class AccommodationServiceImpl implements AccommodationService {
         }
         
         for (RoomListResponse room : roomList) {
+        	
+            // 오늘 날짜
+            LocalDate today = LocalDate.now();
+            // 90일 상한 정책 (from ~ to 포함, +89일)
+            LocalDate after3Months = today.plusDays(89);
+            
             // 예약 불가일 조회
             List<String> blockedDates = rmMapper.SelectBlockedDates(
                 room.getRoomId(),
-                new Date(System.currentTimeMillis()),       // fromDate: 오늘
-                new Date(System.currentTimeMillis() + 1000L*60*60*24*180) // toDate: 6개월
+                today,
+                after3Months
             );
             room.setDisabledDates(blockedDates);
         }

@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.accommodation.service.impl;
 
-import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.dao.DataAccessException;
@@ -38,38 +39,50 @@ public class RoomServiceImpl implements RoomService{
 	}
 
 	@Override
-	public List<String> blockedDate(Long roomId, Date fromDate, Date toDate) {
+	public List<String> blockedDate(Long roomId, LocalDate from, LocalDate to) {
 		
-		// 1) roomId 검증, 요청값 자체 검증
-		if(roomId == null || roomId< 0) {
+		final long MAX_DAYS = 90L;
+
+		
+		// roomId 검증, 요청값 자체 검증
+		if(roomId == null || roomId<= 0) {
 			log.warn("객실 불러올 수 없음");
 			throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
 		}
 		
-		//날짜 정규화 -> 자정을 기준으로 잘라서 java.sql.Date 타입으로 변환
-        final Date from = Date.valueOf(fromDate.toLocalDate());
-        final Date to   = Date.valueOf(toDate.toLocalDate());
-		
-		//2)날짜 필수
+
+		//날짜 필수
 		if(from == null || to == null) {
 			log.warn("날짜가 비워져있습니다.");
 			throw new BusinessException(ErrorCode.DATE_NOT_FOUND);
 		}
+		 if (to.isBefore(from)) {
+	            throw new BusinessException(ErrorCode.INVALID_DATE_RANGE);
+	      }
+		 
+		//최대 조회 범위 예약 가능일/불가능일 조회는 90일 이내만 가능
+		long days = ChronoUnit.DAYS.between(from, to) + 1;
 		
-		//3) 순서 검증
-		if(to.before(from)) {
-			log.warn("날짜순서가 잘못되었습니다.");
-			throw new BusinessException(ErrorCode.INVALID_DATE_RANGE);
-		}
+	    if (days < 1) {
+	        log.warn("INVALID_DATE_RANGE(empty): roomId={}, from={}, to={}", roomId, from, to);
+	        throw new BusinessException(ErrorCode.INVALID_DATE_RANGE);
+	    }
+	    if (days > MAX_DAYS) {
+	        log.warn("날짜 범위가 너무 깁니다. ");
+	        throw new BusinessException(ErrorCode.INVALID_DATE_RANGE);
+	    }
+	    
 		
-		// 4) Room 존재 검증 
+		//Room 존재 검증 
 		if (roomMapper.existsRoom(roomId) == 0) {
 			log.warn("존재하지 않는 객실입니다. ");
 		    throw new BusinessException(ErrorCode.ROOM_NOT_FOUND);
 		}
 		
+		
+		//조회
 		try {
-			return roomMapper.SelectBlockedDates(roomId, fromDate, toDate);
+			return roomMapper.SelectBlockedDates(roomId, from, to);
 		}catch(DataAccessException e) {
 			log.warn("DB 예외");
 			throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);

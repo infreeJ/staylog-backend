@@ -51,8 +51,7 @@ public class RoomController {
 
 		log.info("객실 block 날짜 요청");
 		
-		List<String> roomAvailable = roomService.blockedDate(
-		        roomId, Date.valueOf(from), Date.valueOf(to));
+		List<String> roomAvailable = roomService.blockedDate(roomId, from, to);
 		String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
 		String code = SuccessCode.SUCCESS.name();
 		SuccessResponse<List<String>> success = SuccessResponse.of(code, message, roomAvailable);

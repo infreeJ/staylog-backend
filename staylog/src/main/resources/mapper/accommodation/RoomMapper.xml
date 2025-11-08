@@ -33,8 +33,10 @@
 	    SELECT 1
 	    FROM RESERVATION r
 	    WHERE r.room_id = #{roomId}
-	      AND TRUNC(r.check_in)  <![CDATA[<=]]> a.d
-	      AND TRUNC(r.check_out) <![CDATA[>=]]> a.d 
+	      AND r.status = 'RES_CONFIRMED'
+	      AND r.check_in <![CDATA[<]]> a.d + 1
+	      AND r.check_out <![CDATA[>]]> a.d 
+	      <!--[check_in, check_out) : 체크아웃 당일은 허용 -->
 	  )
 	  ORDER BY a.d
 	</select>

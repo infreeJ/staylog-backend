@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.accommodation.mapper;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -29,8 +30,8 @@ public interface RoomMapper {
 	 * */
 	List<String> SelectBlockedDates(
 			@Param("roomId") Long roomId, 
-			@Param("fromDate") Date fromDate,
-		    @Param("toDate") Date toDate);
+			@Param("fromDate") LocalDate from,
+		    @Param("toDate") LocalDate to);
 	
 
 	/* 정나영
