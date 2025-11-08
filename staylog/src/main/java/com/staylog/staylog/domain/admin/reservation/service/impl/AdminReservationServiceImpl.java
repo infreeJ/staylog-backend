@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.admin.reservation.service.impl;
 
 
+import com.staylog.staylog.domain.admin.reservation.dto.AdminMonthlyStatsDto;
 import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
 import com.staylog.staylog.domain.admin.reservation.dto.response.AdminReservationListResponse;
@@ -28,6 +29,7 @@ public class AdminReservationServiceImpl implements AdminReservationService {
 
     @Override
     public AdminReservationListResponse getReservationList(AdminReservationListRequest req) {
+
         int totalCount = mapper.countReservations(req);
 
         PageResponse page = new PageResponse();
@@ -42,7 +44,8 @@ public class AdminReservationServiceImpl implements AdminReservationService {
     }
 
     @Override
-    public AdminReservationDto getReservationDetail(Long bookingId) {
+    public AdminReservationDto getReservationDetail(Long bookingId)
+    {
         return mapper.getReservationDetail(bookingId);
     }
 
@@ -59,4 +62,12 @@ public class AdminReservationServiceImpl implements AdminReservationService {
     public int getTotalCount(AdminReservationListRequest req) {
         return mapper.countReservations(req);
     }
+
+    @Override
+    public AdminMonthlyStatsDto getMonthlyStats() {
+        AdminMonthlyStatsDto dto = mapper.getMonthlyStats();
+        return dto != null ? dto : new AdminMonthlyStatsDto(0, 0, 0, 0L);
+    }
+
+
 }

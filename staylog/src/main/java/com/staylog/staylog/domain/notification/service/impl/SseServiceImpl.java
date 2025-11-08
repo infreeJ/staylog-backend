@@ -8,6 +8,7 @@ import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import com.staylog.staylog.global.security.jwt.JwtTokenValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -87,4 +88,54 @@ public class SseServiceImpl implements SseService {
             }
         }
     }
+
+
+    /**
+     * 현재 접속된 전체 사용자에게 알림을 보내는 메서드
+     * @author 이준혁
+     * @param notificationResponse 알림 데이터
+     */
+    @Override
+    public void broadcast(NotificationResponse notificationResponse) {
+        System.out.println("broadcast 메서드로 진입");
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("new-notification")
+                        .data(notificationResponse));
+            } catch (IOException e) {
+                emitters.remove(userId);
+                log.warn("Broadcast 중 유효하지 않은 Emitter 발견 - userId={}", userId);
+            }
+        });
+    }
+
+
+    /**
+     * SSE 연결 타임아웃 방지용 Heartbeat 전송
+     * @author 이준혁
+     * 20초마다 주석(comment)를 전송하여 타임아웃을 방지
+     */
+    @Scheduled(fixedRate = 20000) // 20초
+    public void sendHeartbeat() {
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event().comment("keep-alive"));
+                System.out.println("SSE의 심장이 도키도키..");
+            } catch (IOException e) {
+                emitters.remove(userId);
+                System.out.println("Heartbeat 전송 실패로 SSE 연결 종료");
+                throw new RuntimeException(e);
+            }
+        });
+    }
 }
+
+
+
+
+
+
+
+
+

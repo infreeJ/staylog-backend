@@ -1,5 +1,6 @@
 package com.staylog.staylog.domain.admin.reservation.controller;
 
+import com.staylog.staylog.domain.admin.reservation.dto.AdminMonthlyStatsDto;
 import com.staylog.staylog.domain.admin.reservation.dto.AdminReservationDto;
 import com.staylog.staylog.domain.admin.reservation.dto.request.AdminReservationListRequest;
 import com.staylog.staylog.domain.admin.reservation.dto.response.AdminReservationListResponse;
@@ -27,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/v1")
 public class AdminReservationController {
+
     private final AdminReservationService reservationService;
     private final MessageUtil messageUtil;
 
@@ -56,18 +58,33 @@ public class AdminReservationController {
         return ResponseEntity.ok(success);
     }
 
-//    /**
-//     * 예약 상태 변경
-//     */
-//    @PatchMapping("/admin/reservations/{bookingId}/status")
-//    public ResponseEntity<SuccessResponse<Void>> updateReservationStatus(
-//            @PathVariable Long bookingId,
-//            @RequestParam("status") String status) {
-//        reservationService.updateReservationStatus(bookingId, status);
-//        String message = messageUtil.getMessage(SuccessCode.BOOKING_STATUS_UPDATED.getMessageKey());
-//        String code = SuccessCode.BOOKING_STATUS_UPDATED.name();
-//        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
-//        return ResponseEntity.ok(success);
-//    }
+    /**
+     * 월 매출 조회
+     *
+     */
+    @Operation(summary = "월 매출 조회", description = "이번 달 매출, 예약 건 정보 조회")
+    @GetMapping("/admin/reservations/stats/monthly")
+    public ResponseEntity<SuccessResponse<AdminMonthlyStatsDto>> getMonthlyStats() {
+        AdminMonthlyStatsDto stats = reservationService.getMonthlyStats();
+        String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+        String code = SuccessCode.SUCCESS.name();
+        SuccessResponse<AdminMonthlyStatsDto> success = SuccessResponse.of(code, message, stats);
+        return ResponseEntity.ok(success);
+    }
+
+    /**
+     * 예약 상태 변경 (미사용)
+     * @deprecated
+     */
+    @PatchMapping("/admin/reservations/{bookingId}/status")
+    public ResponseEntity<SuccessResponse<Void>> updateReservationStatus(
+            @PathVariable Long bookingId,
+            @RequestParam("status") String status) {
+        reservationService.updateReservationStatus(bookingId, status);
+        String message = messageUtil.getMessage(SuccessCode.BOOKING_STATUS_UPDATED.getMessageKey());
+        String code = SuccessCode.BOOKING_STATUS_UPDATED.name();
+        SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
+        return ResponseEntity.ok(success);
+    }
 
 }

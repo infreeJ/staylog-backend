@@ -23,7 +23,7 @@
 	</insert>
 
 	<!-- 행을 비관적 잠금으로 조회 -->
-	<select id="selectForUpdate" resultType="long">
+	<select id="selectForUpdate" resultType="long" parameterType="imageDto">
 		SELECT next_display_order
 		FROM image_target_counter
 		WHERE target_type = #{targetType} AND target_id = #{targetId}
@@ -31,20 +31,21 @@
 	</select>
 	
 	<!-- 카운터 값을 업데이트 -->
-	<update id="updateCounter">
+	<update id="updateCounter" parameterType="imageDto">
 		UPDATE image_target_counter
-		SET next_display_order = #{nextDisplayOrder}
+		SET next_display_order = #{counterValue}
 		WHERE target_type = #{targetType} AND target_id = #{targetId}
 	</update>
 	
 	<!-- 새로운 카운터 레코드를 생성 -->
-	<insert id="createCounter" parameterType="map">
+	<insert id="createCounter" parameterType="imageDto">
 		INSERT INTO image_target_counter(target_type, target_id, next_display_order)
-		VALUES (#{targetType}, #{targetId}, #{nextDisplayOrder})
+		VALUES (#{targetType}, #{targetId}, #{counterValue})
 	</insert>
 
 
 <!-- 이미지 불러오기 관련 SQL 쿼리 -->
+	<!-- target 정보로 이미지 목록 불러오기 -->
 	<select id="selectImagesByTarget" resultType="imageDto">
 		SELECT
 			image_id, image_type, target_type, target_id,
@@ -55,6 +56,16 @@
 		ORDER BY display_order ASC
 	</select>
 	
+	<!-- imageId로 이미지 정보 불러오기 -->
+	<select id="selectImageById" parameterType="long" resultType="imageDto">
+    SELECT
+        image_id, image_type, target_type, target_id,
+        saved_url, original_name, file_size,
+        mime_type, display_order, upload_date
+    FROM image_file
+    WHERE image_id = #{imageId}
+	</select>
+	
 	
 <!-- 이미지 삭제 관련 SQL 쿼리 -->	
 	<!-- 특정 이미지를 imageId로 삭제 -->
@@ -63,19 +74,42 @@
 	</delete>
 
 	<!-- 삭제된 이미지보다 displayOrder가 뒤에 있는 이미지들의 순서를 1씩 앞당김 -->
-	<update id="updateDisplayOrderAfterDelete" parameterType="map">
+	<update id="updateDisplayOrderAfterDelete" parameterType="imageDto">
 		UPDATE image_file
     SET display_order = display_order - 1
     WHERE target_type = #{targetType} AND target_id = #{targetId} AND display_order > #{deletedDisplayOrder}
 	</update>
 
 	<!-- 지정된 target 의 카운터를 1 감소 -->
-	<update id="decrementCounter">
+	<update id="decrementCounter" parameterType="imageDto">
 		UPDATE image_target_counter
 		SET next_display_order = next_display_order - 1
 		WHERE target_type = #{targetType} AND target_id = #{targetId}
 	</update>
 	
+	<!-- target에 속한 모든 이미지 일괄 삭제 -->
+	<delete id="deleteImagesByTarget" parameterType="imageDto">
+		DELETE FROM image_file WHERE target_type = #{targetType} AND target_id = #{targetId}
+	</delete>
+	
+	<!-- target에 속한 카운터 레코드를 삭제 -->
+	<delete id="deleteCounterByTarget" parameterType="imageDto">
+		DELETE FROM image_target_counter WHERE target_type = #{targetType} AND target_id = #{targetId}
+	</delete>
+	
+	<!-- 특정 이미지의 displayOrder만 업데이트 -->
+	<update id="updateImageDisplayOrder" parameterType="imageDto">
+	  UPDATE image_file
+	  SET display_order = #{displayOrder}
+	  WHERE image_id = #{imageId}
+	</update>
+  
+	<!-- 카운터 값을 특정 값으로 설정 -->
+	<update id="setCounterValue" parameterType="imageDto">
+		UPDATE image_target_counter
+		SET next_display_order = #{counterValue}
+		WHERE target_type = #{targetType} AND target_id = #{targetId}
+	</update>
 	
 	<select id="getNextBoardId" resultType="long">
 		SELECT seq_board_id.NEXTVAL FROM DUAL

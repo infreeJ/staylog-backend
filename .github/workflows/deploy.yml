@@ -3,7 +3,7 @@ name: Build Docker Image & Deploy to EC2 (No Registry)
 
 on:
   push:
-    branches: [ deploy_test ]
+    branches: [ deploy ]
 
 
 concurrency:
@@ -35,6 +35,9 @@ jobs:
       KAKAO_MAP_KEY: ${{ secrets.KAKAO_MAP_KEY }}
       IMAGE_LOCATION: ${{ secrets.IMAGE_LOCATION }}
       FILE_LOCATION: ${{ secrets.FILE_LOCATION }}
+      TOSS_CLIENT_KEY: ${{secrets.TOSS_CLIENT_KEY}}
+      TOSS_SECRET_KEY: ${{secrets.TOSS_SECRET_KEY}}
+      TOSS_WEBHOOK_SECRET: ${{secrets.TOSS_WEBHOOK_SECRET}}
 
 
     steps:
@@ -132,6 +135,9 @@ jobs:
               -e KAKAO_MAP_KEY="${{ env.KAKAO_MAP_KEY }}" \
               -e IMAGE_LOCATION="${{ env.IMAGE_LOCATION }}" \
               -e FILE_LOCATION="${{ env.FILE_LOCATION }}" \
+              -e TOSS_CLIENT_KEY:"${{env.TOSS_CLIENT_KEY}}" \
+              -e TOSS_SECRET_KEY:"${{env.TOSS_SECRET_KEY}}" \
+              -e TOSS_WEBHOOK_SECRET:"${{env.TOSS_WEBHOOK_SECRET}}" \
               "${{ env.IMAGE_NAME }}:latest"
 
 

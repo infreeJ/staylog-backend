@@ -12,14 +12,6 @@ import java.util.List;
 public interface CouponService {
 
     /**
-     * 회원가입 이벤트리스너 메서드
-     * @param event 이벤트 객체
-     * @author 이준혁
-     */
-    public void handleSignupEvent(SignupEvent event);
-
-
-    /**
      * 특정 유저의 사용 가능한 모든 쿠폰 조회
      * @author 이준혁
      * @param userId 유저 PK
@@ -49,14 +41,6 @@ public interface CouponService {
      * @param couponBatchRequest couponBatchRequest Dto
      */
     public void saveCouponToAllUsers(CouponBatchRequest couponBatchRequest);
-
-    /**
-     * 쿠폰 사용 처리
-     * @author 이준혁
-     * @param useCouponRequest 쿠폰 PK
-     * @return 성공 시 1, 실패 시 0 반환
-     */
-    public void useCoupon(UseCouponRequest useCouponRequest);
 
     /**
      * 쿠폰 삭제

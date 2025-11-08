@@ -28,7 +28,7 @@ public class SseController {
     /**
      * 클라이언트 구독 컨트롤러 메서드
      * @author 이준혁
-     * @param userId 인증된 사용자의 PK
+     * @param user 인증된 유저 객체
      * @return SseEmitter
      */
     @Operation(summary = "클라이언트 SSE 채널 구독", description = "로그인한 사용자의 토큰을 검증하여 SSE 채널에 구독시킵니다.")

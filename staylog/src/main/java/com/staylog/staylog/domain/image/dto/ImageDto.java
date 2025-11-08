@@ -22,5 +22,10 @@ public class ImageDto {
 	private String mimeType;
 	private long displayOrder;
 	private String uploadDate;
-	private String imageUrl; // 이미지 URL 필드 추가
+	
+	// 이미지 삭제 시 필요한 필드
+	private Long deletedDisplayOrder;
+	
+	// 카운터 값 설정을 위한 필드
+	private Long counterValue;
 }

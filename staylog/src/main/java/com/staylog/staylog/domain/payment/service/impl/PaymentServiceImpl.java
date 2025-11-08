@@ -20,6 +20,7 @@ import com.staylog.staylog.external.toss.dto.request.TossConfirmRequest;
 import com.staylog.staylog.external.toss.dto.response.TossPaymentResponse;
 import com.staylog.staylog.global.constant.PaymentStatus;
 import com.staylog.staylog.global.constant.ReservationStatus;
+import com.staylog.staylog.global.event.PaymentConfirmEvent;
 import com.staylog.staylog.global.exception.custom.booking.BookingNotFoundException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentAmountMismatchException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentFailedException;
@@ -27,11 +28,13 @@ import com.staylog.staylog.global.exception.custom.payment.PaymentNotFoundExcept
 import com.staylog.staylog.global.exception.custom.payment.TossApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +56,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final TossPaymentsConfig tossConfig;
     private final PaymentCompensationService compensationService;
     private final CouponService couponService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 결제 준비
@@ -222,6 +226,12 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             log.info("결제 승인 성공: paymentId={}, bookingId={}", paymentId, bookingId);
+
+            // ============ 결제 완료 이벤트 발행(알림 전송 / 쿠폰 사용처리) =============
+            // TODO: couponId 추가되면 4번째 인자 전달값 수정
+            PaymentConfirmEvent event = new PaymentConfirmEvent(paymentId, bookingId, tossResponse.getTotalAmount(), 0);
+            eventPublisher.publishEvent(event);
+            // ==========================================================
 
             return PaymentResultResponse.builder()
                     .paymentId(paymentId)

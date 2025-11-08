@@ -8,21 +8,21 @@ import com.staylog.staylog.domain.coupon.dto.response.CouponDiscountResult;
 import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
-import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.common.code.ErrorCode;
-import com.staylog.staylog.global.event.SignupEvent;
+import com.staylog.staylog.global.event.CouponCreatedAllEvent;
+import com.staylog.staylog.global.event.CouponCreatedEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import com.staylog.staylog.global.exception.custom.ForbiddenException;
 import com.staylog.staylog.global.exception.custom.InvalidInputException;
 import com.staylog.staylog.global.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -31,27 +31,9 @@ import java.util.List;
 public class CouponServiceImpl implements CouponService {
 
     private final CouponMapper couponMapper;
-    private final UserMapper userMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
 
-    /**
-     * 회원가입 이벤트리스너 메서드
-     * @param event 이벤트 객체
-     * @author 이준혁
-     */
-    @Override
-    @TransactionalEventListener
-    public void handleSignupEvent(SignupEvent event) {
-
-        CouponRequest couponRequest = CouponRequest.builder()
-                .userId(event.getUserId())
-                .name("회원가입 웰컴 쿠폰")
-                .discount(5)
-                .expiredAt(LocalDate.now().plusDays(30)) // 30일 후 만료
-                .build();
-
-        saveCoupon(couponRequest);
-    }
 
     /**
      * 특정 유저의 사용 가능한 모든 쿠폰 조회
@@ -97,6 +79,7 @@ public class CouponServiceImpl implements CouponService {
      * @author 이준혁
      */
     @Override
+    @Transactional
     public void saveCoupon(CouponRequest couponRequest) {
 
         if(couponRequest.getExpiredAt() == null) {
@@ -107,6 +90,10 @@ public class CouponServiceImpl implements CouponService {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponRequest={}", couponRequest);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+
+        // =========== 쿠폰 발급 이벤트 발행(알림 전송) ==============
+        CouponCreatedEvent event = new CouponCreatedEvent(couponRequest.getCouponId(), couponRequest.getUserId(), couponRequest.getName(), couponRequest.getDiscount());
+        eventPublisher.publishEvent(event);
     }
 
     /**
@@ -116,6 +103,7 @@ public class CouponServiceImpl implements CouponService {
      * @author 이준혁
      */
     @Override
+    @Transactional
     public void saveCouponToAllUsers(CouponBatchRequest couponBatchRequest) {
         int isSuccess = couponMapper.saveCouponToAllUsers(couponBatchRequest);
 
@@ -123,33 +111,12 @@ public class CouponServiceImpl implements CouponService {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponBatchRequest={}", couponBatchRequest);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+
+        // =========== 쿠폰 발급 이벤트 발행(알림 전송) ==============
+        CouponCreatedAllEvent event = new CouponCreatedAllEvent(couponBatchRequest.getName(), couponBatchRequest.getDiscount());
+        eventPublisher.publishEvent(event);
     }
 
-    /**
-     * 쿠폰 사용 처리
-     *
-     * @param useCouponRequest 쿠폰 PK
-     * @author 이준혁
-     */
-    @Override
-    public void useCoupon(UseCouponRequest useCouponRequest) {
-        long couponId = useCouponRequest.getCouponId();
-        CouponCheckDto couponCheckDto = couponMapper.checkAvailableCoupon(couponId);
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiredAt = couponCheckDto.getExpiredAt();
-        boolean isNotExpired = (expiredAt == null) || (expiredAt.isAfter(now));
-
-        int isSuccess = 0;
-        if (couponCheckDto.getIsUsed().equals("N") && isNotExpired) {
-            isSuccess = couponMapper.useCoupon(couponId);
-        }
-
-        if (isSuccess == 0) {
-            log.warn("쿠폰 사용 실패: 만료 기간이 지났거나 이미 사용된 쿠폰입니다. - couponId={}", couponId);
-            throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
-        }
-    }
 
     /**
      * 쿠폰 삭제

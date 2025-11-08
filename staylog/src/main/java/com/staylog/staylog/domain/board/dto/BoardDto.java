@@ -49,7 +49,7 @@ public class BoardDto {
 
     private Integer rating;         // 별점 (1~5)
     private Integer viewsCount;     // 조회 수
-    private Integer likes;          // 좋아요 수
+    private Integer likesCount;     // 좋아요 수
 
     private LocalDateTime createdAt;    // 작성일
     private LocalDateTime updatedAt;    // 수정일

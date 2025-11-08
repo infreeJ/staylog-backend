@@ -8,74 +8,76 @@
 	<select id="selectBoardList" parameterType="BoardSearchRequest" resultType="BoardDto">
 		SELECT *
 	    FROM (
-			SELECT
-			    b.board_id,
-			    b.accommodation_id,
-			    a.name AS accommodationName,
-			    b.user_id,
-			    u.nickname AS userNickName,
-			    b.title,
-			    <!-- 리뷰 게시글만 사용 -->
-			    b.rating,
-			    b.likes_count AS likes,
-			    b.views_count,
-			    TO_CHAR(b.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
-			    b.deleted,
-			    ROWNUM AS rn
-		    FROM board b
-		    LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
-		    LEFT JOIN users u ON u.user_id = b.user_id
-		    <where>
-		    	b.board_type = #{boardType}
-				<if test="keyword != null and keyword != ''">
-				    <choose>
-				        <!-- 숙소명으로 검색 -->
-				        <when test="searchType == 'accommodationName'">
-				            AND a.name LIKE '%' || #{keyword} || '%'
-				        </when>
-				        <!-- 닉네임으로 검색 -->
-				        <when test="searchType == 'userNickName'">
-				            AND u.nickname LIKE '%' || #{keyword} || '%'
-				        </when>
-				    </choose>
-				</if>
-	        	<if test="deleted != null and deleted != ''">
-		           AND b.deleted = #{deleted}
-		        </if>
-	        </where>
-			ORDER BY b.deleted ASC,
-		        <choose>
-		            <!-- 작성일 정렬 -->
-		            <when test="sortBy == 'createdAt'">
-		                b.created_at
-		            </when>
-		            <!-- 조회수 정렬 -->
-		            <when test="sortBy == 'viewsCount'">
-		                b.views_count
-		            </when>
-		            <!-- 별점 정렬 (리뷰만) -->
-		            <when test="sortBy == 'rating'">
-		                b.rating
-		            </when>
-		            <!-- 좋아요 정렬 -->
-		            <when test="sortBy == 'likes'">
-		                b.likes_count
-		            </when>
-		            <!-- 기본: 작성일 -->
-		            <otherwise>
-		                b.created_at
-		            </otherwise>
-		        </choose>
-		        <choose>
-		            <when test="sortOrder == 'ASC'">
-		                ASC
-		            </when>
-		            <otherwise>
-		                DESC
-		            </otherwise>
-		        </choose>
-		) t
-		WHERE t.rn BETWEEN #{startRow} AND #{endRow}
+		    SELECT t.*, ROWNUM AS rn
+		    FROM (
+				SELECT
+				    b.board_id,
+				    b.accommodation_id,
+				    a.name AS accommodationName,
+				    b.user_id,
+				    u.nickname AS userNickName,
+				    b.title,
+				    <!-- 리뷰 게시글만 사용 -->
+				    b.rating,
+				    b.likes_count AS likes,
+				    b.views_count,
+				    TO_CHAR(b.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
+				    b.deleted
+			    FROM board b
+			    LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+			    LEFT JOIN users u ON u.user_id = b.user_id
+			    <where>
+			    	b.board_type = #{boardType}
+					<if test="keyword != null and keyword != ''">
+					    <choose>
+					        <!-- 숙소명으로 검색 -->
+					        <when test="searchType == 'accommodationName'">
+					            AND a.name LIKE '%' || #{keyword} || '%'
+					        </when>
+					        <!-- 닉네임으로 검색 -->
+					        <when test="searchType == 'userNickName'">
+					            AND u.nickname LIKE '%' || #{keyword} || '%'
+					        </when>
+					    </choose>
+					</if>
+		        	<if test="deleted != null and deleted != ''">
+			           AND b.deleted = #{deleted}
+			        </if>
+		        </where>
+				ORDER BY b.deleted ASC,
+			        <choose>
+			            <!-- 작성일 정렬 -->
+			            <when test="sortBy == 'createdAt'">
+			                b.created_at
+			            </when>
+			            <!-- 조회수 정렬 -->
+			            <when test="sortBy == 'viewsCount'">
+			                b.views_count
+			            </when>
+			            <!-- 별점 정렬 (리뷰만) -->
+			            <when test="sortBy == 'rating'">
+			                b.rating
+			            </when>
+			            <!-- 좋아요 정렬 -->
+			            <when test="sortBy == 'likes'">
+			                b.likes_count
+			            </when>
+			            <!-- 기본: 작성일 -->
+			            <otherwise>
+			                b.created_at
+			            </otherwise>
+			        </choose>
+			        <choose>
+			            <when test="sortOrder == 'ASC'">
+			                ASC
+			            </when>
+			            <otherwise>
+			                DESC
+			            </otherwise>
+			        </choose>
+			) t
+		)
+		WHERE rn BETWEEN #{startRow} AND #{endRow}
 	</select>
 	
 	<!-- 전체 게시글 수 조회 -->

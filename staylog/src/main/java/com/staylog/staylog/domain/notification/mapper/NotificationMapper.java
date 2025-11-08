@@ -4,7 +4,6 @@ import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.request.NotificationSelectRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadAllRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadRequest;
-import com.staylog.staylog.domain.notification.dto.response.NotificationResponse;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -19,6 +18,14 @@ public interface NotificationMapper {
      * @return 성공 여부 1 또는 0
      */
     public int notiSave(NotificationRequest notificationRequest);
+
+    /**
+     * 전체 사용자 알림 일괄 데이터 저장
+     * @author 이준혁
+     * @param notificationRequest 알림 정보
+     * @return 성공 여부 1 또는 0
+     */
+    public int notiSaveBroadcast(NotificationRequest notificationRequest);
 
     /**
      * 유저 한명의 알림 리스트 조회

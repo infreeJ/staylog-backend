@@ -5,11 +5,6 @@ import com.staylog.staylog.domain.notification.dto.request.ReadAllRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadRequest;
 import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.dto.response.NotificationResponse;
-import com.staylog.staylog.global.event.CommentCreatedEvent;
-import com.staylog.staylog.global.event.ReviewCreatedEvent;
-import com.staylog.staylog.global.event.SignupEvent;
-import org.springframework.transaction.event.TransactionalEventListener;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -17,34 +12,31 @@ public interface NotificationService {
 
 
     /**
-     * 리뷰 게시글 작성 이벤트리스너 메서드
-     * @param event 이벤트 객체
+     * 알림 데이터 저장 및 푸시
+     *
+     * @param notificationRequest 알림 데이터 + JSON 형태의 String Type 데이터
+     * @param detailsResponse     반복적인 직렬화, 역직렬화를 막기 위한 온전한 Details 객체(프론트에 그대로 출력 가능)
+     * @apiNote 알림 별로 필요한 상세데이터는 해당하는 이벤트리스너에서
+     * JSON 형식으로 각 타입별 데이터에 맞게 notificationRequest.details 필드에 담아 가져온다.
+     * notificationRequest를 사용해서 DB에 저장 후 details 필드의 값을 사용해,
+     * NotificationResponse를 구성하여 사용자에게 PUSH한다.
      * @author 이준혁
      */
-    public void handleReviewCreatedEvent(ReviewCreatedEvent event);
-    
-
-    /**
-     * 회원가입 이벤트리스너 메서드
-     * @param event 이벤트 객체
-     * @author 이준혁
-     */
-    public void handleSignupEvent(SignupEvent event);
-
-    /**
-     * 댓글 작성 이벤트리스너 메서드
-     * @author 이준혁
-     * @param event 이벤트 객체
-     */
-    public void handleCommentCreatedEvent(CommentCreatedEvent event);
+    public void saveNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse);
 
 
     /**
      * 알림 데이터 저장 및 푸시
+     *
+     * @param notificationRequest 알림 데이터 + JSON 형태의 String Type 데이터
+     * @param detailsResponse     반복적인 직렬화, 역직렬화를 막기 위한 온전한 Details 객체(프론트에 그대로 출력 가능)
+     * @apiNote 알림 별로 필요한 상세데이터는 해당하는 이벤트리스너에서
+     * JSON 형식으로 각 타입별 데이터에 맞게 notificationRequest.details 필드에 담아 가져온다.
+     * notificationRequest를 사용해서 DB에 저장 후 details 필드의 값을 사용해,
+     * NotificationResponse를 구성하여 사용자에게 PUSH한다.
      * @author 이준혁
-     * @param notificationRequest 알림 정보
      */
-    public void saveAndPushNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse);
+    public void saveAllNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse);
 
 
     /**
