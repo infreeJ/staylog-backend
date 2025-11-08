@@ -39,9 +39,9 @@
         FROM users
     </insert>
 
-    <!-- 쿠폰 사용 가능 여부 확인 -->
-    <select id="checkAvailableCoupon" parameterType="long" resultType="couponCheckDto">
-        SELECT is_used, expired_at
+    <!-- 쿠폰 상세 정보 조회 -->
+    <select id="getByCouponId" parameterType="long" resultType="couponResponse">
+        SELECT *
         FROM coupon
         WHERE coupon_id = #{couponId}
     </select>

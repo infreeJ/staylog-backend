@@ -217,5 +217,11 @@
             JOIN accommodation a ON r.accommodation_id = a.accommodation_id
         WHERE res.booking_id = #{bookingId}
     </select>
+
+    <select id="findUserIdByBookingId" parameterType="long" resultType="long">
+        SELECT user_id
+        FROM reservation
+        WHERE booking_id = #{bookingId}
+    </select>
     
 </mapper>

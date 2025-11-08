@@ -1,7 +1,7 @@
 package com.staylog.staylog.domain.coupon.listener;
 
+import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
-import com.staylog.staylog.domain.coupon.dto.response.CouponCheckDto;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.global.common.code.ErrorCode;
@@ -12,11 +12,9 @@ import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,6 +23,7 @@ public class CouponEventListener {
 
     private final CouponMapper couponMapper;
     private final CouponService couponService;
+    private final BookingMapper bookingMapper;
 
 
     /**
@@ -76,22 +75,21 @@ public class CouponEventListener {
     @TransactionalEventListener
     private void handlePaymentConfirmEvent(PaymentConfirmEvent event) {
 
+        long userId = bookingMapper.findUserIdByBookingId(event.getBookingId());
         long couponId = event.getCouponId();
-        CouponCheckDto couponCheckDto = couponMapper.checkAvailableCoupon(couponId);
+        
+        // 쿠폰 검증
+        couponService.validateCoupon(userId, couponId);
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiredAt = couponCheckDto.getExpiredAt();
-        boolean isNotExpired = (expiredAt == null) || (expiredAt.isAfter(now));
-
-        int isSuccess = 0;
-        if (couponCheckDto.getIsUsed().equals("N") && isNotExpired) {
-            isSuccess = couponMapper.useCoupon(couponId);
-        }
+        // 쿠폰 사용 처리
+        int isSuccess = couponMapper.useCoupon(couponId);
 
         if (isSuccess == 0) {
-            log.warn("쿠폰 사용 실패: 만료 기간이 지났거나 이미 사용된 쿠폰입니다. - couponId={}", couponId);
+            log.error("쿠폰 사용 처리 실패 (결제는 성공): couponId={}", couponId);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+
+        log.info("쿠폰 사용 처리 완료: couponId={}", couponId);
     }
     
 

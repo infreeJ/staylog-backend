@@ -5,6 +5,7 @@ import com.staylog.staylog.domain.booking.entity.Booking;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.booking.service.BookingService;
 import com.staylog.staylog.domain.coupon.dto.response.CouponDiscountResult;
+import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.domain.payment.dto.request.ConfirmPaymentRequest;
 import com.staylog.staylog.domain.payment.dto.request.PreparePaymentRequest;
@@ -95,21 +96,23 @@ public class PaymentServiceImpl implements PaymentService {
         Long couponId = request.getCouponId();
 
         if (couponId != null) {
-            // CouponService에 검증 및 할인 계산 위임
-            CouponDiscountResult discountResult = couponService.validateAndCalculateDiscount(
-                    userId,
-                    couponId,
-                    originalAmount
-            );
+            // 쿠폰 검증 메서드 호출
+            CouponResponse availableCoupon = couponService.validateCoupon(userId, couponId);
+            
+            // 할인금액 계산 및 최종금액 계산
+            discountAmount = couponService.calculateCouponDiscount(originalAmount, availableCoupon.getDiscount());
+            finalAmount = originalAmount - discountAmount;
 
-            discountAmount = discountResult.getDiscountAmount();
-            finalAmount = discountResult.getFinalAmount();
+            // 최종 금액은 0원 이상이어야 함
+            if (finalAmount < 0) {
+                finalAmount = 0L;
+            }
 
             // ✅ RESERVATION.FINAL_AMOUNT 업데이트
             bookingMapper.updateFinalAmount(request.getBookingId(), finalAmount);
 
-            log.info("쿠폰 할인 적용: 쿠폰ID={}, 할인율={}%, 원래금액={}, 할인액={}, 최종금액={}",
-                    couponId, discountResult.getDiscountPercent(), originalAmount, discountAmount, finalAmount);
+            log.info("쿠폰 할인 적용: 쿠폰ID={}, 원래금액={}, 할인액={}, 최종금액={}",
+                    couponId, originalAmount, discountAmount, finalAmount);
         } else {
             // 쿠폰 미사용 시에도 FINAL_AMOUNT 업데이트 (AMOUNT와 동일)
             bookingMapper.updateFinalAmount(request.getBookingId(), finalAmount);
@@ -211,20 +214,6 @@ public class PaymentServiceImpl implements PaymentService {
             );
 
             bookingMapper.updateBookingStatus(bookingId, ReservationStatus.RES_CONFIRMED.getCode());  // CONFIRMED 상태
-
-            // 이벤트 리스너로 결제 완료 이벤트 발행하여 쿠폰 사용 처리
-//            // 🆕 쿠폰 사용 처리 (결제 승인 성공 시)
-//            Long couponId = payment.getCouponId();
-//            if (couponId != null) {
-//                try {
-//                    couponService.applyCouponUsage(couponId);
-//                    log.info("쿠폰 사용 처리 완료: couponId={}", couponId);
-//                } catch (Exception e) {
-//                    // 쿠폰 사용 처리 실패는 로그만 남기고 결제는 성공 처리
-//                    // (이미 Toss 결제가 성공했으므로 롤백 불가)
-//                    log.error("쿠폰 사용 처리 실패 (결제는 성공): couponId={}, error={}", couponId, e.getMessage(), e);
-//                }
-//            }
 
             log.info("결제 승인 성공: paymentId={}, bookingId={}", paymentId, bookingId);
 

@@ -58,12 +58,10 @@ public interface CouponService {
      *
      * @param userId 사용자 ID
      * @param couponId 쿠폰 ID
-     * @param originalAmount 할인 전 원래 금액
      * @return CouponDiscountResult 할인 계산 결과 (원래 금액, 할인액, 최종 금액)
-     * @throws BusinessException 쿠폰을 찾을 수 없거나, 이미 사용되었거나, 만료된 경우
      * @author danjae
      */
-    public CouponDiscountResult validateAndCalculateDiscount(Long userId, Long couponId, Long originalAmount);
+    public CouponResponse validateCoupon(Long userId, Long couponId);
 
 //    /**
 //     * 쿠폰 사용 처리 (결제 승인 성공 시 호출)
@@ -75,6 +73,9 @@ public interface CouponService {
 //     * @author danjae
 //     */
 //    public void applyCouponUsage(Long couponId);
+
+
+    public Long calculateCouponDiscount(Long originalAmount, int discountPercent);
 
     /**
      * 쿠폰 복구 처리 (결제 실패/취소 시 호출)
