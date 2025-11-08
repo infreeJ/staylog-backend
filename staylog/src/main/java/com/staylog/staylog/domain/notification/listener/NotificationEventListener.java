@@ -9,6 +9,8 @@ import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.service.NotificationService;
+import com.staylog.staylog.domain.payment.dto.response.PreparePaymentResponse;
+import com.staylog.staylog.domain.payment.entity.Payment;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.event.*;
@@ -20,6 +22,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.staylog.staylog.global.event.CouponCreatedEvent;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -124,12 +127,12 @@ public class NotificationEventListener {
      */
     @TransactionalEventListener
     private void handlePaymentResultEvent(PaymentConfirmEvent event) {
-        Map<String, Object> payment = paymentMapper.findPaymentById(event.getPaymentId());
+    	Payment payment = paymentMapper.findPaymentById(event.getPaymentId());
         Map<String, Object> recipientIdAndAccommodationName = bookingMapper.findUserIdAndAccommodationNameByBookingId(event.getBookingId());
-
+        
         long recipientId = (long) recipientIdAndAccommodationName.get("userId"); // 수신자(예약자) PK
         String accommodationName = (String) recipientIdAndAccommodationName.get("accommodationName"); // 숙소명
-        LocalDateTime approvedAt = (LocalDateTime) payment.get("approvedAt"); // 결제 승인 시간
+        OffsetDateTime approvedAt = (OffsetDateTime) payment.getApprovedAt() ; // 결제 승인 시간
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()

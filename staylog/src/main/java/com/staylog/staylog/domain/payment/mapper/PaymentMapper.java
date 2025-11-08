@@ -24,7 +24,7 @@ public interface PaymentMapper {
      * @param paymentId 결제 ID
      * @return 결제 정보
      */
-    PreparePaymentResponse findPaymentById(@Param("paymentId") Long paymentId);
+    Payment findPaymentById(@Param("paymentId") Long paymentId);
 
     /**
      * 결제 조회 (bookingId) - Payment Entity 반환
