@@ -45,8 +45,17 @@ public interface MypageMapper {
      * @return 조건에 맞는 예약 내역 리스트
      */
     List<BookingInfoResponse> selectBookings(@Param("userId") Long userId, @Param("status") String status);
+
     
+     /**
+      * 예약 상세 조회
+      * @param userId 현재 로그인한 회원의 ID
+      * @param bookingId 조회할 예약의 ID
+      * @return 예약 상세 정보 DTO
+     */
+     BookingInfoResponse selectBookingDetail(@Param("userId") Long userId, @Param("bookingId") Long bookingId);    
     
+     
     /** 리뷰목록 조회
      * @param userId 리뷰를 조회할 회원의 고유 번호
      * @param type 리뷰 구분 타입

@@ -21,12 +21,17 @@ import lombok.Setter;
 public class BookingInfoResponse {
 	// 예약 정보 
     private Long bookingId; 			// 예약 고유번호 내부 (RESERVATION.BOOKING_ID(PK))
-    private String bookingNum; 			// 회원에게 보이는 예약번호 (RESERVATION.BOOKING_ID(PK))
+    private String bookingNum; 			// 회원에게 보이는 예약번호 (RESERVATION.BOOKING_NUM)
     
-    // 결제 및 투숙자 정보
-    private Long payId;               	// 결제 ID (PAYMENT.PAY_ID)
+    // 사용자 정보
+    private String userName;			// 사용자(회원) 명
+    private String phone;				// 전화번호 
+    
+    // 투숙객 정보
     private String guestName;         	// 실 투숙자명
-    private Integer amount;           	// 결제 금액
+    private Integer adults;           	// 성인
+    private Integer children;           // 어린이
+    private Integer infants;           	// 영유아
     private Integer totalGuestCount;  	// 총 인원 수
     
     // 숙소 & 객실 정보
@@ -34,10 +39,17 @@ public class BookingInfoResponse {
     private String roomName; 			// 객실명 (ROOM.NAME)
     private Long roomId;				// 객실 ID (ROOM_ID)
     
+    // 결제 정보
+    private Long payId;               	// 결제 ID (PAYMENT.PAY_ID)
+    private Integer amount;           	// 결제 금액
+    private String paymentMethod;		// 결제 방식
+    private LocalDateTime paidAt;		// 결제일
+
+    
     // 예약 일정 & 상태/생성/수정일 
-    private LocalDateTime checkIn;  	// 체크인 날짜 
-    private LocalDateTime checkOut; 	// 체크아웃 날짜
-    private String status; 				// 예약 상태 (CONFIRMED, CANCELED, REFUNDED)
+    private String checkIn;  			// 체크인 날짜 
+    private String checkOut; 			// 체크아웃 날짜
+    private String status; 				// 예약 상태 (RESERVATION.RES_CONFIRMED, RES_CANCELED, RES_REFUNDED)
     private LocalDateTime createdAt; 	// 예약 생성일
     private LocalDateTime updatedAt; 	// 예약 수정일
     

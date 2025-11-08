@@ -128,23 +128,59 @@ public class MypageServiceImpl implements MypageService {
      */
     @Override
     public List<BookingInfoResponse> getBookings(Long userId, String status) {
-        log.info("예약 내역 조회: userId={}, status={}", userId, status);
-        return mypageMapper.selectBookings(userId, status);
+        log.info("예약 내역 조회 시: userId={}, status={}", userId, status);
+        List<BookingInfoResponse> bookings = null;
+        try {
+        	bookings = mypageMapper.selectBookings(userId, status);
+        	log.info("예약 내역 조회 성공. 결과 개수: {}", bookings != null ? bookings.size() : 0);
+        }catch (Exception e) {
+           log.error("예약 내역 조회 중 오류 발생: userId={}, status={}", userId, status, e);
+            // 필요하다면 예외를 다시 던지거나, 빈 리스트 반환 등 처리
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "예약 내역 조회 실패");
+        }
+        return bookings;
     }
-    
+
+    /**
+     * 예약 상세 조회
+     * 사용자의 특정 예약 건에 대한 상세 정보를 조회
+     * 전달받은 userId(회원 PK)와 bookingId(예약 PK)를 기준으로 예약 상세 데이터를 조회
+     * @param userId    예약 상세 정보를 조회할 회원의 고유 번호(PK)
+     * @param bookingId 상세 조회할 예약의 고유 번호(PK)
+     * @return 예약 상세 정보가 담긴 BookingInfoResponse DTO
+     * @throws BusinessException 예약이 존재하지 않거나 본인 소유가 아닐 경우 BOOKING_NOT_FOUND 예외 발생
+     */
+     @Override
+     public BookingInfoResponse getBookingDetail(Long userId, Long bookingId) {
+         log.info("예약 상세 조회: userId={}, bookingId={}", userId, bookingId);
+         BookingInfoResponse bookingDetail = mypageMapper.selectBookingDetail(userId, bookingId);
+         if (bookingDetail == null) {
+             // 본인의 예약이 아니거나, 존재하지 않는 예약일 경우
+             throw new BusinessException(ErrorCode.BOOKING_NOT_FOUND);
+         }
+         return bookingDetail;
+     }
     
     /**
      * 리뷰 내역 조회
      * type 값에 따라 작성 가능한 리뷰(writable) 또는 내가 쓴 리뷰(written)를 구분
-     * @author 오미나
      * @param userId 리뷰 내역을 조회할 회원의 고유 번호
      * @param type 리뷰 구분 타입 (writable / written)
      * @return 조건에 해당하는 리뷰 목록 List
      */
     @Override
     public List<ReviewInfoResponse> getReviews(Long userId, String type) {
-        log.info("리뷰 내역 조회: userId={}, type={}", userId, type);
-        return mypageMapper.selectReviews(userId, type);
+    	log.info("리뷰 내역 조회 시작: userId={}, type={}", userId, type);
+        List<ReviewInfoResponse> reviews = null;
+        try {
+            reviews = mypageMapper.selectReviews(userId, type);
+            log.info("리뷰 내역 조회 성공. 결과 개수: {}", reviews != null ? reviews.size() : 0);       
+        } catch (Exception e) {
+            log.error("리뷰 내역 조회 중 오류 발생: userId={}, type={}", userId, type, e);
+            // 필요하다면 예외를 다시 던지거나, 빈 리스트 반환 등 처리
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "리뷰 내역 조회 실패");
+        }
+        return reviews;
     }
 
     /**

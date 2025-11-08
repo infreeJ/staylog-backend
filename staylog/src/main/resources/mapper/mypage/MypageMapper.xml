@@ -37,20 +37,24 @@
 		WHERE user_id = #{userId}
     </update>
 
-
-
     <!-- 3. 예약 내역 (status = upcoming/completed/canceled) -->
     <select id="selectBookings"
             resultType="BookingInfoResponse">
         SELECT
             r.booking_id AS bookingId,
             r.booking_num AS bookingNum,
+            r.pay_id AS payId,
+            r.guest_name AS guestName,
+            r.amount AS amount,
+            r.total_guest_count AS totalGuestCount,
             a.name AS accommodationName,
             rm.name AS roomName,
+            rm.room_id AS roomId,
             r.check_in  AS checkIn,
             r.check_out AS checkOut,
             r.status    AS status,
-            r.created_at AS createdAt
+            r.created_at AS createdAt,
+            r.updated_at AS updatedAt
         FROM reservation r
         	JOIN room rm ON r.room_id = rm.room_id
 	        JOIN accommodation a ON rm.accommodation_id = a.accommodation_id
@@ -59,61 +63,98 @@
         <choose>
         	<!-- 다가올 예약-->
             <when test="status == 'upcoming'">
-                AND r.status = 'CONFIRMED'
+                AND r.status = 'RES_CONFIRMED'
                 AND r.check_in &gt; SYSDATE
             </when>
             <!-- 이용 완료 -->
             <when test="status == 'completed'">
-                AND r.status = 'CONFIRMED'
+                AND r.status = 'RES_CONFIRMED'
                 AND r.check_out &lt; SYSDATE
             </when>
             <!-- 취소/환불 -->
             <when test="status == 'canceled'">
-                AND r.status IN ('CANCELED', 'REFUNDED')
+                AND r.status IN ('RES_CANCELED', 'RES_REFUNDED')
             </when>
             <!-- status 안보내면 전체 -->
         </choose>
-        ORDER BY r.check_in DESC
+        ORDER BY r.check_in ASC
+    </select>
+    
+    <!-- 4. 예약 상세 조회 -->
+    <select id="selectBookingDetail" 
+    		resultType="BookingInfoResponse">
+        SELECT
+            r.booking_id AS bookingId,
+            r.booking_num AS bookingNum,
+            u.name AS userName,
+            u.phone AS phone,
+            r.guest_name AS guestName,
+            r.adults,
+            r.children,
+            r.infants,
+            r.total_guest_count AS totalGuestCount,
+            a.name AS accommodationName,
+            rm.name AS roomName,
+            rm.room_id AS roomId,
+            p.payment_id AS payId,
+            r.amount,
+            p.method AS paymentMethod,
+            p.approved_at AS paidAt,
+            TO_CHAR(r.check_in, 'YYYY-MM-DD') AS checkIn,
+            TO_CHAR(r.check_out, 'YYYY-MM-DD') AS checkOut,
+            r.status,
+            r.created_at AS createdAt,
+            r.updated_at AS updatedAt
+        FROM RESERVATION r
+        JOIN USERS u ON r.user_id = u.user_id
+        JOIN ROOM rm ON r.room_id = rm.room_id
+        JOIN ACCOMMODATION a ON rm.accommodation_id = a.accommodation_id
+        LEFT JOIN PAYMENT p ON r.booking_id = p.booking_id
+        WHERE r.user_id = #{userId} AND r.booking_id = #{bookingId}
     </select>
 
     <!-- 5. 리뷰 내역 -->
     <select id="selectReviews"
-            resultType="ReviewInfoResponse">
+            resultType="com.staylog.staylog.domain.mypage.dto.response.ReviewInfoResponse">
         <choose>
-            <!-- 작성 가능한 리뷰 -->
-            <when test="type == 'available'">
+            <!-- 작성 가능한 리뷰 (type: availableToWrite)-->
+            <when test="type == 'availableToWrite'">
                 SELECT
                     b.booking_id AS bookingId,
-                    a.accommodation_name AS accommodationName,
-                    b.check_in  AS checkIn,
+                    b.booking_num AS bookingNum,
+                    a.name AS accommodationName,
+                    b.check_in AS checkIn,
                     b.check_out AS checkOut
-                FROM booking b
-                JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+                FROM RESERVATION b
+                JOIN ROOM rm ON b.room_id = rm.room_id
+                JOIN ACCOMMODATION a ON rm.accommodation_id = a.accommodation_id
                 WHERE b.user_id = #{userId}
-                  AND b.status = 'CONFIRMED'
+                  AND b.status = 'RES_CONFIRMED'
                   AND b.check_out &lt; SYSDATE
-                  AND NOT EXISTS (
-                      SELECT 1 FROM review r WHERE r.booking_id = b.booking_id
-                  )
+                  AND b.is_writed = 'N'
                 ORDER BY b.check_out DESC
             </when>
 
-            <!-- 내가 쓴 리뷰 -->
+            <!-- 내가 쓴 리뷰 (type: myWrittenReview) -->
             <otherwise>
                 SELECT
-                    r.review_id AS reviewId,
-                    a.accommodation_name AS accommodationName,
-                    r.content   AS content,
-                    r.rating    AS rating,
+                    r.board_id AS reviewId,
+                    b.booking_num AS bookingNum,
+                    a.name AS accommodationName,
+                    r.title AS title,
+                    r.rating AS rating,
                     r.created_at AS createdAt
-                FROM review r
-                JOIN booking b ON r.booking_id = b.booking_id
-                JOIN accommodation a ON a.accommodation_id = b.accommodation_id
-                WHERE b.user_id = #{userId}
+                FROM BOARD r
+                LEFT JOIN RESERVATION b ON r.booking_id = b.booking_id
+                LEFT JOIN ACCOMMODATION a ON r.accommodation_id = a.accommodation_id
+                WHERE r.user_id = #{userId}
+                  AND r.board_type = 'BOARD_REVIEW'
+                  AND b.is_writed = 'Y'
                 ORDER BY r.created_at DESC
             </otherwise>
         </choose>
     </select>
+
 
 </mapper>
 

@@ -46,6 +46,15 @@ public interface MypageService {
     
     
     /**
+     * 예약 상세 조회 (모달 창)
+     * @param userId 현재 로그인한 회원의 ID
+     * @param bookingId 조회할 예약의 ID
+     * @return 예약 상세 정보 DTO
+     */
+    BookingInfoResponse getBookingDetail(Long userId, Long bookingId);
+    
+    
+    /**
      * 리뷰내역 조회(type 값에 따라 분류하여 조회)
      * @param userId 리뷰 내역을 조회할 회원의 고유 번호
      * @param type 리뷰 구분 타입 (writable / written)
