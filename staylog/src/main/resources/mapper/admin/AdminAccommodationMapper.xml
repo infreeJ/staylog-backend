@@ -90,7 +90,7 @@
 		LEFT JOIN (
 			SELECT accommodation_id, ROUND(AVG(rating), 2) AS avg_rating, COUNT(*) AS reviewCount
 			FROM board 
-			WHERE board_type = 'BOARD_REVIEW'
+			WHERE board_type = 'BOARD_REVIEW' AND deleted = 'N'
 			GROUP BY accommodation_id
 		) b ON b.accommodation_id = a.accommodation_id
 	    WHERE a.accommodation_id = #{accommodationId}
