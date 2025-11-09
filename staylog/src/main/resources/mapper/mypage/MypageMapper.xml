@@ -94,6 +94,7 @@
             r.infants,
             r.total_guest_count AS totalGuestCount,
             a.name AS accommodationName,
+            a.accommodation_id AS accommodationId,
             rm.name AS roomName,
             rm.room_id AS roomId,
             p.payment_id AS payId,
