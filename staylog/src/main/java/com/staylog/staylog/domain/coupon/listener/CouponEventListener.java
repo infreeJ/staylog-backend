@@ -12,14 +12,10 @@ import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.*;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 
 @Slf4j
@@ -33,7 +29,7 @@ public class CouponEventListener {
 
 
     /**
-     * 리뷰글 작성 이벤트리스너 메서드(리뷰 쿠폰 발급)
+     * 리뷰 쿠폰 발급(리뷰글 작성 이벤트리스너)
      *
      * @param event 이벤트 객체
      * @author 이준혁
@@ -41,7 +37,7 @@ public class CouponEventListener {
     @Async
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
-    public void handleReviewCreatedEvent(ReviewCreatedEvent event) {
+    public void handleIssueReviewCoupon(ReviewCreatedEvent event) {
 
         CouponRequest couponRequest = CouponRequest.builder()
                 .userId(event.getUserId())
@@ -55,7 +51,7 @@ public class CouponEventListener {
 
 
     /**
-     * 회원가입 이벤트리스너 메서드(환영 쿠폰 발급)
+     * 환영 쿠폰 발급(회원가입 이벤트리스너)
      *
      * @param event 이벤트 객체
      * @author 이준혁
@@ -63,7 +59,7 @@ public class CouponEventListener {
     @Async
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
-    public void handleSignupEvent(SignupEvent event) {
+    public void handleIssueSignupCoupon(SignupEvent event) {
 
         CouponRequest couponRequest = CouponRequest.builder()
                 .userId(event.getUserId())
@@ -77,7 +73,7 @@ public class CouponEventListener {
 
 
     /**
-     * 결제완료 이벤트리스너 메서드
+     * 쿠폰 사용 처리(결제완료 이벤트리스너)
      *
      * @param event 결제 이벤트 객체
      * @author 이준혁
@@ -89,7 +85,7 @@ public class CouponEventListener {
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     // TODO: @Recover 메서드 정의 필요
-    public void handlePaymentConfirmEvent(PaymentConfirmEvent event) {
+    public void handleProcessCouponUsage(PaymentConfirmEvent event) {
         if (event.getCouponId() == null) {
             log.warn("쿠폰 미사용 결제 건: paymentId={}", event.getPaymentId());
             return;
