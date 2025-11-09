@@ -166,6 +166,8 @@ public class CouponEventListener {
             // 향후 추가될 쿠폰 관련 리스너를 위한 폴백
             log.error(" -> 실패 작업 상세: 알 수 없는 Event Type={}, Data={}", event.getClass().getSimpleName(), event);
         }
+
+        // 에러 테이블 추가 시 DB 저장 필요
     }
 
 

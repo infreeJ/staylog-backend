@@ -11,6 +11,7 @@ import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.service.NotificationService;
 import com.staylog.staylog.domain.payment.entity.Payment;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
+import com.staylog.staylog.domain.refund.mapper.RefundMapper;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.annotation.CommonRetryable;
 import com.staylog.staylog.global.event.*;
@@ -25,6 +26,7 @@ import com.staylog.staylog.global.event.CouponCreatedEvent;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +40,7 @@ public class NotificationEventListener {
     private final BookingMapper bookingMapper;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
+    private final RefundMapper refundMapper;
 
 
     /**
@@ -178,8 +181,38 @@ public class NotificationEventListener {
     @Async
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
-    public void handlePaymentCancelNotification(PaymentConfirmEvent event) {
-        // TODO: 메서드 정의 필요
+    public void handleRefundConfirmNotification(RefundConfirmEvent event) {
+        
+        long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
+        String accommodationName = bookingMapper.findAccommodationNameByBookingId(event.getBookingId()); // 숙소명
+
+        // 알림 카드에 출력할 데이터 구성
+        DetailsResponse detailsResponse = DetailsResponse.builder()
+                .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
+                .date(OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .title(accommodationName)
+                .message("예약이 취소되었습니다.")
+                .typeName("Reservation")
+                .build();
+
+        try {
+            // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성
+            String detailsObject = objectMapper.writeValueAsString(detailsResponse);
+
+            // INSERT의 parameterType 객체 구성
+            NotificationRequest notificationRequest = NotificationRequest.builder()
+                    .userId(recipientId)
+                    .notiType("NOTI_RES_CANCEL")
+                    .targetId(event.getRefundId()) // 이동할 페이지 PK
+                    .details(detailsObject)
+                    .build();
+
+            // DB 저장 후 SSE 요청하는 메서드 호출
+            notificationService.saveNotification(notificationRequest, detailsResponse);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -330,35 +363,37 @@ public class NotificationEventListener {
         log.error("[Recover] 알림 발송 재시도 최종 실패. 원인: {}", t.getMessage(), t);
 
         if (event instanceof CouponCreatedEvent cce) {
-            log.error(" -> 실패 이벤트 상세: CouponCreatedEvent (UserID: {})", cce.getUserId());
+            log.error(" -> 실패 이벤트 상세: 쿠폰 발급 알림 (UserID: {})", cce.getUserId());
 
         } else if (event instanceof CouponCreatedAllEvent) {
-            log.error(" -> 실패 이벤트 상세: CouponCreatedAllEvent (전체 발송)");
+            log.error(" -> 실패 이벤트 상세: 전체 쿠폰 발급 알림 (전체 발송)");
 
         } else if (event instanceof PaymentConfirmEvent pce) {
-            log.error(" -> 실패 이벤트 상세: PaymentConfirmEvent (PaymentID: {}, BookingID: {}, CouponID: {})",
+            log.error(" -> 실패 이벤트 상세: 예약 확정 알림 (PaymentID: {}, BookingID: {}, CouponID: {})",
                     pce.getPaymentId(), pce.getBookingId(), pce.getCouponId());
 
-            // TODO: handlePaymentCancelNotification 구현 시 추가 필요
+        } else if (event instanceof RefundConfirmEvent pce) {
+            log.error(" -> 실패 이벤트 상세: 예약 취소 알림 (PaymentID: {}, BookingID: {}, RefundId: {})",
+                    pce.getPaymentId(), pce.getBookingId(), pce.getRefundId());
 
         } else if (event instanceof ReviewCreatedEvent rce) {
-            log.error(" -> 실패 이벤트 상세: ReviewCreatedEvent (UserID: {}, BoardID: {})",
+            log.error(" -> 실패 이벤트 상세: 리뷰글 작성 알림 (UserID: {}, BoardID: {})",
                     rce.getUserId(), rce.getBoardId());
 
         } else if (event instanceof CommentCreatedEvent cce) {
-            log.error(" -> 실패 이벤트 상세: CommentCreatedEvent (UserID: {}, BoardID: {}, CommentID: {})",
+            log.error(" -> 실패 이벤트 상세: 댓글 작성 알림 (UserID: {}, BoardID: {}, CommentID: {})",
                     cce.getUserId(), cce.getBoardId(), cce.getCommentId());
 
         } else if (event instanceof SignupEvent se) {
-            log.error(" -> 실패 이벤트 상세: SignupEvent (UserID: {})", se.getUserId());
+            log.error(" -> 실패 이벤트 상세: 회원가입 알림 (UserID: {})", se.getUserId());
 
         } else {
             // 향후 추가될 알림 관련 리스너를 위한 폴백
             log.error(" -> 실패 이벤트 상세: 알 수 없는 Event Type={}, Data={}",
                     event.getClass().getSimpleName(), event);
         }
-
-        // TODO: 공통 복구 로직 (예: 실패한 알림 정보를 별도 DB 테이블에 저장)
+        
+        // 에러 테이블 추가 시 DB 저장 필요
     }
 
 }
