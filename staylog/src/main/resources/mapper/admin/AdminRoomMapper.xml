@@ -75,8 +75,6 @@
 	        r.max_adult,
 	        r.max_children,
 	        r.max_infant,
-	        TO_CHAR(r.check_in, 'HH24:MI') AS checkIn,
-			TO_CHAR(r.check_out, 'HH24:MI') AS checkOut,
 	        r.area,
 	        r.deleted_yn,
 	        r.single_bed,
@@ -86,7 +84,7 @@
 	        r.description,
 	        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 	        TO_CHAR(r.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS updatedAt
-	    FROM room r
+	    FROM room r 
 	    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
 	    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
 	    WHERE r.room_id = #{roomId}
@@ -101,8 +99,6 @@
 	        max_adult = #{maxAdult},
 	        max_children = #{maxChildren},
 	        max_infant = #{maxInfant},
-	        check_in = TO_TIMESTAMP(#{checkIn}, 'HH24:MI'),
-	        check_out = TO_TIMESTAMP(#{checkOut}, 'HH24:MI'),
 	        area = #{area},
 	        single_bed = #{singleBed},
 	        double_bed = #{doubleBed},
@@ -124,16 +120,12 @@
 	<insert id="insertRoom" parameterType="AdminRoomRequest">
 	    INSERT INTO room (
 	        room_id, accommodation_id, name, rm_type,
-	        price, max_adult, max_children, max_infant,
-	        check_in, check_out, area,
+	        price, max_adult, max_children, max_infant, area,
 	        single_bed, double_bed, queen_bed, king_bed, description,
 	        created_at
 	    ) VALUES (
 	        #{roomId}, #{accommodationId}, #{name}, #{rmType},
-	        #{price}, #{maxAdult}, #{maxChildren}, #{maxInfant},
-	        TO_TIMESTAMP(#{checkIn}, 'HH24:MI'),
-	        TO_TIMESTAMP(#{checkOut}, 'HH24:MI'),
-	        #{area},
+	        #{price}, #{maxAdult}, #{maxChildren}, #{maxInfant}, #{area},
 	        #{singleBed}, #{doubleBed}, #{queenBed}, #{kingBed}, #{description},
 	        SYSTIMESTAMP
 	    )

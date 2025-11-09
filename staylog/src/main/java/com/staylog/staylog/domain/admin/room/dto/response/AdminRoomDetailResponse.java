@@ -49,11 +49,6 @@ public class AdminRoomDetailResponse {
     /** 최대 유아 수 */
     private Integer maxInfant;
 
-    /** 체크인 시간 */
-    private String checkIn;
-    /** 체크아웃 시간 */
-    private String checkOut;
-
     /** 객실 면적 (m²) */
     private Double area;
 

@@ -19,7 +19,7 @@
 				    b.title,
 				    <!-- 리뷰 게시글만 사용 -->
 				    b.rating,
-				    b.likes_count AS likes,
+				    b.likes_count AS likesCount,
 				    b.views_count,
 				    TO_CHAR(b.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 				    b.deleted
@@ -59,7 +59,7 @@
 			                b.rating
 			            </when>
 			            <!-- 좋아요 정렬 -->
-			            <when test="sortBy == 'likes'">
+			            <when test="sortBy == 'likesCount'">
 			                b.likes_count
 			            </when>
 			            <!-- 기본: 작성일 -->
@@ -120,7 +120,7 @@
 		    b.title,
 		    b.content,
 		    b.rating,
-		    b.likes_count AS likes,
+		    b.likes_count AS likesCount,
 		    b.views_count,
 		    TO_CHAR(b.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 		    TO_CHAR(b.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS updatedAt,
