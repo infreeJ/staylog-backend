@@ -97,7 +97,6 @@ public class SseServiceImpl implements SseService {
      */
     @Override
     public void broadcast(NotificationResponse notificationResponse) {
-        System.out.println("broadcast 메서드로 진입");
         emitters.forEach((userId, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()

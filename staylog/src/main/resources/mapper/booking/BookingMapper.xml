@@ -210,9 +210,9 @@
           AND EXPIRES_AT <![CDATA[<]]> #{now}
     </select>
 
-    <!-- bookingId로 숙소명 조회 -->
-    <select id="findAccommodationNameByBookingId" parameterType="long" resultType="String">
-        SELECT a.name AS accommodation_name
+    <!-- bookingId로 숙소PK, 숙소명 조회 -->
+    <select id="findAccommodationIdAndNameByBookingId" parameterType="long" resultType="map">
+        SELECT a.accommodation_id AS accommodation_id, a.name AS accommodation_name
         FROM reservation res JOIN room r ON res.room_id = r.room_id
             JOIN accommodation a ON r.accommodation_id = a.accommodation_id
         WHERE res.booking_id = #{bookingId}

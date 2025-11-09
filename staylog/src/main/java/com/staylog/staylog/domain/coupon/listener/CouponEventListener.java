@@ -90,7 +90,6 @@ public class CouponEventListener {
     @Async
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
-    // TODO: @Recover 메서드 정의 필요
     public void handleProcessCouponUsage(PaymentConfirmEvent event) {
         if (event.getCouponId() == null) {
             log.warn("쿠폰 미사용 결제 건: paymentId={}", event.getPaymentId());

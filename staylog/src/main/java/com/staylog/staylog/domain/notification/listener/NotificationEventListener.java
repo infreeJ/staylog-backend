@@ -6,12 +6,13 @@ import com.staylog.staylog.domain.board.dto.CommentsDto;
 import com.staylog.staylog.domain.board.mapper.BoardMapper;
 import com.staylog.staylog.domain.board.mapper.CommentsMapper;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
+import com.staylog.staylog.domain.image.dto.ImageResponse;
+import com.staylog.staylog.domain.image.service.ImageService;
 import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.service.NotificationService;
 import com.staylog.staylog.domain.payment.entity.Payment;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
-import com.staylog.staylog.domain.refund.mapper.RefundMapper;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.annotation.CommonRetryable;
 import com.staylog.staylog.global.event.*;
@@ -40,7 +41,7 @@ public class NotificationEventListener {
     private final BookingMapper bookingMapper;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
-    private final RefundMapper refundMapper;
+    private final ImageService imageService;
 
 
     /**
@@ -139,14 +140,21 @@ public class NotificationEventListener {
     	Payment payment = paymentMapper.findPaymentById(event.getPaymentId());
 
         long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
-        String accommodationName = bookingMapper.findAccommodationNameByBookingId(event.getBookingId()); // 숙소명
+        Map<String, Object> accommodationInfo = bookingMapper.findAccommodationIdAndNameByBookingId(event.getBookingId()); // 숙소명
+
+        ImageResponse imageResponse = imageService.getImagesByTarget(
+                "IMG_FROM_ACCOMMODATION", (long)accommodationInfo.get("accommodationId")
+        );
+        String imageUrl = imageResponse.getImages().get(0).getImageUrl(); // 숙소 메인이미지
+        // TODO: 숙소의 대표 이미지만 가져오는 메서드를 정의해서 사용하는 구조로 성능 개선 필요
+
         OffsetDateTime approvedAt = payment.getApprovedAt() ; // 결제 승인 시간
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
                 .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
                 .date(approvedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                .title(accommodationName)
+                .title((String)accommodationInfo.get("accommodationName"))
                 .message("예약이 확정되었습니다.")
                 .typeName("Reservation")
                 .build();
@@ -184,13 +192,13 @@ public class NotificationEventListener {
     public void handleRefundConfirmNotification(RefundConfirmEvent event) {
         
         long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
-        String accommodationName = bookingMapper.findAccommodationNameByBookingId(event.getBookingId()); // 숙소명
+        Map<String, Object> accommodationInfo = bookingMapper.findAccommodationIdAndNameByBookingId(event.getBookingId()); // 숙소명
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
                 .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
                 .date(OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                .title(accommodationName)
+                .title((String)accommodationInfo.get("accommodationName"))
                 .message("예약이 취소되었습니다.")
                 .typeName("Reservation")
                 .build();
@@ -232,7 +240,7 @@ public class NotificationEventListener {
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
-                .imageUrl("https://picsum.photos/id/10/200/300")
+                .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
                 .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                 .title(nickname) // 리뷰 작성자 닉네임
                 .message("[" + accommodationName + "]" + " 신규 리뷰")
@@ -278,7 +286,7 @@ public class NotificationEventListener {
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
-                .imageUrl("https://picsum.photos/id/10/200/300")
+                .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
                 .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                 .title(nickname) // 댓글 작성자 닉네임
                 .message(commentsDto.getContent())
@@ -323,7 +331,7 @@ public class NotificationEventListener {
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
-                .imageUrl("https://picsum.photos/id/10/200/300")
+                .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
                 .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                 .title(nickname + "님!")
                 .message("회원가입을 축하합니다!")
