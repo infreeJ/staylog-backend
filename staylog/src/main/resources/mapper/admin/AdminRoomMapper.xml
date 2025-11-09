@@ -82,6 +82,8 @@
 	        r.queen_bed,
 	        r.king_bed,
 	        r.description,
+			TO_CHAR(a.check_in_time, 'HH24:MI') AS checkInTime,
+			TO_CHAR(a.check_out_time, 'HH24:MI') AS checkOutTime,
 	        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 	        TO_CHAR(r.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS updatedAt
 	    FROM room r 

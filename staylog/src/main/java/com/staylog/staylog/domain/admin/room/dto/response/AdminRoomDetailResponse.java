@@ -71,4 +71,9 @@ public class AdminRoomDetailResponse {
     private String createdAt;
     /** 수정일시 */
     private String updatedAt;
+    
+    /** 체크인 시간 */
+    private String checkInTime;
+    /** 체크아웃 시간 */
+    private String checkOutTime;
 }
