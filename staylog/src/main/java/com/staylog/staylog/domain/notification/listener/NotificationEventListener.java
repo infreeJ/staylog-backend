@@ -8,9 +8,7 @@ import com.staylog.staylog.domain.board.mapper.CommentsMapper;
 import com.staylog.staylog.domain.booking.entity.AccommodationIdAndName;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.image.dto.ImageDto;
-import com.staylog.staylog.domain.image.dto.ImageResponse;
 import com.staylog.staylog.domain.image.mapper.ImageMapper;
-import com.staylog.staylog.domain.image.service.ImageService;
 import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.service.NotificationService;
@@ -32,7 +30,6 @@ import com.staylog.staylog.global.event.CouponCreatedEvent;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -47,7 +44,6 @@ public class NotificationEventListener {
     private final BookingMapper bookingMapper;
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
-    //    private final ImageService imageService;
     private final ImageMapper imageMapper;
 
 
@@ -65,11 +61,7 @@ public class NotificationEventListener {
         long recipientId = event.getUserId(); // 수신자 PK
 
         // 이미지 가져오기
-        ImageDto imageDto = ImageDto.builder()
-                .targetType("IMG_FROM_ICON")
-                .targetId(2)
-                .build();
-        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+        String imageUrl = getImageUrl("IMG_FROM_ICON", 2);
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -107,11 +99,7 @@ public class NotificationEventListener {
     public void handleCouponAllIssuanceNotification(CouponCreatedAllEvent event) {
 
         // 이미지 가져오기
-        ImageDto imageDto = ImageDto.builder()
-                .targetType("IMG_FROM_ICON")
-                .targetId(2)
-                .build();
-        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+        String imageUrl = getImageUrl("IMG_FROM_ICON", 2);
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -131,7 +119,7 @@ public class NotificationEventListener {
                 .notiType("NOTI_COUPON_CREATE")
                 .targetId(null) // 이동할 페이지 PK -> 현재는 null
                 .details(detailsObject)
-                .batchId(UUID.randomUUID().toString())
+                .batchId(UUID.randomUUID().toString()) // 알림 일괄 PUSH를 위한 UUID 구성
                 .build();
 
         // DB 저장 후 SSE 요청하는 메서드 호출
@@ -160,11 +148,7 @@ public class NotificationEventListener {
 //        String imageUrl = imageResponse.getImages().get(0).getImageUrl(); // 숙소 메인이미지
 
         // 이미지 가져오기
-        ImageDto imageDto = ImageDto.builder()
-                .targetType("IMG_FROM_ACCOMMODATION")
-                .targetId(accommodationInfo.getAccommodationId())
-                .build();
-        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+        String imageUrl = getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
 
         OffsetDateTime approvedAt = payment.getApprovedAt(); // 결제 승인 시간
 
@@ -209,11 +193,7 @@ public class NotificationEventListener {
         AccommodationIdAndName accommodationInfo = bookingMapper.findAccommodationIdAndNameByBookingId(event.getBookingId()); // 숙소명
 
         // 이미지 가져오기
-        ImageDto imageDto = ImageDto.builder()
-                .targetType("IMG_FROM_ACCOMMODATION")
-                .targetId(accommodationInfo.getAccommodationId())
-                .build();
-        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+        String imageUrl = getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -256,11 +236,7 @@ public class NotificationEventListener {
         AccommodationIdAndName accommodationInfo = boardMapper.getAccommodationNameAndIdByBoardId(event.getBoardId());
 
         // 이미지 가져오기
-        ImageDto imageDto = ImageDto.builder()
-                .targetType("IMG_FROM_ACCOMMODATION")
-                .targetId(accommodationInfo.getAccommodationId())
-                .build();
-        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+        String imageUrl = getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -341,11 +317,7 @@ public class NotificationEventListener {
     public void handleSignupNotification(SignupEvent event) {
 
         // 이미지 가져오기
-        ImageDto imageDto = ImageDto.builder()
-                .targetType("IMG_FROM_ICON")
-                .targetId(1)
-                .build();
-        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+        String imageUrl = getImageUrl("IMG_FROM_ICON", 1);
 
         long recipientId = event.getUserId();
         String nickname = userMapper.findNicknameByUserId(recipientId);
@@ -390,6 +362,34 @@ public class NotificationEventListener {
             log.error("알림 데이터 직렬화 중 오류 발생");
             throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
         }
+    }
+
+
+    /**
+     * 대표 이미지 1장 가져오는 메서드
+     * @author 이준혁
+     * @param targetType 이미지의 타겟 타입
+     * @param targetId 이미지의 타겟 PK
+     * @return 이미지 URL
+     */
+    private String getImageUrl(String targetType, long targetId) {
+        ImageDto imageDto = ImageDto.builder()
+                .targetType(targetType)
+                .targetId(targetId)
+                .build();
+        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+        
+        if(imageUrl != null) {
+            return imageUrl;
+        } else {
+            // 이미지가 없을 경우 기본 이미지로 출력
+            ImageDto defaultImageDto = ImageDto.builder()
+                    .targetType("IMG_FROM_ICON")
+                    .targetId(3)
+                    .build();
+            return imageMapper.getMainImgByTargetTypeAndId(defaultImageDto);
+        }
+
     }
 
 

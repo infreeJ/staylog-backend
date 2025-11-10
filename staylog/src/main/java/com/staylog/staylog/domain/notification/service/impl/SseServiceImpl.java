@@ -138,7 +138,7 @@ public class SseServiceImpl implements SseService {
         log.info("일괄 알림 발송 이벤트 확인 batchId: {}", event.getBatchId());
 
         // 현재 접속 중인 유저 ID 목록
-        Set<Long> connectedUserIds = this.getConnectedUserIds();
+        Set<Long> connectedUserIds = getConnectedUserIds();
         if (connectedUserIds.isEmpty()) {
             log.info("접속 중인 유저가 없으므로 Batch SSE 푸시를 스킵합니다. batchId: {}", event.getBatchId());
             return;
