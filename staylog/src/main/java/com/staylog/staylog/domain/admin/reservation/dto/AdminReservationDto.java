@@ -32,8 +32,7 @@ public class AdminReservationDto {
     private String statusName;       // 예약 상태명
     private String statusColor;      // 상태 색상
     private LocalDateTime createdAt; // 예약일
-    private LocalDateTime updatedAt;
-    private String paymentMethod;
-    private LocalDateTime paidAt;
+    private String paymentMethod; // 결제수단
+    private LocalDateTime paidAt; // 결제시간
 }
 
