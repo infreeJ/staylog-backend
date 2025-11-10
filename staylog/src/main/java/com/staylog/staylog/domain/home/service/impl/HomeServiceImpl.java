@@ -1,14 +1,10 @@
 package com.staylog.staylog.domain.home.service.impl;
 
 
-import com.staylog.staylog.domain.accommodation.mapper.RoomMapper;
-import com.staylog.staylog.domain.accommodation.service.impl.RoomServiceImpl;
 import com.staylog.staylog.domain.home.dto.request.HomeAccommodationListRequest;
 import com.staylog.staylog.domain.home.dto.response.HomeAccommodationListResponse;
 import com.staylog.staylog.domain.home.mapper.HomeMapper;
 import com.staylog.staylog.domain.home.service.HomeService;
-import com.staylog.staylog.global.common.code.ErrorCode;
-import com.staylog.staylog.global.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
