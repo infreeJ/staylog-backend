@@ -49,4 +49,12 @@ public interface ImageMapper {
      * @return 대표 이미지 DTO 목록
      */
     List<ImageDto> selectFirstImageByTargetIds(String targetType, List<Long> targetIds);
+
+
+	/**
+	 * 대표이미지 1개 조회
+	 * @param imageDto 이미지 객체
+	 * @return String 저장된 이미지 명
+	 */
+	String getMainImgByTargetTypeAndId(ImageDto imageDto);
 }

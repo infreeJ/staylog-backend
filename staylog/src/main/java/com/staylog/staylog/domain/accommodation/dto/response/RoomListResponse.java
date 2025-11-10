@@ -21,4 +21,6 @@ public class RoomListResponse {
 	private int maxGuest;
 	private String rmTypeNameEn;
 	private String rmTypeName;
+	// 예약 불가일
+	private List<String> disabledDates;
 }

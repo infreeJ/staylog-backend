@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -58,7 +57,7 @@ public class NotificationServiceImpl implements NotificationService {
             // DB 저장
             int success = notificationMapper.notiSave(notificationRequest);
             if (success == 0) {
-                log.error("알림 DB 저장 0건, 로직 확인 필요. request: {}", notificationRequest);
+                log.error("알림 DB 저장 0건, 로직 확인 필요. request: {}", notificationRequest); // TODO: 너무 긴 로그 -> 수정필요
                 throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
             }
         } catch (TransientDataAccessException e) { // @Retryable이 가로채서 재시도
@@ -112,7 +111,7 @@ public class NotificationServiceImpl implements NotificationService {
             // Users 테이블에서 userId를 매핑하여 모든 사용자에게 알림 저장
             int success = notificationMapper.notiSaveBatchFromUsers(notificationRequest);
             if(success == 0) {
-                log.error("알림 DB 저장 0건, 로직 확인 필요. request: {}", notificationRequest);
+                log.error("알림 DB 저장 0건, 로직 확인 필요. request: {}", notificationRequest); // TODO: 너무 긴 로그 -> 수정필요
                 throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
             }
         } catch (TransientDataAccessException e) { // @Retryable이 가로채서 재시도
@@ -126,7 +125,7 @@ public class NotificationServiceImpl implements NotificationService {
             throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
         }
 
-        log.info("알림 데이터 일괄 저장 완료");
+        log.info("알림 데이터 일괄 저장 완료. batchId: {}", notificationRequest.getBatchId());
 
         // 클라이언트에게 SSE로 푸시하기위한 객체 구성
         NotificationResponse notificationResponse = NotificationResponse.builder()

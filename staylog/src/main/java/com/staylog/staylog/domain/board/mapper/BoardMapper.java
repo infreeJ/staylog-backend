@@ -5,6 +5,7 @@ import com.staylog.staylog.domain.board.dto.BookingDto;
 import com.staylog.staylog.domain.board.dto.request.BoardListRequest;
 import com.staylog.staylog.domain.board.dto.request.BoardRequest;
 import com.staylog.staylog.domain.board.dto.response.BoardListResponse;
+import com.staylog.staylog.domain.booking.entity.AccommodationIdAndName;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -36,8 +37,8 @@ public interface BoardMapper {
     void increaseViewsCount(Long boardId);
     void updateViewsCount(Long boardId);
 
-    // 게시글 PK로 숙소명 조회 (알림에서 사용)
-    public String getAccommodationNameByBoardId(long boardId);
+    // 게시글 PK로 숙소명, PK 조회 (알림에서 사용)
+    AccommodationIdAndName getAccommodationNameAndIdByBoardId(long boardId);
 }
 
 
