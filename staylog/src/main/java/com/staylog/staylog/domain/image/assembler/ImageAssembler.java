@@ -6,6 +6,8 @@ import com.staylog.staylog.domain.image.dto.ImageResponse;
 import com.staylog.staylog.domain.image.mapper.ImageMapper;
 import com.staylog.staylog.domain.image.service.ImageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ImageAssembler {
@@ -96,15 +99,24 @@ public class ImageAssembler {
                 .map(idExtractor)
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toList());
+        
+        log.info("==> [ImageAssembler] assembleFirstImage 호출");
+        log.info("==> targetType: {}", targetType);
+        log.info("==> targetIds: {}", targetIds);
 
         // ID가 없으면 이미지 조회 불필요
         if (targetIds.isEmpty()) {
             mainDataList.forEach(data -> imageSetter.accept(data, null)); // 대표 이미지가 없으면 null 설정
+            log.info("==> targetIds가 비어있어 null로 설정 후 반환");
             return;
         }
 
         // 2. ImageMapper를 통해 여러 targetId에 대한 대표 이미지들을 조회합니다. (ImageDto 반환)
         List<ImageDto> representativeImageDtos = imageMapper.selectFirstImageByTargetIds(targetType, targetIds);
+        log.info("==> DB에서 조회된 대표 이미지 DTO 개수: {}", representativeImageDtos.size());
+        if (!representativeImageDtos.isEmpty()) {
+        	log.info("==> 첫 번째 조회된 이미지 DTO: {}", representativeImageDtos.get(0));
+        }
 
         // 3. 조회된 ImageDto 리스트를 targetId를 키로, 변환된 ImageData를 값으로 하는 Map으로 변환합니다.
         Map<Long, ImageData> representativeImageMap = representativeImageDtos.stream()
@@ -117,6 +129,7 @@ public class ImageAssembler {
                                 .originalName(imageDto.getOriginalName())
                                 .build()
                 ));
+        log.info("==> 생성된 대표 이미지 Map 크기: {}", representativeImageMap.size());
 
         // 4. 메인 데이터 목록을 순회하며 각 데이터에 맞는 대표 이미지 정보를 설정합니다.
         mainDataList.forEach(data -> {
@@ -124,6 +137,11 @@ public class ImageAssembler {
             if (id != null) {
                 ImageData representativeImage = representativeImageMap.get(id);
                 imageSetter.accept(data, representativeImage); // 대표 이미지가 없으면 null이 설정됨
+                if (representativeImage != null) {
+                    log.info("==> targetId {}에 대표 이미지 설정 완료: {}", id, representativeImage.getImageUrl());
+                } else {
+                    log.info("==> targetId {}에 해당하는 대표 이미지가 없어 null로 설정", id);
+                }
             } else {
                 imageSetter.accept(data, null); // ID가 없으면 null 설정
             }
