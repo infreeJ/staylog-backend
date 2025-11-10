@@ -368,7 +368,7 @@ public class ImageServiceImpl implements ImageService {
 	@Transactional
 	public String uploadProfileImage(MultipartFile file, String targetType, Long targetId) {
 		// 기존 프로필 이미지가 있는지 확인하고, 있다면 삭제
-		deleteProfileImage(targetType, targetId);
+		deleteImagesByTarget(targetType, targetId);
 		String prefixedTargetType = "IMG_FROM_"+targetType;
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비어있습니다.");

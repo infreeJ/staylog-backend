@@ -37,7 +37,8 @@ public class FileUtil {
         String safeFileName = UUID.randomUUID().toString() + extension;
         String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
         // 시스템 기본 경로 구분자 대신 URL에 적합한 '/'를 사용하도록 변경
-        String savedPath = Paths.get(datePath, safeFileName).toString().replace("\\\\", "/");
+       // String savedPath = Paths.get(datePath, safeFileName).toString().replace("\\\\", "/");
+        String savedPath = Paths.get(datePath, safeFileName).toString().replace(File.separator, "/");
         File destinationFile = new File(uploadPath, savedPath);
 
         destinationFile.getParentFile().mkdirs();
