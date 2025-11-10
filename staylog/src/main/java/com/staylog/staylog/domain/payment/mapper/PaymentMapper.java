@@ -83,4 +83,20 @@ public interface PaymentMapper {
      * @return couponId
      */
     Long findCouponIdByPaymentId(@Param("paymentId") Long paymentId);
+
+    /**
+     * 가상계좌 정보 업데이트 (Toss 응답에서 받은 정보 저장)
+     * @param paymentId 결제 ID
+     * @param bank 은행명
+     * @param accountNumber 계좌번호
+     * @param customerName 예금주
+     * @param dueDate 입금 기한
+     */
+    void updateVirtualAccountInfo(@Param("paymentId") Long paymentId,
+                                  @Param("bank") String bank,
+                                  @Param("accountNumber") String accountNumber,
+                                  @Param("customerName") String customerName,
+                                  @Param("dueDate") OffsetDateTime dueDate);
+
+
 }

@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.payment.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.staylog.staylog.external.toss.dto.response.VirtualAccount;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,6 +29,7 @@ public class PaymentResultResponse {
     private Long amount;
     private String method;
 
+    private VirtualAccount virtualAccount;
     // 상태 정보
     private String paymentStatus;      // PaymentStatus code (PAY_PAID, PAY_FAILED, etc.)
     private String reservationStatus;  // ReservationStatus code (RES_CONFIRMED, RES_CANCELED, etc.)

@@ -25,5 +25,6 @@ public class TossPaymentResponse {
     private List<Cancel> cancels;   // 취소 내역
     private Card card;              // 카드 결제 정보
     private EasyPay easyPay;        // 간편결제 정보
+    private VirtualAccount virtualAccount;  // 가상계좌 정보
     private Failure failure;        // 실패 정보
 }
