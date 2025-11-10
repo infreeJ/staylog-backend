@@ -59,7 +59,7 @@ public class NotificationEventListener {
     @CommonRetryable // 실패시 재시도
     public void handleCouponIssuanceNotification(CouponCreatedEvent event) {
         long recipientId = event.getUserId(); // 수신자 PK
-        log.info("CouponCreatedEvent 리스너 실행. recipientId: {}, couponId: {}", recipientId, event.getCouponId());
+        log.info("handleCouponIssuanceNotification 리스너 실행. recipientId: {}, couponId: {}", recipientId, event.getCouponId());
 
         // 이미지 가져오기
         String imageUrl = getImageUrl("IMG_FROM_ICON", 2);
@@ -98,7 +98,7 @@ public class NotificationEventListener {
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleCouponAllIssuanceNotification(CouponCreatedAllEvent event) {
-        log.info("CouponCreatedAllEvent 리스너 실행.");
+        log.info("handleCouponAllIssuanceNotification 리스너 실행.");
 
         // 이미지 가져오기
         String imageUrl = getImageUrl("IMG_FROM_ICON", 2);
@@ -142,7 +142,7 @@ public class NotificationEventListener {
         Payment payment = paymentMapper.findPaymentById(event.getPaymentId());
         long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
 
-        log.info("PaymentConfirmEvent 리스너 실행. recipientId: {}, paymentId: {}", recipientId, event.getPaymentId());
+        log.info("handlePaymentConfirmNotification 리스너 실행. recipientId: {}, paymentId: {}", recipientId, event.getPaymentId());
         AccommodationIdAndName accommodationInfo = bookingMapper.findAccommodationIdAndNameByBookingId(event.getBookingId()); // 숙소명
 
 //        ImageResponse imageResponse = imageService.getImagesByTarget(
@@ -192,7 +192,7 @@ public class NotificationEventListener {
     @CommonRetryable // 실패시 재시도
     public void handleRefundConfirmNotification(RefundConfirmEvent event) {
         long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
-        log.info("RefundConfirmEvent 리스너 실행. recipientId: {}, refundId: {}", recipientId, event.getRefundId());
+        log.info("handleRefundConfirmNotification 리스너 실행. recipientId: {}, refundId: {}", recipientId, event.getRefundId());
 
         AccommodationIdAndName accommodationInfo = bookingMapper.findAccommodationIdAndNameByBookingId(event.getBookingId()); // 숙소명
 
@@ -236,7 +236,7 @@ public class NotificationEventListener {
     @CommonRetryable // 실패시 재시도
     public void handleReviewCreationNotification(ReviewCreatedEvent event) {
         long recipientId = (long) 7;  // TODO: 원래 Admin에게 보내야하지만 개발 환경이라 infreeJ 아이디로 수취
-        log.info("ReviewCreatedEvent 리스너 실행. recipientId: {}, boardId: {}", recipientId, event.getBoardId());
+        log.info("handleReviewCreationNotification 리스너 실행. recipientId: {}, boardId: {}", recipientId, event.getBoardId());
 
         String nickname = userMapper.findNicknameByUserId(event.getUserId());
         AccommodationIdAndName accommodationInfo = boardMapper.getAccommodationNameAndIdByBoardId(event.getBoardId());
@@ -281,7 +281,7 @@ public class NotificationEventListener {
     @CommonRetryable // 실패시 재시도
     public void handleCommentCreationNotification(CommentCreatedEvent event) {
         long recipientId = boardMapper.getUserIdByBoardId(event.getBoardId()); // 댓글이 작성된 게시글 작성자의 PK
-        log.info("CommentCreatedEvent 리스너 실행. recipientId: {}, commentId: {}", recipientId, event.getCommentId());
+        log.info("handleCommentCreationNotification 리스너 실행. recipientId: {}, commentId: {}", recipientId, event.getCommentId());
 
         String nickname = userMapper.findNicknameByUserId(event.getUserId()); // 댓글 작성자 닉네임
         CommentsDto commentsDto = commentsMapper.getOneByCommentId(event.getCommentId()); // 댓글 데이터
@@ -323,7 +323,7 @@ public class NotificationEventListener {
     @CommonRetryable // 실패시 재시도
     public void handleSignupNotification(SignupEvent event) {
         long recipientId = event.getUserId();
-        log.info("CommentCreatedEvent 리스너 실행. recipientId: {}", recipientId);
+        log.info("handleSignupNotification 리스너 실행. recipientId: {}", recipientId);
 
         // 이미지 가져오기
         String imageUrl = getImageUrl("IMG_FROM_ICON", 1);

@@ -2,7 +2,6 @@ package com.staylog.staylog.domain.coupon.listener;
 
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
 import com.staylog.staylog.domain.coupon.dto.request.CouponRequest;
-import com.staylog.staylog.domain.coupon.dto.response.CouponResponse;
 import com.staylog.staylog.domain.coupon.mapper.CouponMapper;
 import com.staylog.staylog.domain.coupon.service.CouponService;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
@@ -13,7 +12,6 @@ import com.staylog.staylog.global.event.RefundConfirmEvent;
 import com.staylog.staylog.global.event.ReviewCreatedEvent;
 import com.staylog.staylog.global.event.SignupEvent;
 import com.staylog.staylog.global.exception.BusinessException;
-import com.staylog.staylog.global.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Recover;
@@ -44,6 +42,7 @@ public class CouponEventListener {
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleIssueReviewCoupon(ReviewCreatedEvent event) {
+        log.info("handleCouponIssuanceNotification 리스너 실행. userId: {}, boardId: {}", event.getUserId(), event.getBoardId());
 
         CouponRequest couponRequest = CouponRequest.builder()
                 .userId(event.getUserId())
@@ -66,6 +65,7 @@ public class CouponEventListener {
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleIssueSignupCoupon(SignupEvent event) {
+        log.info("handleIssueSignupCoupon 리스너 실행. userId: {}", event.getUserId());
 
         CouponRequest couponRequest = CouponRequest.builder()
                 .userId(event.getUserId())
@@ -95,9 +95,9 @@ public class CouponEventListener {
             log.warn("쿠폰 미사용 결제 건: paymentId={}", event.getPaymentId());
             return;
         }
-
         long userId = bookingMapper.findUserIdByBookingId(event.getBookingId());
         long couponId = event.getCouponId();
+        log.info("handleProcessCouponUsage 리스너 실행. userId: {}, couponId: {}", userId, couponId);
 
         // 쿠폰 검증
         couponService.validateCoupon(userId, couponId);
@@ -128,6 +128,8 @@ public class CouponEventListener {
             log.warn("쿠폰 미사용 결제 건: paymentId={}", event.getPaymentId());
             return;
         }
+
+        log.info("handleProcessCouponUsage 리스너 실행. refundId: {}, couponId: {}", event.getRefundId(), couponId);
 
         int isSuccess = couponMapper.unuseCoupon(couponId);
         if(isSuccess == 0) {
