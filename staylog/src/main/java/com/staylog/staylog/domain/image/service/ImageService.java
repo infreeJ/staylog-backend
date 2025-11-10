@@ -40,5 +40,21 @@ public interface ImageService {
      * @return 각 targetId에 해당하는 ImageResponse 맵
      */
     Map<Long, ImageResponse> getImagesByTargets(String targetType, List<Long> targetIds);
+    
+    /**
+     * 프로필 이미지를 업로드(등록/수정)합니다.
+     * @param file 업로드할 이미지 파일
+     * @param targetType 이미지 타입 (e.g., "USER_PROFILE")
+     * @param targetId 사용자 ID
+     * @return 업로드된 이미지 URL (String)
+     */
+    String uploadProfileImage(MultipartFile file, String targetType, Long targetId);
+    
+    /**
+     * 프로필 이미지를 삭제합니다. (변경 없음)
+     * @param targetType 이미지 타입
+     * @param targetId 사용자 ID
+     */
+    void deleteProfileImage(String targetType, Long targetId);
 
 }

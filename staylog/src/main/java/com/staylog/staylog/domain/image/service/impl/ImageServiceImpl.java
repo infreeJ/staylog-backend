@@ -364,4 +364,53 @@ public class ImageServiceImpl implements ImageService {
 	        .build();
 	}
 
+	@Override
+	@Transactional
+	public String uploadProfileImage(MultipartFile file, String targetType, Long targetId) {
+		// 기존 프로필 이미지가 있는지 확인하고, 있다면 삭제
+		deleteProfileImage(targetType, targetId);
+		String prefixedTargetType = "IMG_FROM_"+targetType;
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("파일이 비어있습니다.");
+        }
+		// 새 이미지 업로드
+		FileUploadDto fileUploadDto = null;
+		try {
+			fileUploadDto = FileUtil.saveFile(file, uploadPath);
+			log.info("저장된 파일 경로"+uploadPath);
+        } catch (IOException e) {
+            log.error("이미지 업로드 중 IO 오류 발생", e);
+            // GlobalExceptionHandler에서 처리하도록 예외를 다시 던집니다.
+            String message = messageUtil.getMessage(ErrorCode.FILE_UPLOAD_FAILED.getMessageKey());
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED, message, e);
+        } catch (IllegalArgumentException e) {
+            log.error("이미지 업로드 인자 오류 발생", e);
+            // GlobalExceptionHandler에서 처리하도록 예외를 다시 던집니다.
+            String message = messageUtil.getMessage(ErrorCode.INVALID_FILE_TYPE.getMessageKey());
+            throw new BusinessException(ErrorCode.INVALID_FILE_TYPE, message, e);
+        }
+		String savedUrl = fileUploadDto.getRelativePath();
+		
+		// DB에 새 이미지 정보 저장
+		ImageDto imageDto = ImageDto.builder()
+                .imageType("IMG_ORIGINAL")
+                .targetType(prefixedTargetType)
+                .targetId(targetId)
+                .savedUrl(fileUploadDto.getRelativePath()) // savedUrl 필드에 FileUtil에서 반환된 상대 경로 저장
+                .originalName(fileUploadDto.getOriginalName())
+                .fileSize(String.valueOf(file.getSize()))
+                .mimeType(file.getContentType())
+                .displayOrder(1)
+                .build();
+		imageMapper.insertImage(imageDto);
+				
+		return "/images/"+savedUrl;
+	}
+
+	@Override
+	public void deleteProfileImage(String targetType, Long targetId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
