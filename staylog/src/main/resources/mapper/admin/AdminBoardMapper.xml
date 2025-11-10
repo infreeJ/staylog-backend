@@ -27,7 +27,7 @@
 			    LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
 			    LEFT JOIN users u ON u.user_id = b.user_id
 			    <where>
-			    	b.board_type = #{boardType}
+			    		b.board_type = #{boardType}
 					<if test="keyword != null and keyword != ''">
 					    <choose>
 					        <!-- 숙소명으로 검색 -->
@@ -46,10 +46,6 @@
 		        </where>
 				ORDER BY b.deleted ASC,
 			        <choose>
-			            <!-- 작성일 정렬 -->
-			            <when test="sortBy == 'createdAt'">
-			                b.created_at
-			            </when>
 			            <!-- 조회수 정렬 -->
 			            <when test="sortBy == 'viewsCount'">
 			                b.views_count
@@ -67,14 +63,8 @@
 			                b.created_at
 			            </otherwise>
 			        </choose>
-			        <choose>
-			            <when test="sortOrder == 'ASC'">
-			                ASC
-			            </when>
-			            <otherwise>
-			                DESC
-			            </otherwise>
-			        </choose>
+				<if test="sortOrder != null and sortOrder == 'ASC'">ASC</if>
+				<if test="sortOrder == null or sortOrder != 'ASC'">DESC</if>
 			) t
 		)
 		WHERE rn BETWEEN #{startRow} AND #{endRow}
@@ -84,10 +74,17 @@
 	<select id="countBoardList" parameterType="BoardSearchRequest" resultType="int">
 	    SELECT COUNT(*)
 	    FROM board b
-	    LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
-	    LEFT JOIN users u ON u.user_id = b.user_id
+		<if test="keyword != null and keyword != '' and searchType == 'accommodationName'">
+			LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+		</if>
+		<if test="keyword != null and keyword != '' and searchType == 'userNickName'">
+		    LEFT JOIN users u ON u.user_id = b.user_id
+		</if>
 	    <where>
 	        b.board_type = #{boardType}
+	        <if test="deleted != null and deleted != ''">
+	            AND b.deleted = #{deleted}
+	        </if>
 	        <if test="keyword != null and keyword != ''">
 	            <choose>
 	                <!-- 숙소명으로 검색 -->
@@ -99,9 +96,6 @@
 	                    AND u.nickname LIKE '%' || #{keyword} || '%'
 	                </when>
 	            </choose>
-	        </if>
-	        <if test="deleted != null and deleted != ''">
-	            AND b.deleted = #{deleted}
 	        </if>
 	    </where>
 	</select>

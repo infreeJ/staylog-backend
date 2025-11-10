@@ -11,8 +11,7 @@
 		    SELECT t.*, ROWNUM AS rn
 			FROM (
 			    SELECT
-			    	r.accommodation_id,
-			    	a.name AS accommodationName,
+				    	r.accommodation_id,
 			        r.room_id,
 			        r.name,
 			        r.rm_type,
@@ -23,18 +22,17 @@
 			        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt
 			    FROM room r
 			    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
-			    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
 			    <where>
-			    	r.accommodation_id = #{accommodationId}
-		            <if test="rmType != null and rmType != ''">
-		            	AND r.rm_type = #{rmType}
-		        	</if>
+			    		r.accommodation_id = #{accommodationId}
+					<if test="rmType != null and rmType != ''">
+						AND r.rm_type = #{rmType}
+					</if>
 					<if test="keyword != null and keyword != ''">
-			            AND r.name LIKE '%' || #{keyword} || '%'
-			        </if>
-		        	<if test="deletedYn != null and deletedYn != ''">
-			           AND r.deleted_yn = #{deletedYn}
-			        </if>
+						AND r.name LIKE '%' || #{keyword} || '%'
+					</if>
+					<if test="deletedYn != null and deletedYn != ''">
+						AND r.deleted_yn = #{deletedYn}
+					</if>
 		        </where>
 			    ORDER BY r.deleted_yn ASC, r.created_at DESC
 			) t
@@ -46,18 +44,16 @@
 	<select id="countRoomList" parameterType="AdminRoomSearchRequest" resultType="int">
 	    SELECT COUNT(*)
 	    FROM room r
-	    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
-	    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
 	    <where>
-	    	r.accommodation_id = #{accommodationId}
+	    		r.accommodation_id = #{accommodationId}
             <if test="rmType != null and rmType != ''">
-            	AND r.rm_type = #{rmType}
-        	</if>
+            		AND r.rm_type = #{rmType}
+        		</if>
+        		<if test="deletedYn != null and deletedYn != ''">
+	           	AND r.deleted_yn = #{deletedYn}
+	        </if>
 			<if test="keyword != null and keyword != ''">
 	            AND r.name LIKE '%' || #{keyword} || '%'
-	        </if>
-        	<if test="deletedYn != null and deletedYn != ''">
-	           AND r.deleted_yn = #{deletedYn}
 	        </if>
         </where>
 	</select>
@@ -65,8 +61,8 @@
 	<!-- 객실 상세 조회 -->
 	<select id="selectRoomDetail" parameterType="long" resultType="AdminRoomDetailResponse">
 	    SELECT
-	    	r.accommodation_id,
-	    	a.name AS accommodationName,
+		    	r.accommodation_id,
+		    	a.name AS accommodationName,
 	        r.room_id,
 	        r.name,
 	        r.rm_type,
@@ -107,6 +103,7 @@
 	        queen_bed = #{queenBed},
 	        king_bed = #{kingBed},
 	        updated_at = SYSTIMESTAMP
+	        description = #{description}
 	    WHERE room_id = #{roomId}
 	</update>
 	

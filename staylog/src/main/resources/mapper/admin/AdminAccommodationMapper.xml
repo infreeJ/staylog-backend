@@ -23,17 +23,17 @@
 				LEFT JOIN common_code ct ON ct.code_id = a.ac_type AND ct.use_yn = 'Y'         
 				LEFT JOIN common_code cr ON cr.code_id = a.region_code AND cr.use_yn = 'Y'
 		        <where>
-		            <if test="regionCode != null and regionCode != ''">
-		            	AND a.region_code = #{regionCode}
-		        	</if>
-		            <if test="acType != null and acType != ''">
-		            	AND a.ac_type = #{acType}
-		        	</if>
-		        	<if test="keyword != null and keyword != ''">
-			            AND a.name LIKE '%' || #{keyword} || '%'
-			        </if>
+			        <if test="regionCode != null and regionCode != ''">
+			            	AND a.region_code = #{regionCode}
+			        	</if>
+			            <if test="acType != null and acType != ''">
+			            	AND a.ac_type = #{acType}
+			        	</if>
+			        	<if test="keyword != null and keyword != ''">
+				     	AND a.name LIKE '%' || #{keyword} || '%'
+				    </if>
 			        <if test="deletedYn != null and deletedYn != ''">
-			           AND a.deleted_yn = #{deletedYn}
+			          	AND a.deleted_yn = #{deletedYn}
 			        </if>
 		        </where>
 				ORDER BY a.deleted_yn ASC, a.created_at DESC
@@ -46,20 +46,18 @@
 	<select id="countAccommodationList" parameterType="AdminAccommodationSearchRequest" resultType="int">
 		SELECT COUNT(*)
 	    FROM accommodation a
-		LEFT JOIN common_code ct ON ct.code_id = a.ac_type AND ct.use_yn = 'Y'         
-		LEFT JOIN common_code cr ON cr.code_id = a.region_code AND cr.use_yn = 'Y'
         <where>
             <if test="regionCode != null and regionCode != ''">
-            	AND a.region_code = #{regionCode}
-        	</if>
-            <if test="acType != null and acType != ''">
-            	AND a.ac_type = #{acType}
-        	</if>
-        	<if test="keyword != null and keyword != ''">
-	            AND a.name LIKE '%' || #{keyword} || '%'
-	        </if>
+            		AND a.region_code = #{regionCode}
+	        	</if>
+			<if test="acType != null and acType != ''">
+	            	AND a.ac_type = #{acType}
+	        	</if>
 	        <if test="deletedYn != null and deletedYn != ''">
-	           AND a.deleted_yn = #{deletedYn}
+	           	AND a.deleted_yn = #{deletedYn}
+	        </if>
+	        	<if test="keyword != null and keyword != ''">
+	            AND a.name LIKE '%' || #{keyword} || '%'
 	        </if>
         </where>
 	</select>
@@ -116,7 +114,7 @@
 	<update id="updateAccommodationStatus" parameterType="map">
 	    UPDATE accommodation
 	    SET deleted_yn = #{deletedYn},
-	        updated_at = SYSDATE
+	        updated_at = SYSTIMESTAMP
 	    WHERE accommodation_id = #{accommodationId}
 	</update>
 	
@@ -124,7 +122,7 @@
 	<update id="updateAccommodationRoomStatus" parameterType="map">
 	    UPDATE room
 	    SET deleted_yn = #{deletedYn},
-	        updated_at = SYSDATE
+	        updated_at = SYSTIMESTAMP
 	    WHERE accommodation_id = #{accommodationId}
 	</update>
 	
