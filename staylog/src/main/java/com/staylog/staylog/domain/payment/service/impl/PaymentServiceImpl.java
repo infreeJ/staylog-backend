@@ -237,6 +237,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .paymentId(paymentId)
                     .paymentKey(tossResponse.getPaymentKey())
                     .orderId(tossResponse.getOrderId())
+                    .bookingId(bookingId)
                     .amount(tossResponse.getTotalAmount())
                     .method(tossResponse.getMethod())
                     .paymentStatus(PaymentStatus.PAY_PAID.getCode())
