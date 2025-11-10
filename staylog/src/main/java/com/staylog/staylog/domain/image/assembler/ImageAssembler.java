@@ -84,7 +84,7 @@ public class ImageAssembler {
      * @param targetType   이미지를 조회할 targetType
      * @param <T>          메인 데이터의 타입
      */
-    public <T> void assembleFirstImage(
+    public <T> void assembleMainImage(
             List<T> mainDataList,
             Function<T, Long> idExtractor,
             BiConsumer<T, ImageData> imageSetter,
@@ -144,6 +144,59 @@ public class ImageAssembler {
                 }
             } else {
                 imageSetter.accept(data, null); // ID가 없으면 null 설정
+            }
+        });
+    }
+
+    /**
+     * 메인 데이터 목록에 '대표 이미지 URL' (String)을 조합하는 범용 메서드.
+     *
+     * @param mainDataList   메인 데이터 목록
+     * @param idExtractor    메인 데이터에서 targetId를 추출하는 함수
+     * @param imageUrlSetter 메인 데이터에 대표 이미지 URL(String)을 설정하는 BiConsumer
+     * @param targetType     이미지를 조회할 targetType
+     * @param <T>            메인 데이터의 타입
+     */
+    public <T> void assembleMainImageUrl(
+            List<T> mainDataList,
+            Function<T, Long> idExtractor,
+            BiConsumer<T, String> imageUrlSetter, // String 타입의 URL을 설정
+            String targetType) {
+
+        if (mainDataList == null || mainDataList.isEmpty()) {
+            return;
+        }
+
+        // 1. 메인 데이터 목록에서 Long 타입의 ID 목록을 추출합니다.
+        List<Long> targetIds = mainDataList.stream()
+                .map(idExtractor)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // ID가 없으면 이미지 조회 불필요
+        if (targetIds.isEmpty()) {
+            mainDataList.forEach(data -> imageUrlSetter.accept(data, null));
+            return;
+        }
+
+        // 2. ImageMapper를 통해 여러 targetId에 대한 대표 이미지들을 조회합니다. (ImageDto 반환)
+        List<ImageDto> representativeImageDtos = imageMapper.selectFirstImageByTargetIds(targetType, targetIds);
+
+        // 3. 조회된 ImageDto 리스트를 targetId를 키로, 완성된 이미지 URL(String)을 값으로 하는 Map으로 변환합니다.
+        Map<Long, String> representativeImageUrlMap = representativeImageDtos.stream()
+                .collect(Collectors.toMap(
+                        ImageDto::getTargetId,
+                        imageDto -> "/images/" + imageDto.getSavedUrl() // 값으로 URL 문자열을 생성
+                ));
+
+        // 4. 메인 데이터 목록을 순회하며 각 데이터에 맞는 대표 이미지 URL을 설정합니다.
+        mainDataList.forEach(data -> {
+            Long id = idExtractor.apply(data);
+            if (id != null) {
+                String imageUrl = representativeImageUrlMap.get(id);
+                imageUrlSetter.accept(data, imageUrl); // 이미지가 없으면 null이 설정됨
+            } else {
+                imageUrlSetter.accept(data, null);
             }
         });
     }
