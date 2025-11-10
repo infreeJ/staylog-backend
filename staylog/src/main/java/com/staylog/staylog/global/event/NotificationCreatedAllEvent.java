@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NotificationCreatedAllEvent {
     private NotificationResponse notificationResponse;
+    private String batchId;
 }

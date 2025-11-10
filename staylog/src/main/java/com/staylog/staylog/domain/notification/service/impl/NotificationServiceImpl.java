@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -108,8 +109,8 @@ public class NotificationServiceImpl implements NotificationService {
     public void saveAllNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse) {
 
         try {
-            // DB 저장
-            int success = notificationMapper.notiSaveBroadcast(notificationRequest);
+            // Users 테이블에서 userId를 매핑하여 모든 사용자에게 알림 저장
+            int success = notificationMapper.notiSaveBatchFromUsers(notificationRequest);
             if(success == 0) {
                 log.error("알림 DB 저장 0건, 로직 확인 필요. request: {}", notificationRequest);
                 throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
@@ -129,15 +130,15 @@ public class NotificationServiceImpl implements NotificationService {
 
         // 클라이언트에게 SSE로 푸시하기위한 객체 구성
         NotificationResponse notificationResponse = NotificationResponse.builder()
-                .notiId(null) // selectKey로 채워진 알림 PK
-                .targetId(null) // 페이지 이동을 위한 PK
+                .notiId(null) // 단체 저장이므로 현재 null
+                .targetId(null) // 단체 저장이므로 현재 null
                 .details(detailsResponse)
                 .isRead("N")
                 .createdAt(LocalDateTime.now())
                 .build();
 
         // =========== 단체 알림 저장 이벤트 발행(SSE 푸시) ==============
-        NotificationCreatedAllEvent event = new NotificationCreatedAllEvent(notificationResponse);
+        NotificationCreatedAllEvent event = new NotificationCreatedAllEvent(notificationResponse, notificationRequest.getBatchId());
         eventPublisher.publishEvent(event);
         // ======================================================
     }

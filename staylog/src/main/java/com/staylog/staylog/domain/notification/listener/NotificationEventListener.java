@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -107,15 +108,15 @@ public class NotificationEventListener {
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
-                .userId(null)
+                .userId(null) // 모든 유저에게 저장하므로 현재 null
                 .notiType("NOTI_COUPON_CREATE")
-                .targetId(null) // 이동할 페이지 PK
+                .targetId(null) // 이동할 페이지 PK -> 현재는 null
                 .details(detailsObject)
+                .batchId(UUID.randomUUID().toString())
                 .build();
 
         // DB 저장 후 SSE 요청하는 메서드 호출
         notificationService.saveAllNotification(notificationRequest, detailsResponse);
-
     }
 
 
