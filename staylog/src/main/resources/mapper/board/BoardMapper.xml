@@ -243,8 +243,8 @@
 
 
     <!-- 게시글 PK로 숙소명 조회 (알림에서 사용) -->
-    <select id="getAccommodationNameByBoardId" parameterType="long" resultType="String">
-        SELECT a.name
+    <select id="getAccommodationNameAndIdByBoardId" parameterType="long" resultType="accommodationIdAndName">
+        SELECT a.name AS accommodation_name, a.accommodation_id AS accommodation_id
         FROM accommodation a
         JOIN board b
             ON a.accommodation_id = b.accommodation_id

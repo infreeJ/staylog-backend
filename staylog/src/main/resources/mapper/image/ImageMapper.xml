@@ -178,4 +178,12 @@
         i.target_type = #{targetType}
     </select>
 
+
+	<!-- 대표이미지 1개 조회 -->
+	<select id="getMainImgByTargetTypeAndId" parameterType="imageDto" resultType="String">
+		SELECT saved_url
+		FROM image_file
+		WHERE target_type = #{targetType} AND target_id = #{targetId} AND display_order = 1
+	</select>
+
 </mapper>
