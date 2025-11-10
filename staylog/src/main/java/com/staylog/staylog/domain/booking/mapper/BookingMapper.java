@@ -1,6 +1,7 @@
 package com.staylog.staylog.domain.booking.mapper;
 
 import com.staylog.staylog.domain.booking.dto.response.BookingDetailResponse;
+import com.staylog.staylog.domain.booking.entity.AccommodationIdAndName;
 import com.staylog.staylog.domain.booking.entity.Booking;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -86,7 +87,7 @@ public interface BookingMapper {
      * @param bookingId 예약 PK
      * @return 숙소명
      */
-    Map<String, Object> findAccommodationIdAndNameByBookingId(@Param("bookingId") long bookingId);
+    AccommodationIdAndName findAccommodationIdAndNameByBookingId(@Param("bookingId") long bookingId);
 
     /**
      * bookingId로 예약자 PK 조회

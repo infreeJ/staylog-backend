@@ -211,7 +211,7 @@
     </select>
 
     <!-- bookingId로 숙소PK, 숙소명 조회 -->
-    <select id="findAccommodationIdAndNameByBookingId" parameterType="long" resultType="map">
+    <select id="findAccommodationIdAndNameByBookingId" parameterType="long" resultType="accommodationIdAndName">
         SELECT a.accommodation_id AS accommodation_id, a.name AS accommodation_name
         FROM reservation res JOIN room r ON res.room_id = r.room_id
             JOIN accommodation a ON r.accommodation_id = a.accommodation_id
