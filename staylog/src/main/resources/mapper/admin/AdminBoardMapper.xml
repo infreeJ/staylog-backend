@@ -96,6 +96,10 @@
 	        <if test="deleted != null and deleted != ''">
 	            AND b.deleted = #{deleted}
 	        </if>
+    	        <!-- 지역으로 검색 -->
+            <if test="searchType == 'region_code'">
+                AND b.region_code = #{regionCode}
+            </if>
 	        <if test="keyword != null and keyword != ''">
 	            <choose>
 	                <!-- 숙소명으로 검색 -->
@@ -105,10 +109,6 @@
 	                <!-- 닉네임으로 검색 -->
 	                <when test="searchType == 'userNickName'">
 	                    AND u.nickname LIKE '%' || #{keyword} || '%'
-	                </when>
-	                <!-- 지역으로 검색 -->
-	                <when test="searchType == 'region_code'">
-	                    AND b.region_code = #{regionCode}
 	                </when>
 	            </choose>
 	        </if>
