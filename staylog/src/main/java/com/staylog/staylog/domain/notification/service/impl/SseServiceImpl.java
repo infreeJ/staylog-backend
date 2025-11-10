@@ -6,8 +6,10 @@ import com.staylog.staylog.domain.notification.dto.response.NotificationUserMapp
 import com.staylog.staylog.domain.notification.mapper.NotificationMapper;
 import com.staylog.staylog.domain.notification.service.SseService;
 import com.staylog.staylog.global.annotation.CommonRetryable;
+import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.event.NotificationCreatedAllEvent;
 import com.staylog.staylog.global.event.NotificationCreatedEvent;
+import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,6 +18,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -132,6 +135,7 @@ public class SseServiceImpl implements SseService {
     @TransactionalEventListener
     @CommonRetryable
     public void pushBatchNotifications(NotificationCreatedAllEvent event) {
+        log.info("일괄 알림 발송 이벤트 확인 batchId: {}", event.getBatchId());
 
         // 현재 접속 중인 유저 ID 목록
         Set<Long> connectedUserIds = this.getConnectedUserIds();
@@ -142,6 +146,10 @@ public class SseServiceImpl implements SseService {
 
         // DB에서 방금 저장한 알림 중 접속 중인 유저의 것만 조회
         List<NotificationUserMapping> notisToPush = notificationMapper.findByBatchIdAndUserIds(event.getBatchId(), connectedUserIds);
+        if (notisToPush == null || notisToPush.isEmpty()) {
+            log.warn("알림 데이터 조회 실패: 접속한 유저가 없거나, 알림 정보를 찾을 수 없습니다.");
+            throw new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND);
+        }
 
         // 여러번 사용하므로 미리 꺼내놓기
         NotificationResponse responseTemplate = event.getNotificationResponse();
