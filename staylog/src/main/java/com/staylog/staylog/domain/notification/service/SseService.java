@@ -13,9 +13,4 @@ public interface SseService {
      * @author 이준혁
      */
     public SseEmitter subscribe(Long userId);
-
-
-    public void sendNotification(Long userId, NotificationResponse data);
-
-    public void broadcast(NotificationResponse notificationResponse);
 }

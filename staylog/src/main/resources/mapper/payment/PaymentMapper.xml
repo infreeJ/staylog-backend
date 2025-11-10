@@ -140,4 +140,11 @@
         WHERE PAYMENT_ID = #{paymentId}
     </update>
 
+    <!-- 결제 PK로 쿠폰 PK 조회 -->
+    <select id="findCouponIdByPaymentId" parameterType="long" resultType="Long">
+        SELECT coupon_id
+        FROM payment
+        WHERE payment_id = #{paymentId}
+    </select>
+
 </mapper>

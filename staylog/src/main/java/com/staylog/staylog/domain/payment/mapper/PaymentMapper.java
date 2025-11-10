@@ -61,4 +61,12 @@ public interface PaymentMapper {
     void updatePaymentFailure(@Param("paymentId") Long paymentId,
                               @Param("status") String status,
                               @Param("failureReason") String failureReason);
+
+
+    /**
+     * 쿠폰 PK 조회
+     * @param paymentId 결제 PK
+     * @return couponId
+     */
+    Long findCouponIdByPaymentId(@Param("paymentId") Long paymentId);
 }

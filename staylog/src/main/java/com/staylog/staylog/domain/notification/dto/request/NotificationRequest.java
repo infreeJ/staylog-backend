@@ -20,4 +20,5 @@ public class NotificationRequest {
     private String notiType;
     private Long targetId;
     private String details;
+    private String batchId; // null일 수 있다.
 }

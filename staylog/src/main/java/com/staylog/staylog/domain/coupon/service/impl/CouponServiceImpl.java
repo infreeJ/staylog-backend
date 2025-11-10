@@ -129,13 +129,12 @@ public class CouponServiceImpl implements CouponService {
 
 
     /**
-     * 쿠폰 검증 및 퍼센트 할인 계산
+     * 쿠폰 검증
      * - PaymentService에서 결제 준비 시 호출
-     * - DISCOUNT 컬럼 값을 퍼센트로 해석 (예: 10 = 10% 할인)
      *
      * @param userId 사용자 ID
      * @param couponId 쿠폰 ID
-     * @return CouponDiscountResult 할인 계산 결과
+     * @return coupon 쿠폰 객체
      * @author danjae
      */
     @Override

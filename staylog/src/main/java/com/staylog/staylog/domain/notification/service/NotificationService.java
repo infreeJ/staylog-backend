@@ -55,6 +55,12 @@ public interface NotificationService {
      */
     public void deleteNotification(long notiId);
 
+    /**
+     * 해당 유저의 알림 전체 삭제
+     * @author 이준혁
+     * @param userId 유저 PK
+     */
+    public void deleteNotificationAll(long userId);
 
     /**
      * 단일 알림 읽음 처리

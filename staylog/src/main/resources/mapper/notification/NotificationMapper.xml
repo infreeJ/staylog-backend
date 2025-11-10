@@ -14,12 +14,37 @@
         VALUES(#{notiId}, #{userId}, #{notiType}, #{targetId}, #{details})
     </insert>
 
-    <!-- 전체 사용자에게 알림 일괄 발송 -->
-    <insert id="notiSaveBroadcast" parameterType="notificationRequest">
-        INSERT INTO notification(noti_id, user_id, noti_type, target_id, details)
-        SELECT seq_notification_id.NEXTVAL, u.user_id, #{notiType}, u.user_id, #{details}
+    <!-- 전체 사용자에게 알림 일괄 발송(사용하지 않음) -->
+<!--    <insert id="notiSaveBroadcast" parameterType="notificationRequest">-->
+<!--        INSERT INTO notification(noti_id, user_id, noti_type, target_id, details)-->
+<!--        SELECT seq_notification_id.NEXTVAL, u.user_id, #{notiType}, u.user_id, #{details}-->
+<!--        FROM users u-->
+<!--    </insert>-->
+
+    <!-- 전체 사용자에게 알림 일괄 발송(batch_id를 추가하면서 더이상 batchId 추가 삽입) -->
+    <insert id="notiSaveBatchFromUsers" parameterType="notificationRequest">
+        INSERT INTO notification(noti_id, user_id, noti_type, target_id, details, batch_id)
+        SELECT seq_notification_id.NEXTVAL, u.user_id, #{notiType}, u.user_id, #{details}, #{batchId}
         FROM users u
     </insert>
+
+
+    <!-- batchId로 저장된 알림 데이터 중 현재 접속 중인 유저의 noti_id와 user_id 조회 -->
+    <resultMap id="notificationResultMap" type="notificationUserMapping">
+        <id     property="notiId"    column="noti_id" />
+        <result property="userId"    column="user_id" />
+    </resultMap>
+    <select id="findByBatchIdAndUserIds" resultMap="notificationResultMap">
+        SELECT noti_id, user_id
+        FROM notification
+        WHERE batch_id = #{batchId} AND user_id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </select>
+
+
+
 
     <!-- 알림 데이터 조회 -->
     <select id="findNotificationsByUserId" parameterType="long" resultType="NotificationSelectRequest">
@@ -33,6 +58,12 @@
     <delete id="deleteByNotiId" parameterType="long">
         DELETE FROM notification
         WHERE noti_id = #{notiId}
+    </delete>
+
+    <!-- 알림 데이터 전체 삭제 -->
+    <delete id="deleteAllByUserId" parameterType="long">
+        DELETE FROM notification
+        WHERE user_id = #{userId}
     </delete>
 
     <!-- 단일 알림 읽음 처리 -->

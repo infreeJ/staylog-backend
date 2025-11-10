@@ -86,7 +86,7 @@ public interface BookingMapper {
      * @param bookingId 예약 PK
      * @return 숙소명
      */
-    String findAccommodationNameByBookingId(@Param("bookingId") long bookingId);
+    Map<String, Object> findAccommodationIdAndNameByBookingId(@Param("bookingId") long bookingId);
 
     /**
      * bookingId로 예약자 PK 조회
