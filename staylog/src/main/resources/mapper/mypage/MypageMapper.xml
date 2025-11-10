@@ -150,7 +150,6 @@
                 LEFT JOIN ACCOMMODATION a ON r.accommodation_id = a.accommodation_id
                 WHERE r.user_id = #{userId}
                   AND r.board_type = 'BOARD_REVIEW'
-                  AND b.is_writed = 'Y'
                 ORDER BY r.created_at DESC
             </otherwise>
         </choose>
