@@ -1,6 +1,5 @@
 package com.staylog.staylog.domain.image.controller;
 
-import com.staylog.staylog.domain.image.dto.ImageDto;
 import com.staylog.staylog.domain.image.dto.ImageResponse;
 import com.staylog.staylog.domain.image.dto.ImageUpdateRequest;
 import com.staylog.staylog.domain.image.service.ImageService;
@@ -16,9 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "ImageController", description = "Image Load & Upload")
 @Slf4j
@@ -102,19 +99,6 @@ public class ImageController {
 	    String code = "200"; // 임시 코드
 	    SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
 	    return ResponseEntity.ok(success);
-    }
-    
-    @PostMapping("/images/imageId/draft") //정나영 : 보드 아이디만 미리 발급
-    public ResponseEntity<SuccessResponse<Long>> selectImageId(){
-    	
-    	Long imageId = imageService.getBoardId();
-    	String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
-    	String code = SuccessCode.SUCCESS.getCode();
-    	
-    	SuccessResponse<Long> success = SuccessResponse.of(code,message,imageId);
-    	
-    	return ResponseEntity.ok(success);
-    	
     }
     
 }

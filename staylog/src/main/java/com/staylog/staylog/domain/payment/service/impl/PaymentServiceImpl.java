@@ -178,20 +178,20 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // 이미 완료된 결제일 경우 결제 정보를 즉시 리턴
-//        if(!payment.getStatus().equals("PAY_READY")) {
-//            log.info("이미 완료된 결제입니다.: paymentId={}, bookingId={}, couponId={}", payment.getPaymentId(), payment.getBookingId(), payment.getCouponId());
-//            return PaymentResultResponse.builder()
-//                    .paymentId(paymentId)
-//                    .paymentKey(payment.getPaymentKey())
-//                    .orderId(tossResponse.getOrderId())
-//                    .amount(tossResponse.getTotalAmount())
-//                    .method(tossResponse.getMethod())
-//                    .paymentStatus(PaymentStatus.PAY_PAID.getCode())
-//                    .reservationStatus(ReservationStatus.RES_CONFIRMED.getCode())
-//                    .requestedAt(payment.getRequestedAt())
-//                    .approvedAt(tossResponse.getApprovedAt())
-//                    .build();
-//        }
+        if(payment.getStatus().equals("PAY_PAID")) {
+            log.info("이미 완료된 결제입니다.: paymentId={}, bookingId={}, couponId={}", payment.getPaymentId(), payment.getBookingId(), payment.getCouponId());
+            return PaymentResultResponse.builder()
+                    .paymentId(payment.getPaymentId())
+                    .paymentKey(payment.getPaymentKey())
+                    .orderId(request.getOrderId())
+                    .amount(payment.getAmount())
+                    .method(payment.getMethod())
+                    .paymentStatus(PaymentStatus.PAY_PAID.getCode())
+                    .reservationStatus(ReservationStatus.RES_CONFIRMED.getCode())
+                    .requestedAt(payment.getRequestedAt())
+                    .approvedAt(payment.getApprovedAt())
+                    .build();
+        }
 
         // 3. ✅ 금액 검증 (PAYMENT.AMOUNT와 비교 - 할인 후 최종 금액)
         if (!payment.getAmount().equals(request.getAmount())) {
@@ -237,6 +237,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .paymentId(paymentId)
                     .paymentKey(tossResponse.getPaymentKey())
                     .orderId(tossResponse.getOrderId())
+                    .bookingId(bookingId)
                     .amount(tossResponse.getTotalAmount())
                     .method(tossResponse.getMethod())
                     .paymentStatus(PaymentStatus.PAY_PAID.getCode())

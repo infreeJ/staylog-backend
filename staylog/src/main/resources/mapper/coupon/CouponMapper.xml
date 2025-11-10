@@ -57,7 +57,7 @@
     <!-- 쿠폰 미사용처리 -->
     <update id="unuseCoupon" parameterType="long">
         UPDATE coupon
-        SET is_used = 'N', used_at = SYSTIMESTAMP
+        SET is_used = 'N', used_at = NULL
         WHERE coupon_id = #{couponId}
     </update>
 

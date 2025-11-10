@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -278,17 +279,27 @@ public class ImageServiceImpl implements ImageService {
 	    
 	}
 	
-	
-	//정나영
 	@Override
-	public Long getBoardId() {
-		
-		//boardId 만 미리 발급 = 이미지 테이블의 TargetId 
-		Long imageId = imageMapper.getNextBoardId();
-		
-		return imageId;
+    @Transactional(readOnly = true)
+	public Map<Long, ImageResponse> getImagesByTargets(String targetType, List<Long> targetIds) {
+		String prefixedTargetType = "IMG_FROM_" + targetType;
+		if (targetIds == null || targetIds.isEmpty()) {
+			return new HashMap<>();
+		}
+
+        List<ImageDto> allImages = imageMapper.selectImagesByTargetIds(prefixedTargetType, targetIds);
+
+        // targetId를 기준으로 ImageDto를 그룹화합니다.
+        Map<Long, List<ImageDto>> groupedImages = allImages.stream()
+                .collect(Collectors.groupingBy(ImageDto::getTargetId));
+
+        Map<Long, ImageResponse> resultMap = new HashMap<>();
+        for (Map.Entry<Long, List<ImageDto>> entry : groupedImages.entrySet()) {
+            resultMap.put(entry.getKey(), buildImageResponse(targetType, entry.getKey(), entry.getValue()));
+        }
+        return resultMap;
+
 	}
-	
 	
 	/**
 	 * 필요한 개수(count)만큼의 displayOrder 범위를 예약하고, 시작 번호를 반환.

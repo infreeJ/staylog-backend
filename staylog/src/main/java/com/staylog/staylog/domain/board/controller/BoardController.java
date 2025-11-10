@@ -69,8 +69,8 @@ public class BoardController {
 
 
     // 게시판 수정
-    @PatchMapping("/boards")
-    public ResponseEntity<SuccessResponse<BoardDto>> boardUpdate(@ModelAttribute BoardDto boardDto) {
+    @PutMapping("/boards/{boardId}")
+    public ResponseEntity<SuccessResponse<BoardDto>> boardUpdate(@RequestBody BoardDto boardDto) {
 
         boardService.update(boardDto);
 

@@ -61,6 +61,23 @@ public class NotificationController {
 
 
     /**
+     * 해당 유저의 알림 전체 삭제
+     * @author 이준혁
+     * @param userId 유저 PK
+     */
+    @Operation(summary = "특정 유저의 알림 전체 삭제", description = "알림을 일괄 삭제합니다.")
+    @DeleteMapping("/notification/{userId}/delete-all")
+    public ResponseEntity<SuccessResponse<Void>> deleteNotificationAll(@PathVariable long userId) {
+
+        notificationService.deleteNotificationAll(userId);
+
+        String message = messageUtil.getMessage(SuccessCode.NOTIFICATION_DELETE.getMessageKey());
+        String code = SuccessCode.NOTIFICATION_DELETE.name();
+        return ResponseEntity.ok(SuccessResponse.of(code, message, null));
+    }
+
+
+    /**
      * 단일 알림 읽음 처리
      * @author 이준혁
      * @param readRequest 알림 PK

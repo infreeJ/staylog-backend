@@ -59,14 +59,21 @@
             TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
             TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
             b.likes_count AS likesCount,
-            b.deleted
+            b.deleted,
+            i.saved_url AS thumbnailUrl
+
             FROM board b
             LEFT JOIN accommodation a
-            ON b.accommodation_id = a.accommodation_id
+                ON b.accommodation_id = a.accommodation_id
             LEFT JOIN users u
-            ON b.user_id = u.user_id
+                ON b.user_id = u.user_id
             LEFT JOIN common_code cc
-            ON b.region_code = cc.code_id
+                ON b.region_code = cc.code_id
+            LEFT JOIN image_file i
+                ON i.target_id = b.board_id
+                AND SUBSTR(i.target_type,10) = #{boardType}
+                AND i.display_order = 1
+
             WHERE b.deleted = 'N'
             AND b.board_type = #{boardType}
 
@@ -77,11 +84,6 @@
                     #{code}
                 </foreach>
             </if>
-
-    <!--        GROUP BY-->
-    <!--        b.board_type, b.region_code, cc.code_name, b.board_id,-->
-    <!--        b.accommodation_id, a.name, b.booking_id, b.user_id, u.nickname,-->
-    <!--        b.title, b.rating, b.views_count, b.created_at, b.updated_at, b.deleted-->
 
             <!-- 정렬 -->
             <choose>
@@ -108,12 +110,15 @@
 
 
     <!-- 해당 카테고리 게시글 상세 조회 -->
-    <select id="getByBoardId" parameterType="long" resultType="BoardDto">
+    <select id="getByBoardId" parameterType="Long" resultType="BoardDto">
         SELECT b.board_id AS boardId,
             b.region_code AS regionCode,
             b.board_type AS boardType,
             b.accommodation_id AS accommodationId,
+            a.name AS accommodationName,
             b.booking_id AS bookingId,
+            TO_CHAR(r.check_in, 'YYYY-MM-DD') AS checkIn,
+            TO_CHAR(r.check_out, 'YYYY-MM-DD') AS checkOut,
             b.user_id AS userId,
             u.name AS userName,
             u.nickname AS userNickName,
@@ -128,7 +133,12 @@
         FROM board b
         JOIN users u
             ON b.user_id = u.user_id
+        LEFT JOIN accommodation a
+            ON b.accommodation_id = a.accommodation_id
+        LEFT JOIN reservation r
+            ON b.booking_id = r.booking_id
         WHERE b.board_id = #{boardId}
+            AND deleted = 'N'
     </select>
 
 
@@ -181,6 +191,7 @@
         JOIN accommodation a
             ON rm.accommodation_id = a.accommodation_id
         WHERE r.user_id = #{userId}
+            AND r.check_out &lt; SYSDATE
     </select>
 
 
@@ -234,7 +245,9 @@
     <!-- 게시글 PK로 숙소명 조회 (알림에서 사용) -->
     <select id="getAccommodationNameByBoardId" parameterType="long" resultType="String">
         SELECT a.name
-        FROM accommodation a JOIN board b ON a.accommodation_id = b.accommodation_id
+        FROM accommodation a
+        JOIN board b
+            ON a.accommodation_id = b.accommodation_id
         WHERE b.board_id = #{boardId}
     </select>
 

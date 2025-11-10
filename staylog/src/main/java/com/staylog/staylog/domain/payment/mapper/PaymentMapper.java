@@ -5,7 +5,7 @@ import com.staylog.staylog.domain.payment.entity.Payment;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Map;
+import java.time.OffsetDateTime;
 
 /**
  * 결제 Mapper 인터페이스
@@ -34,12 +34,26 @@ public interface PaymentMapper {
     Payment findPaymentByBookingId(@Param("bookingId") Long bookingId);
 
     /**
+     * @param orderId -> Reservation의 BookingNum
+     * @return Payment엔티티 bookingId 포함
+     */
+    Payment findByOrderId(@Param("orderId") String orderId);
+
+    /**
      * 결제 조회 (paymentKey) - Payment Entity 반환
      * @param paymentKey Toss 결제 키
      * @return 결제 정보
      */
     Payment findPaymentByPaymentKey(@Param("paymentKey") String paymentKey);
 
+
+    /**
+     * Payment 상태 업데이트
+     */
+    int updatePaymentStatus(@Param("paymentId") Long paymentId,
+                            @Param("paymentKey") String paymentKey,
+                            @Param("status") String status,
+                            @Param("approvedAt") OffsetDateTime approvedAt);
     /**
      * 결제 상태 업데이트 (승인 성공 시)
      * @param paymentId 결제 ID
@@ -61,4 +75,12 @@ public interface PaymentMapper {
     void updatePaymentFailure(@Param("paymentId") Long paymentId,
                               @Param("status") String status,
                               @Param("failureReason") String failureReason);
+
+
+    /**
+     * 쿠폰 PK 조회
+     * @param paymentId 결제 PK
+     * @return couponId
+     */
+    Long findCouponIdByPaymentId(@Param("paymentId") Long paymentId);
 }

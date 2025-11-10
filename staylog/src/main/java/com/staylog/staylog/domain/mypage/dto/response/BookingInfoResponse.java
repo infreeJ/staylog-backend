@@ -35,9 +35,10 @@ public class BookingInfoResponse {
     private Integer totalGuestCount;  	// 총 인원 수
     
     // 숙소 & 객실 정보
+    private Long accommodationId;		// 숙소 ID (ACCOMMODATION.ACCOMMODATION_ID)
     private String accommodationName; 	// 숙소명 (ACCOMMODATION.NAME)
+    private Long roomId;				// 객실 ID (ROOM.ROOM_ID)
     private String roomName; 			// 객실명 (ROOM.NAME)
-    private Long roomId;				// 객실 ID (ROOM_ID)
     
     // 결제 정보
     private Long payId;               	// 결제 ID (PAYMENT.PAY_ID)

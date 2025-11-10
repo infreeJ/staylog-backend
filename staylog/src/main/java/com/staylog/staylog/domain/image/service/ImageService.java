@@ -8,6 +8,7 @@ import com.staylog.staylog.domain.image.dto.ImageUpdateRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 이미지 저장 서비스 인터페이스
@@ -29,9 +30,15 @@ public interface ImageService {
     */
     void updateImages(ImageUpdateRequest request, List<MultipartFile> files);
     ImageResponse getImagesByTarget(String targetType, long targetId);
-    
-    
-    //정나영
-    Long getBoardId();
+
+    /**
+     * 여러 대상(targetId)에 대한 이미지 목록을 한 번에 조회합니다.
+     * N+1 쿼리 문제를 해결하기 위해 사용됩니다.
+     * @param targetType 이미지의 부모 엔티티 타입 (e.g., "BOARD", "ACCOMMODATION")
+     * @param targetIds 조회할 대상 ID 목록
+     * @param <T> targetId의 타입
+     * @return 각 targetId에 해당하는 ImageResponse 맵
+     */
+    Map<Long, ImageResponse> getImagesByTargets(String targetType, List<Long> targetIds);
 
 }

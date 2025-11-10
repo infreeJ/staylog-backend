@@ -12,22 +12,33 @@
 		    FROM (
 				SELECT
 				    b.board_id,
-				    b.accommodation_id,
-				    a.name AS accommodationName,
+	                <if test="boardType == 'BOARD_REVIEW'">
+	                		b.accommodation_id,
+	                		a.name AS accommodationName,
+	                </if>
+	                <if test="boardType == 'BOARD_JOURNAL'">
+		                	b.region_code,
+		                cr.code_name AS regionName,
+	                </if>
 				    b.user_id,
 				    u.nickname AS userNickName,
 				    b.title,
 				    <!-- 리뷰 게시글만 사용 -->
 				    b.rating,
-				    b.likes_count AS likes,
+				    b.likes_count AS likesCount,
 				    b.views_count,
 				    TO_CHAR(b.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 				    b.deleted
 			    FROM board b
-			    LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
 			    LEFT JOIN users u ON u.user_id = b.user_id
+				<if test="boardType == 'BOARD_REVIEW'">
+	                LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+	            </if>
+				<if test="boardType == 'BOARD_JOURNAL'">
+	                LEFT JOIN common_code cr ON cr.code_id = b.region_code AND cr.use_yn = 'Y'
+	            </if>
 			    <where>
-			    	b.board_type = #{boardType}
+			    		b.board_type = #{boardType}
 					<if test="keyword != null and keyword != ''">
 					    <choose>
 					        <!-- 숙소명으로 검색 -->
@@ -46,20 +57,16 @@
 		        </where>
 				ORDER BY b.deleted ASC,
 			        <choose>
-			            <!-- 작성일 정렬 -->
-			            <when test="sortBy == 'createdAt'">
-			                b.created_at
-			            </when>
 			            <!-- 조회수 정렬 -->
 			            <when test="sortBy == 'viewsCount'">
 			                b.views_count
 			            </when>
 			            <!-- 별점 정렬 (리뷰만) -->
-			            <when test="sortBy == 'rating'">
+			            <when test="sortBy == 'rating' and boardType == 'BOARD_REVIEW'">
 			                b.rating
 			            </when>
 			            <!-- 좋아요 정렬 -->
-			            <when test="sortBy == 'likes'">
+			            <when test="sortBy == 'likesCount'">
 			                b.likes_count
 			            </when>
 			            <!-- 기본: 작성일 -->
@@ -67,14 +74,8 @@
 			                b.created_at
 			            </otherwise>
 			        </choose>
-			        <choose>
-			            <when test="sortOrder == 'ASC'">
-			                ASC
-			            </when>
-			            <otherwise>
-			                DESC
-			            </otherwise>
-			        </choose>
+				<if test="sortOrder != null and sortOrder == 'ASC'">ASC</if>
+				<if test="sortOrder == null or sortOrder != 'ASC'">DESC</if>
 			) t
 		)
 		WHERE rn BETWEEN #{startRow} AND #{endRow}
@@ -84,10 +85,21 @@
 	<select id="countBoardList" parameterType="BoardSearchRequest" resultType="int">
 	    SELECT COUNT(*)
 	    FROM board b
-	    LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
-	    LEFT JOIN users u ON u.user_id = b.user_id
+		<if test="keyword != null and keyword != '' and searchType == 'accommodationName'">
+			LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+		</if>
+		<if test="keyword != null and keyword != '' and searchType == 'userNickName'">
+		    LEFT JOIN users u ON u.user_id = b.user_id
+		</if>
 	    <where>
 	        b.board_type = #{boardType}
+	        <if test="deleted != null and deleted != ''">
+	            AND b.deleted = #{deleted}
+	        </if>
+    	        <!-- 지역으로 검색 -->
+            <if test="searchType == 'region_code'">
+                AND b.region_code = #{regionCode}
+            </if>
 	        <if test="keyword != null and keyword != ''">
 	            <choose>
 	                <!-- 숙소명으로 검색 -->
@@ -99,9 +111,6 @@
 	                    AND u.nickname LIKE '%' || #{keyword} || '%'
 	                </when>
 	            </choose>
-	        </if>
-	        <if test="deleted != null and deleted != ''">
-	            AND b.deleted = #{deleted}
 	        </if>
 	    </where>
 	</select>
@@ -120,7 +129,7 @@
 		    b.title,
 		    b.content,
 		    b.rating,
-		    b.likes_count AS likes,
+		    b.likes_count AS likesCount,
 		    b.views_count,
 		    TO_CHAR(b.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt,
 		    TO_CHAR(b.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS updatedAt,

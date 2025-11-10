@@ -14,6 +14,8 @@ import com.staylog.staylog.external.toss.dto.request.TossCancelRequest;
 import com.staylog.staylog.external.toss.dto.response.TossPaymentResponse;
 import com.staylog.staylog.global.constant.RefundType;
 import com.staylog.staylog.global.constant.ReservationStatus;
+import com.staylog.staylog.global.event.PaymentConfirmEvent;
+import com.staylog.staylog.global.event.RefundConfirmEvent;
 import com.staylog.staylog.global.exception.custom.booking.BookingNotFoundException;
 import com.staylog.staylog.global.exception.custom.payment.PaymentNotFoundException;
 import com.staylog.staylog.global.exception.custom.refund.RefundFailedException;
@@ -21,6 +23,7 @@ import com.staylog.staylog.global.exception.custom.refund.RefundPolicyViolationE
 import com.staylog.staylog.global.util.RefundPolicyCalculator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +45,7 @@ public class RefundServiceImpl implements RefundService {
     private final BookingMapper bookingMapper;
     private final PaymentMapper paymentMapper;
     private final TossPaymentClient tossPaymentClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 환불 요청
@@ -163,6 +167,11 @@ public class RefundServiceImpl implements RefundService {
             bookingMapper.updateBookingStatus(bookingId, "RES_REFUNDED");
 
             log.info("환불 처리 성공: refundId={}, paymentKey={}", refundId, paymentKey);
+
+            // ============ 환불 완료 이벤트 발행(알림 전송 / 쿠폰 미사용처리) =============
+            RefundConfirmEvent event = new RefundConfirmEvent(refundId, paymentId, bookingId, refundAmount);
+            eventPublisher.publishEvent(event);
+            // ==========================================================
 
             return RefundResultResponse.builder()
                     .refundId(refundId)

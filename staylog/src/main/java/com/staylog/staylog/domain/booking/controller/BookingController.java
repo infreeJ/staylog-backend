@@ -70,6 +70,7 @@ public class BookingController {
         log.info("예약 조회 요청: bookingId={}", bookingId);
 
         BookingDetailResponse response = bookingService.getBooking(bookingId);
+        log.info("response : BookingDetailResponse = {}", response);
 
         String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
         String code = SuccessCode.SUCCESS.name();

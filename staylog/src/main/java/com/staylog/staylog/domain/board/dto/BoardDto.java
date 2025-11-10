@@ -35,15 +35,17 @@ public class BoardDto {
     private String regionCode;      // 지역 코드 (SEOUL, BUSAN, ..)(common_code.code_id)
     private String regionName;      // 지역 이름 (서울, 부산..)
 
-    private Long boardId;          // 리뷰 고유번호 (PK)
-    private Long accommodationId;  // 숙소 고유번호
+    private Long boardId;           // 리뷰 고유번호 (PK)
+    private Long accommodationId;   // 숙소 고유번호
     private String accommodationName;  // 숙소 고유번호
-    private Long bookingId;        // 예약 고유번호 (UNIQUE)
-    private Long userId;           // 작성자 고유번호
-    private String userNickName;   // 작성자 닉네임
+    private Long bookingId;         // 예약 고유번호 (UNIQUE)
+    private String checkIn;         // 체크인
+    private String checkOut;        // 체크아웃
+    private Long userId;            // 작성자 고유번호
+    private String userNickName;    // 작성자 닉네임
     private String userName;        // 작성자 아이디(영문 or 한글)
 
-
+    private String thumbnailUrl;    // 썸네일 이미지
     private String title;           // 리뷰 제목
     private String content;         // 리뷰 내용
 

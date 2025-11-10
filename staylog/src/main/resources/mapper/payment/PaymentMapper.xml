@@ -55,8 +55,27 @@
         )
     </insert>
 
-
-
+    <!-- orderId(bookingNum)로 Payment 조회 -->
+    <select id="findByOrderId" resultMap="PaymentResultMap">
+        SELECT
+        p.payment_id,
+        p.status,
+        p.amount,
+        p.method,
+        p.booking_id,
+        p.payment_key,
+        p.coupon_id,
+        p.original_amount,
+        p.discount_amount,
+        p.requested_at,
+        p.approved_at,
+        p.refunded_at,
+        p.refund_id,
+        p.refund_amount
+        FROM payments p
+        INNER JOIN bookings b ON p.booking_id = b.booking_id
+        WHERE b.booking_num = #{orderId}
+    </select>
 
     <!-- 결제 조회 (ID) - Payment Entity 반환 -->
     <select id="findPaymentById" resultMap="PaymentResultMap">
@@ -139,5 +158,12 @@
         SET STATUS = #{status}
         WHERE PAYMENT_ID = #{paymentId}
     </update>
+
+    <!-- 결제 PK로 쿠폰 PK 조회 -->
+    <select id="findCouponIdByPaymentId" parameterType="long" resultType="Long">
+        SELECT coupon_id
+        FROM payment
+        WHERE payment_id = #{paymentId}
+    </select>
 
 </mapper>
