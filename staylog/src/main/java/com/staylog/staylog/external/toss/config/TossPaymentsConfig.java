@@ -11,7 +11,7 @@ import java.util.Base64;
 /**
  * 토스 페이먼츠 설정
  */
-@Configuration
+
 @ConfigurationProperties(prefix = "toss.payments")
 @Getter
 @Setter
