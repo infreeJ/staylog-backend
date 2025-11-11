@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -82,7 +83,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
-        log.warn("잘못된 인자 오류 발생: {}", ex.getMessage());
+        log.warn("잘못된 인자 오류 발생: ", ex.getMessage());
 
         ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE; // 적절한 ErrorCode 사용
         String message = messageUtil.getMessage(errorCode.getMessageKey());
@@ -115,6 +116,23 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException e, HttpServletRequest request) {
+    	log.error("요청한 리소스를 찾을 수 없음", e.getResourcePath());
+    	
+    	String message = messageUtil.getMessage(ErrorCode.RESOURCE_NOT_FOUND.getMessageKey());
+    	
+    	ErrorResponse error = ErrorResponse.builder()
+    			.code(ErrorCode.RESOURCE_NOT_FOUND.getCode())
+    			.message(message)
+    			.status(HttpStatus.NOT_FOUND.value())
+    			.path(request.getRequestURI())
+    			.method(request.getMethod())
+    			.build();
+    	
+    	return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
 }

@@ -20,6 +20,10 @@
         <result property="refundedAt" column="REFUNDED_AT" typeHandler="com.staylog.staylog.global.config.OffsetDateTimeTypeHandler"/>
         <result property="refundId" column="REFUND_ID"/>
         <result property="refundAmount" column="REFUND_AMOUNT"/>
+        <result property="virtualAccountBank" column="VIRTUAL_ACCOUNT_BANK"/>
+        <result property="virtualAccountNumber" column="VIRTUAL_ACCOUNT_NUMBER"/>
+        <result property="virtualAccountHolder" column="VIRTUAL_ACCOUNT_HOLDER"/>
+        <result property="virtualAccountDueDate" column="VIRTUAL_ACCOUNT_DUE_DATE" typeHandler="com.staylog.staylog.global.config.OffsetDateTimeTypeHandler"/>
     </resultMap>
 
 
@@ -148,6 +152,9 @@
             STATUS = #{status},
             PAYMENT_KEY = #{paymentKey},
             APPROVED_AT = SYSTIMESTAMP
+            <if test="lastTransactionKey != null">
+                , LAST_TRANSACTION_KEY = #{lastTransactionKey}
+            </if>
         WHERE PAYMENT_ID = #{paymentId}
     </update>
 
@@ -165,5 +172,21 @@
         FROM payment
         WHERE payment_id = #{paymentId}
     </select>
+
+    <!-- 가상계좌 정보 업데이트 (Toss 응답에서 받은 정보 저장) -->
+    <update id="updateVirtualAccountInfo">
+        UPDATE TEAM404F.PAYMENT
+        SET VIRTUAL_ACCOUNT_BANK = #{bank, jdbcType=VARCHAR},
+            VIRTUAL_ACCOUNT_NUMBER = #{accountNumber, jdbcType=VARCHAR},
+            VIRTUAL_ACCOUNT_HOLDER = #{customerName, jdbcType=VARCHAR},
+            VIRTUAL_ACCOUNT_DUE_DATE = #{dueDate, jdbcType=TIMESTAMP, typeHandler=com.staylog.staylog.global.config.OffsetDateTimeTypeHandler}
+        WHERE PAYMENT_ID = #{paymentId}
+    </update>
+
+
+    <insert id="insertVirtualAccountPayment" parameterType="map">
+        INSERT INTO PAYMENT (BOOKING_ID, AMOUNT, STATUS, REQUESTED_AT)
+        VALUES (#{bookingId}, #{amount}, 'PAY_READY', SYSTIMESTAMP)
+    </insert>
 
 </mapper>

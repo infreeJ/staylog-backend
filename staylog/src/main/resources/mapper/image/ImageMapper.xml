@@ -132,7 +132,7 @@
         <id property="imageId" column="image_id"/>
         <result property="targetType" column="target_type"/>
         <result property="targetId" column="target_id"/>
-        <result property="imageUrl" column="saved_url"/> <!-- saved_url을 imageUrl로 매핑 -->
+        <result property="savedUrl" column="saved_url"/> <!-- saved_url을 imageUrl로 매핑 -->
         <result property="originalName" column="original_name"/>
         <result property="uploadDate" column="upload_date"/>
         <result property="displayOrder" column="display_order"/>
@@ -163,7 +163,7 @@
             </foreach>
           GROUP BY
             target_id
-        ) AS min_orders
+        ) min_orders
         ON
           t.target_id = min_orders.target_id
           AND t.display_order = min_orders.min_display_order
@@ -171,11 +171,19 @@
           t.target_type = #{targetType}
         GROUP BY
         	t.target_id
-	    ) AS representative_images
+	    ) representative_images
 	    ON
         i.image_id = representative_images.representative_image_id
 	    WHERE
         i.target_type = #{targetType}
     </select>
+
+
+	<!-- 대표이미지 1개 조회 -->
+	<select id="getMainImgByTargetTypeAndId" parameterType="imageDto" resultType="String">
+		SELECT saved_url
+		FROM image_file
+		WHERE target_type = #{targetType} AND target_id = #{targetId} AND display_order = 1
+	</select>
 
 </mapper>

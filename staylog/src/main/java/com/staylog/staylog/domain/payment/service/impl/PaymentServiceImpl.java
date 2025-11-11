@@ -17,7 +17,10 @@ import com.staylog.staylog.domain.payment.service.PaymentService;
 import com.staylog.staylog.external.toss.client.TossPaymentClient;
 import com.staylog.staylog.external.toss.config.TossPaymentsConfig;
 import com.staylog.staylog.external.toss.dto.request.TossConfirmRequest;
+import com.staylog.staylog.external.toss.dto.request.TossVirtualAccountRequest;
 import com.staylog.staylog.external.toss.dto.response.TossPaymentResponse;
+import com.staylog.staylog.external.toss.dto.response.TossVirtualAccountResponse;
+import com.staylog.staylog.external.toss.dto.response.VirtualAccount;
 import com.staylog.staylog.global.constant.PaymentStatus;
 import com.staylog.staylog.global.constant.ReservationStatus;
 import com.staylog.staylog.global.event.PaymentConfirmEvent;
@@ -120,7 +123,7 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("계좌이체 예약 만료 시간 연장: bookingId={}, expiresAt={}", request.getBookingId(), newExpiresAt);
         }
 
-        // 6. 결제 생성 (READY 상태, 쿠폰 정보 포함)
+        // 7. 결제 생성 (READY 상태, 쿠폰 정보 포함)
         Payment payment = Payment.builder()
                 .status(PaymentStatus.PAY_READY.getCode())
                 .amount(finalAmount) //할인 후 최종금액
@@ -134,13 +137,13 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         paymentMapper.insertPayment(payment);
-        
 
-        // 6. 생성된 결제 조회
+        // 8. 생성된 결제 조회
         Long paymentId = payment.getPaymentId();
 
         log.info("결제 준비 완료: paymentId={}, orderId={}, method={}", paymentId, bookingNum, request.getMethod());
 
+        // 9. PreparePaymentResponse 생성 (가상계좌 정보는 Toss SDK가 처리)
         return PreparePaymentResponse.builder()
                 .paymentId(paymentId)
                 .orderId(bookingNum)  // Toss에 전달할 주문번호
@@ -216,22 +219,63 @@ public class PaymentServiceImpl implements PaymentService {
 
             TossPaymentResponse tossResponse = tossPaymentClient.confirm(tossRequest);
 
-            // 5. 성공: PAYMENT(PAID) + RESERVATION(CONFIRMED) + COUPON(사용 처리)
+            // 토스에서 받은 method가 "가상계좌"인 경우 내부적으로 VIRTUAL_ACCOUNT로 매핑
+            String internalMethod = "가상계좌".equals(tossResponse.getMethod())
+                    ? "VIRTUAL_ACCOUNT"
+                    : tossResponse.getMethod();
+
+            // 가상계좌인 경우 만료 시간 연장 (5분 → 24시간)
+            if ("가상계좌".equals(tossResponse.getMethod())) {
+                LocalDateTime newExpiresAt = LocalDateTime.now().plusHours(24);
+                bookingMapper.updateExpiresAt(bookingId, newExpiresAt);
+                log.info("가상계좌 예약 만료 시간 연장: bookingId={}, expiresAt={}", bookingId, newExpiresAt);
+            }
+
+            // 5. 가상계좌 정보가 있으면 저장
+            if (tossResponse.getVirtualAccount() != null) {
+                VirtualAccount va = tossResponse.getVirtualAccount();
+                paymentMapper.updateVirtualAccountInfo(
+                        paymentId,
+                        va.getBank(),
+                        va.getAccountNumber(),
+                        va.getCustomerName(),
+                        va.getDueDate()
+                );
+                log.info("가상계좌 정보 저장: bank={}, accountNumber={}, dueDate={}",
+                         va.getBank(), va.getAccountNumber(), va.getDueDate());
+            }
+
+            // 6. 결제 상태 업데이트
+            // 가상계좌는 READY 상태 유지 (입금 대기), 일반 결제는 PAID
+            // 결제 상태
+            String paymentStatus = "VIRTUAL_ACCOUNT".equals(internalMethod)
+                    ? PaymentStatus.PAY_READY.getCode()
+                    : PaymentStatus.PAY_PAID.getCode();
+
             paymentMapper.updatePaymentApproved(
                     paymentId,
-                    PaymentStatus.PAY_PAID.getCode(),  // PAID 상태
+                    paymentStatus,
                     tossResponse.getPaymentKey(),
                     tossResponse.getLastTransactionKey()
             );
 
-            bookingMapper.updateBookingStatus(bookingId, ReservationStatus.RES_CONFIRMED.getCode());  // CONFIRMED 상태
+            // 7. 예약 상태 업데이트
+            // 가상계좌는 PENDING 유지 (입금 대기), 일반 결제는 CONFIRMED
+            String bookingStatus = "VIRTUAL_ACCOUNT".equals(internalMethod)
+                    ? ReservationStatus.RES_PENDING.getCode()
+                    : ReservationStatus.RES_CONFIRMED.getCode();
 
-            log.info("결제 승인 성공: paymentId={}, bookingId={}", paymentId, bookingId);
+            bookingMapper.updateBookingStatus(bookingId, bookingStatus);
+
+            log.info("결제 승인 성공: paymentId={}, bookingId={}, paymentStatus={}, bookingStatus={} , method = {}",
+                     paymentId, bookingId, paymentStatus, bookingStatus, tossResponse.getMethod());
 
             // ============ 결제 완료 이벤트 발행(알림 전송 / 쿠폰 사용처리) =============
             PaymentConfirmEvent event = new PaymentConfirmEvent(paymentId, bookingId, tossResponse.getTotalAmount(), payment.getCouponId());
             eventPublisher.publishEvent(event);
             // ==========================================================
+
+
 
             return PaymentResultResponse.builder()
                     .paymentId(paymentId)
@@ -240,10 +284,15 @@ public class PaymentServiceImpl implements PaymentService {
                     .bookingId(bookingId)
                     .amount(tossResponse.getTotalAmount())
                     .method(tossResponse.getMethod())
-                    .paymentStatus(PaymentStatus.PAY_PAID.getCode())
-                    .reservationStatus(ReservationStatus.RES_CONFIRMED.getCode())
+                    .paymentStatus(paymentStatus.equals(tossResponse.getMethod())
+                            ? PaymentStatus.PAY_READY.getCode()
+                            : PaymentStatus.PAY_PAID.getCode())
+                    .reservationStatus(bookingStatus.equals(tossResponse.getMethod())
+                            ? ReservationStatus.RES_PENDING.getCode()
+                            : ReservationStatus.RES_CONFIRMED.getCode())
                     .requestedAt(payment.getRequestedAt())
                     .approvedAt(tossResponse.getApprovedAt())
+                    .virtualAccount(tossResponse.getVirtualAccount())
                     .build();
 
         } catch (TossApiException e) {
@@ -264,4 +313,6 @@ public class PaymentServiceImpl implements PaymentService {
             throw new PaymentFailedException("결제 처리 중 오류가 발생했습니다");
         }
     }
+
+   
 }

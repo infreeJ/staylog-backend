@@ -25,7 +25,7 @@ public class Payment {
     private String method;          // 결제 수단 (CARD, TRANSFER, etc.)
     private Long bookingId;         // 예약 ID (FK)
     private String paymentKey;      // Toss 결제 키
-
+    
     // 쿠폰 할인 정보
     private Long couponId;          // 사용한 쿠폰 ID (nullable)
     private Long originalAmount;    // 원래 금액 (할인 전)
@@ -39,4 +39,10 @@ public class Payment {
     // 환불 정보
     private Long refundId;          // 환불 ID (nullable)
     private Long refundAmount;      // 환불 금액
+    
+    //가상계좌 웹훅에 필요한 필드
+    private String virtualAccountBank;
+    private String virtualAccountNumber;
+    private String virtualAccountHolder;
+    private OffsetDateTime virtualAccountDueDate;
 }

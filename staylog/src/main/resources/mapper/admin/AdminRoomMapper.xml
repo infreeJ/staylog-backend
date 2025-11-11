@@ -12,6 +12,7 @@
 			FROM (
 			    SELECT
 				    	r.accommodation_id,
+				    	a.name AS accommodationName,
 			        r.room_id,
 			        r.name,
 			        r.rm_type,
@@ -21,6 +22,7 @@
 			        r.deleted_yn,
 			        TO_CHAR(r.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS createdAt
 			    FROM room r
+			    LEFT JOIN accommodation a ON a.accommodation_id = r.accommodation_id
 			    LEFT JOIN common_code ct ON ct.code_id = r.rm_type AND ct.use_yn = 'Y'
 			    <where>
 			    		r.accommodation_id = #{accommodationId}
@@ -102,7 +104,7 @@
 	        double_bed = #{doubleBed},
 	        queen_bed = #{queenBed},
 	        king_bed = #{kingBed},
-	        updated_at = SYSTIMESTAMP
+	        updated_at = SYSTIMESTAMP,
 	        description = #{description}
 	    WHERE room_id = #{roomId}
 	</update>

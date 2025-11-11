@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1")
 @RequiredArgsConstructor
-public class ImageController {
+public class ImageControllerV1 {
 
     private final ImageService imageService;
     private final MessageUtil messageUtil;
@@ -99,6 +99,23 @@ public class ImageController {
 	    String code = "200"; // 임시 코드
 	    SuccessResponse<Void> success = SuccessResponse.of(code, message, null);
 	    return ResponseEntity.ok(success);
+    }
+    
+    /**
+     * 프로필 이미지 등록 및 수정 (단일 파일)
+     * 기존 이미지가 있으면 덮어씁니다.
+     * @param file
+     * @param targetType
+     * @param targetId
+     * @return 업로드된 이미지의 전체 URL (String)
+     */
+    @PostMapping("/profile")
+    public ResponseEntity<SuccessResponse<String>> uploadProfileImage(MultipartFile file, String targetType, Long targetId){
+    	String imageUrl = imageService.uploadProfileImage(file, targetType, targetId);
+    	String message = messageUtil.getMessage(SuccessCode.SUCCESS.getMessageKey());
+    	String code = SuccessCode.SUCCESS.getCode();
+    	SuccessResponse<String> success = SuccessResponse.of(code, message, imageUrl);
+    	return ResponseEntity.ok(success);
     }
     
 }

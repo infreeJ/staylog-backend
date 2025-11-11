@@ -159,9 +159,6 @@
     
     <!-- 게시글 등록 -->
     <insert id="insert" parameterType="BoardDto">
-        <selectKey keyProperty="boardId" resultType="long" order="BEFORE">
-            SELECT seq_board_id.NEXTVAL FROM DUAL
-        </selectKey>
         INSERT INTO board
         (board_id, accommodation_id, booking_id, user_id, region_code, board_type,
             title, content, rating)
@@ -238,8 +235,8 @@
 
 
     <!-- 게시글 PK로 숙소명 조회 (알림에서 사용) -->
-    <select id="getAccommodationNameByBoardId" parameterType="long" resultType="String">
-        SELECT a.name
+    <select id="getAccommodationNameAndIdByBoardId" parameterType="long" resultType="accommodationIdAndName">
+        SELECT a.name AS accommodation_name, a.accommodation_id AS accommodation_id
         FROM accommodation a
         JOIN board b
             ON a.accommodation_id = b.accommodation_id

@@ -50,24 +50,9 @@ public class BoardServiceImpl implements BoardService {
 
         // 게시글 목록
         List<BoardDto> boardList = boardMapper.getByBoardType(boardListRequest);
-
-        // 썸네일
-        imageAssembler.assembleFirstImage(
-                boardList,
-                BoardDto::getBoardId,
-                BoardDto::setImageData,
-                "IMG_FROM_BOARD_JOURNAL_CONTENT"
-        );
-
-        System.out.println("🧩 [BoardServiceImpl] 조립 전 게시글 수: " + boardList.size());
-
-        for (BoardDto dto : boardList) {
-            System.out.println("➡️ boardId=" + dto.getBoardId() +
-                    ", imageData=" + (dto.getImageData() != null ? dto.getImageData().getImageUrl() : "null"));
-        }
-
-
-
+        
+        imageAssembler.assembleMainImageUrl(boardList, BoardDto::getBoardId, BoardDto::setImageUrl, board -> board.getBoardType());
+        
         // 4️⃣ BoardListResponse로 묶어서 반환
         BoardListResponse boardListResponse = new BoardListResponse();
         boardListResponse.setBoardList(boardList);

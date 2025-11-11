@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 
 import org.apache.ibatis.type.Alias;
 
+import com.staylog.staylog.domain.image.dto.ImageData;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,5 +24,6 @@ public class ReviewResponse {
 	private int reviewCount;
 	private String title;
 	private String content;
+	private ImageData images;
 	private Timestamp createdAt;
 }

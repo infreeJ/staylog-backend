@@ -19,9 +19,10 @@ public class AdminBoardSearchRequest extends PageRequest {
 	/** 게시글 타입 (필수) */
     private String boardType;      // BOARD_REVIEW, BOARD_JOURNAL
     
-    /** 검색 조건 */
+    /** 검색 조건 (검색어, 검색어 유형, 상태, 지역코드)*/
     private String keyword;        // 검색어
     private String searchType;     // accommodation, nickname
+    private String regionCode;
     private String deleted;      // Y, N
     
     /** 정렬조건 */

@@ -20,7 +20,7 @@ public class HomeAccommodationListResponse {
 	private LocalDateTime createdAt;
 	
 	private Double ratingAvg; //평균 별점
-	private Integer reviewCount; //리뷰 개수
+	private Integer reviewCnt; //리뷰 개수
 	
 	private Integer minPrice; //최소 가격
 	

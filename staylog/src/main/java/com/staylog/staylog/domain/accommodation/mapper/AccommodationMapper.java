@@ -31,4 +31,11 @@ public interface AccommodationMapper {
      * @return 리뷰 목록 리스트
      * */
     List<ReviewResponse> selectReviewList(@Param("accommodationId") Long accommodationId);
+    
+    /**
+     * 해당 숙소에 대한 전체 리뷰 수 조회
+     * @param accommodationId : 조회할 숙소의 고유번호
+     * @return 전체 리뷰 수
+     * */
+    int selectReviewCount(@Param("accommodationId") Long accommodationId);
 }

@@ -31,14 +31,17 @@
 				    b.deleted
 			    FROM board b
 			    LEFT JOIN users u ON u.user_id = b.user_id
-				<if test="boardType == 'BOARD_REVIEW'">
-	                LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
-	            </if>
-				<if test="boardType == 'BOARD_JOURNAL'">
-	                LEFT JOIN common_code cr ON cr.code_id = b.region_code AND cr.use_yn = 'Y'
-	            </if>
+				LEFT JOIN accommodation a ON a.accommodation_id = b.accommodation_id
+	            LEFT JOIN common_code cr ON cr.code_id = b.region_code AND cr.use_yn = 'Y'
 			    <where>
 			    		b.board_type = #{boardType}
+					<!-- 지역으로 검색 -->
+					<if test="regionCode != null and regionCode != ''">
+			            	AND b.region_code = #{regionCode}
+			        	</if>
+		            	<if test="deleted != null and deleted != ''">
+			           AND b.deleted = #{deleted}
+			        </if>
 					<if test="keyword != null and keyword != ''">
 					    <choose>
 					        <!-- 숙소명으로 검색 -->
@@ -51,9 +54,6 @@
 					        </when>
 					    </choose>
 					</if>
-		        	<if test="deleted != null and deleted != ''">
-			           AND b.deleted = #{deleted}
-			        </if>
 		        </where>
 				ORDER BY b.deleted ASC,
 			        <choose>
@@ -97,9 +97,9 @@
 	            AND b.deleted = #{deleted}
 	        </if>
     	        <!-- 지역으로 검색 -->
-            <if test="searchType == 'region_code'">
-                AND b.region_code = #{regionCode}
-            </if>
+			<if test="regionCode != null and regionCode != ''">
+	            	AND b.region_code = #{regionCode}
+	        	</if>
 	        <if test="keyword != null and keyword != ''">
 	            <choose>
 	                <!-- 숙소명으로 검색 -->
