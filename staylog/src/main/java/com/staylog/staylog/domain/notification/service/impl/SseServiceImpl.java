@@ -11,6 +11,8 @@ import com.staylog.staylog.global.event.NotificationCreatedEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -219,20 +221,27 @@ public class SseServiceImpl implements SseService {
         });
     }
 
-//    @PreDestroy
-//    @Override
-//    public void destroy() throws Exception {
-//        log.info("애플리케이션 종료: 모든 SSE Emitter 연결 종료");
-//        emitters.forEach((userId, emitter) -> {
-//            try {
-//                emitter.complete();
-//            } catch (Exception e) {
-//                log.warn("SSE Emitter 종료 중 오류 발생. userId: {}", userId, e);
-//            }
-//        });
-//        emitters.clear();
-//        log.info("모든 SSE Emitter 연결 종료");
-//    }
+
+
+    /**
+     * 애플리케이션 종료 시 연결된 SSE Emitter 연결을 정리하는 메서드
+     * @author 이준혁
+     */
+    @EventListener(ContextClosedEvent.class)
+    public void handleContextClosedEvent() {
+        log.info("Spring Context Closed: 모든 SSE Emitter 연결을 종료합니다.");
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.complete();
+            } catch (Exception e) {
+                log.warn("SSE Emitter 종료 중 오류 발생. userId: {}", userId, e);
+            }
+        });
+        emitters.clear();
+        log.info("모든 SSE Emitter 연결 종료 완료.");
+    }
+
+
 }
 
 

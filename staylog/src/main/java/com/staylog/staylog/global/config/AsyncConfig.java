@@ -40,8 +40,8 @@ public class AsyncConfig {
         // 서버 종료 시 큐에 남은 작업을 기다릴지 여부
         executor.setWaitForTasksToCompleteOnShutdown(true);
 
-        // 최대 대기 시간
-        executor.setAwaitTerminationSeconds(10);
+        // 서버 종료 시 최대 대기 시간 (넘으면 강제 종료)
+        executor.setAwaitTerminationSeconds(5);
 
         executor.initialize();
         return executor;

@@ -147,7 +147,6 @@ public class NotificationServiceImpl implements NotificationService {
                         notiData.getDetails(),
                         DetailsResponse.class
                 );
-                log.info("목록 조회용 DetailsResponse 역직렬화 완료. userId: {}", userId);
 
             } catch (Exception e) {
                 log.error("목록 조회용 JSON 역직렬화 실패: {}", notiData.getDetails(), e);
