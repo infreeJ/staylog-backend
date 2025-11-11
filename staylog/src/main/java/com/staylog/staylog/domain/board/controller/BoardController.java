@@ -83,7 +83,7 @@ public class BoardController {
     }
 
     // 게시판 삭제
-    @DeleteMapping("/boards")
+    @DeleteMapping("/boards/{boardId}")
     public ResponseEntity<SuccessResponse<Void>> boardDelete(long boardId) {
 
         boardService.delete(boardId);
