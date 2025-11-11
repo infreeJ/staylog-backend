@@ -34,7 +34,7 @@ import java.util.Map;
  */
 @Tag(name = "PaymentWebhookController", description = "결제 웹훅 API")
 @RestController
-@RequestMapping("/v1/payments/webhook")
+@RequestMapping("/v2/payments/webhook")
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentWebhookController {
