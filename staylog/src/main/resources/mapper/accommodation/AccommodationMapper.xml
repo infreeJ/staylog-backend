@@ -45,7 +45,7 @@
         TODO: 리뷰 이미지 관련 코드 추후 추가 필요 
     -->
 	<select id="selectReviewList" parameterType="long" resultType="ReviewResponse">
-		SELECT u.nickname,
+		SELECT u.nickname, u.user_id,
 			u.profile_image AS profileImage,
 			b.board_id AS boardId,
 			b.rating, b.title, b.content,

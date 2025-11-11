@@ -96,6 +96,7 @@ springdoc:
     path: /swagger-ui.html
 
 
+
 # =====================================
 # Toss Payments Settings
 # =====================================
@@ -104,9 +105,6 @@ toss:
     api-url: https://api.tosspayments.com/v1/payments
     success-url: http://localhost:3000/payment/success
     fail-url: http://localhost:3000/payment/fail
-
-
-
 
 
 

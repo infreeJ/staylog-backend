@@ -1,7 +1,5 @@
 package com.staylog.staylog.domain.accommodation.service.impl;
 
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -13,7 +11,6 @@ import com.staylog.staylog.domain.accommodation.mapper.AccommodationMapper;
 import com.staylog.staylog.domain.accommodation.mapper.RoomMapper;
 import com.staylog.staylog.domain.accommodation.service.AccommodationService;
 import com.staylog.staylog.domain.image.assembler.ImageAssembler;
-import com.staylog.staylog.domain.image.dto.ImageData;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.exception.BusinessException;
 
@@ -77,12 +74,8 @@ public class AccommodationServiceImpl implements AccommodationService {
 			throw new BusinessException(ErrorCode.ACCOMMODATION_REVIEW_LIST_NOT_FOUND);
 	    }
 		
-		imageAssembler.assembleMainImage(
-			reviewList,
-			ReviewResponse::getBoardId,
-			ReviewResponse::setImages,
-			"BOARD_REVIEW_CONTENT"
-		);
+		imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getUserId, ReviewResponse::setProfileUrl, "PROFILE");
+		imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getBoardId, ReviewResponse::setContentUrl, "BOARD_REVIEW_CONTENT");
 	    
 	    return reviewList;
 	}
