@@ -36,6 +36,11 @@ spring:
           timeout: 5000
           starttls:
             enable: true 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+        
 
 
 # =====================================
@@ -99,7 +104,6 @@ toss:
     api-url: https://api.tosspayments.com/v1/payments
     success-url: http://localhost:3000/payment/success
     fail-url: http://localhost:3000/payment/fail
-
 
 
 

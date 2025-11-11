@@ -45,7 +45,7 @@ public class BoardDto {
     private String userNickName;    // 작성자 닉네임
     private String userName;        // 작성자 아이디(영문 or 한글)
 
-    private String thumbnailUrl;    // 썸네일 이미지
+    private String imageUrl;    // 썸네일 이미지
     private String title;           // 리뷰 제목
     private String content;         // 리뷰 내용
 
