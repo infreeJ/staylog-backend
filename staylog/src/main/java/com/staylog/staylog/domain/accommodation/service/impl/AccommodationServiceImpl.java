@@ -77,7 +77,7 @@ public class AccommodationServiceImpl implements AccommodationService {
 			throw new BusinessException(ErrorCode.ACCOMMODATION_REVIEW_LIST_NOT_FOUND);
 	    }
 		
-		imageAssembler.assembleFirstImage(
+		imageAssembler.assembleMainImage(
 			reviewList,
 			ReviewResponse::getBoardId,
 			ReviewResponse::setImages,
