@@ -189,4 +189,13 @@
         VALUES (#{bookingId}, #{amount}, 'PAY_READY', SYSTIMESTAMP)
     </insert>
 
+
+    <!-- 가상계좌 웹훅 입금 시각 처리 -->
+    <update id="updateVirtualAccountDeposit">
+        UPDATE payment
+        SET status = #{code},
+        approved_at = #{approvedAt}
+        WHERE payment_id = #{paymentId}
+    </update>
+
 </mapper>

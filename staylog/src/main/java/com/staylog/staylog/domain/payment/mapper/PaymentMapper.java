@@ -99,4 +99,7 @@ public interface PaymentMapper {
                                   @Param("dueDate") OffsetDateTime dueDate);
 
 
+    void updateVirtualAccountDeposit(@Param("paymentId")Long paymentId,
+                                     @Param("code") String code,
+                                     @Param("approvedAt") OffsetDateTime approvedAt);
 }
