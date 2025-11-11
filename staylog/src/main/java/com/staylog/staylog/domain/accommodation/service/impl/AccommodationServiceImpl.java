@@ -61,6 +61,8 @@ public class AccommodationServiceImpl implements AccommodationService {
             log.info("숙소 번호 = {} 의 리뷰는 존재하지 않습니다", accommodationId);
         }
         
+        imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getUserId, ReviewResponse::setProfileUrl, "PROFILE");
+        
         accommodation.setReviews(reviewList);
         
         return accommodation;
