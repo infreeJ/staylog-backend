@@ -218,6 +218,21 @@ public class SseServiceImpl implements SseService {
             }
         });
     }
+
+//    @PreDestroy
+//    @Override
+//    public void destroy() throws Exception {
+//        log.info("애플리케이션 종료: 모든 SSE Emitter 연결 종료");
+//        emitters.forEach((userId, emitter) -> {
+//            try {
+//                emitter.complete();
+//            } catch (Exception e) {
+//                log.warn("SSE Emitter 종료 중 오류 발생. userId: {}", userId, e);
+//            }
+//        });
+//        emitters.clear();
+//        log.info("모든 SSE Emitter 연결 종료");
+//    }
 }
 
 

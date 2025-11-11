@@ -259,22 +259,26 @@ public class AuthServiceImpl implements AuthService {
 
         // 이메일 중복 확인
         if (userMapper.findByEmail(signupRequest.getEmail()) != null) {
+            log.warn("중복된 이메일입니다. email: {}", signupRequest.getEmail());
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         // 아이디 중복 확인
         if (userMapper.findByLoginId(signupRequest.getLoginId()) != null) {
+            log.warn("중복된 아이디입니다. loginId: {}", signupRequest.getLoginId());
             throw new BusinessException(ErrorCode.DUPLICATE_LOGINID);
         }
 
         // 닉네임 중복 확인
         if(userMapper.findByNickname(signupRequest.getNickname()) != null) {
+            log.warn("중복된 닉네임입니다. nickname: {}", signupRequest.getNickname());
             throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
         // 이메일 인증 여부 확인
         EmailVerificationDto verification = emailMapper.findVerificationByEmail(signupRequest.getEmail());
         if (verification == null || !"Y".equals(verification.getIsVerified())) {
+            log.warn("인증되지 않은 이메일입니다. email: {}", signupRequest.getEmail());
             throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
 
@@ -284,7 +288,11 @@ public class AuthServiceImpl implements AuthService {
         authMapper.createUser(signupRequest);
 
         // 회원가입 완료 후 email_verification 테이블에서 사용된 인증 정보 삭제
-        emailMapper.deleteVerificationByEmail(signupRequest.getEmail());
+        int isSuccess = emailMapper.deleteVerificationByEmail(signupRequest.getEmail());
+        if(isSuccess == 0) {
+            throw new BusinessException(ErrorCode.EMAIL_DELETED_FAILED);
+        }
+        log.info("이메일 인증 데이터 삭제 성공. email: {}", signupRequest.getEmail());
 
         // ================= 회원가입 이벤트 발행 ==================
         SignupEvent event = new SignupEvent(signupRequest.getUserId(), signupRequest.getNickname());
