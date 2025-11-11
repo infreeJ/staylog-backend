@@ -56,12 +56,12 @@ public class PaymentWebhookController {
             }
 
             // 3. secret 검증
-            String secretInPayload = rootNode.path("secret").asText();
-            if (!tossConfig.getWebhookSecret().equals(secretInPayload)) {
-                log.warn("웹훅 시크릿 검증 실패: {}", secretInPayload);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid secret");
-            }
-            log.info("시크릿 검증 성공");
+            // String secretInPayload = rootNode.path("secret").asText();
+            // if (!tossConfig.getWebhookSecret().equals(secretInPayload)) {
+            //     log.warn("웹훅 시크릿 검증 실패: {}", secretInPayload);
+            //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid secret");
+            // }
+            // log.info("시크릿 검증 성공");
 
             // 4. DTO 변환
             TossVirtualAccountWebhookRequest webhookRequest = objectMapper.readValue(payload,
