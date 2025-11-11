@@ -67,12 +67,30 @@
         r.status,
         c.code_name AS status_name,
         c.attr1     AS status_color,
-        r.created_at
+        r.created_at,
+        p.method                      AS paymentMethod,
+        p.approved_at                 AS paidAt
+
         FROM reservation r
         LEFT JOIN users u         ON u.user_id = r.user_id
         LEFT JOIN room rm         ON rm.room_id = r.room_id
         LEFT JOIN accommodation a ON a.accommodation_id = rm.accommodation_id
         LEFT JOIN common_code c   ON c.code_id = r.status
+
+        LEFT JOIN (
+        SELECT p1.booking_id,
+        p1.method,
+        p1.approved_at
+        FROM payment p1
+        JOIN (
+        SELECT booking_id, MAX(approved_at) AS approved_at
+        FROM payment
+        WHERE approved_at IS NOT NULL          -- 결제 승인 완료 기준
+        GROUP BY booking_id
+        ) last_paid
+        ON last_paid.booking_id = p1.booking_id
+        AND last_paid.approved_at = p1.approved_at
+        ) p ON p.booking_id = r.booking_id
         <include refid="resWhere"/>
         ORDER BY r.created_at DESC
         ) inner_t
@@ -106,12 +124,32 @@
         c.code_name AS status_name,
         c.attr1     AS status_color,
         r.created_at,
-        r.updated_at
+        r.updated_at,
+
+        p.method                       AS paymentMethod,
+        p.approved_at                  AS paidAt
+
         FROM reservation r
         LEFT JOIN users u         ON u.user_id = r.user_id
         LEFT JOIN room rm         ON rm.room_id = r.room_id
         LEFT JOIN accommodation a ON a.accommodation_id = rm.accommodation_id
         LEFT JOIN common_code c   ON c.code_id = r.status
+
+        LEFT JOIN (
+        SELECT p1.booking_id,
+        p1.method,
+        p1.approved_at
+        FROM payment p1
+        JOIN (
+        SELECT booking_id, MAX(approved_at) AS approved_at
+        FROM payment
+        WHERE approved_at IS NOT NULL
+        GROUP BY booking_id
+        ) last_paid
+        ON last_paid.booking_id = p1.booking_id
+        AND last_paid.approved_at = p1.approved_at
+        ) p ON p.booking_id = r.booking_id
+
         WHERE r.booking_id = #{bookingId}
     </select>
 
