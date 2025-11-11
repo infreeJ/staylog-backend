@@ -75,7 +75,7 @@ public class AccommodationServiceImpl implements AccommodationService {
 	    }
 		
 		imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getUserId, ReviewResponse::setProfileUrl, "PROFILE");
-		imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getUserId, ReviewResponse::setContentUrl, "BOARD_REVIEW_CONTENT");
+		imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getBoardId, ReviewResponse::setContentUrl, "BOARD_REVIEW_CONTENT");
 	    
 	    return reviewList;
 	}
