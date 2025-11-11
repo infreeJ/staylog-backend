@@ -44,22 +44,22 @@
             SELECT inner_query.*, ROWNUM AS rn
             FROM (
             SELECT
-            b.board_type AS boardType,
-            b.region_code AS regionCode,
-            cc.code_name AS regionName,
-            b.board_id AS boardId,
-            b.accommodation_id AS accommodationId,
-            a.name AS accommodationName,
-            b.booking_id AS bookingId,
-            b.user_id AS userId,
-            u.nickname AS userNickName,
-            b.title,
-            b.rating,
-            b.views_count AS viewsCount,
-            TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
-            TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
-            b.likes_count AS likesCount,
-            b.deleted
+                b.board_type AS boardType,
+                b.region_code AS regionCode,
+                cc.code_name AS regionName,
+                b.board_id AS boardId,
+                b.accommodation_id AS accommodationId,
+                a.name AS accommodationName,
+                b.booking_id AS bookingId,
+                b.user_id AS userId,
+                u.nickname AS userNickName,
+                b.title,
+                b.rating,
+                b.views_count AS viewsCount,
+                TO_CHAR(b.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt,
+                TO_CHAR(b.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt,
+                b.likes_count AS likesCount,
+                b.deleted
 
             FROM board b
             LEFT JOIN accommodation a
