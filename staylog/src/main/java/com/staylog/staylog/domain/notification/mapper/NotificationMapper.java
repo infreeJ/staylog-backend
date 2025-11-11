@@ -71,7 +71,7 @@ public interface NotificationMapper {
      * @author 이준혁
      * @param userId 유저 PK
      */
-    public void deleteAllByUserId(long userId);
+    public int deleteAllByUserId(long userId);
 
 
     /**

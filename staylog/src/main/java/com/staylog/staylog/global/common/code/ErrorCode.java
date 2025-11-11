@@ -42,6 +42,8 @@ public enum ErrorCode {
     VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "E3003", "error.mail.verification.expired"),
     EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "E3004", "error.mail.not.verified"),
     EMAIL_ALREADY_VERIFIED(HttpStatus.BAD_REQUEST, "E3005", "error.mail.already.verified"),
+    EMAIL_VERIFIED_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E3006", "error.mail.verified.failed"),
+    EMAIL_DELETED_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "E3007", "error.mail.deleted.failed"),
 
     // ==================== 숙소 관련 에러 (4xxx) ====================
     ACCOMMODATION_NOT_FOUND(HttpStatus.NOT_FOUND, "E4001", "error.accommodation.not.found"),
@@ -90,6 +92,7 @@ public enum ErrorCode {
     FILE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "E9002", "error.file.size.exceeded"),
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "E9003", "error.file.invalid.type"),
     FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "E9004", "error.file.not.found"),
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "E9005", "error.resource.not.found"),
 
     // ==================== 알림 관련 에러 (10xxx) ====================
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "E10001", "error.notification.not.found"),

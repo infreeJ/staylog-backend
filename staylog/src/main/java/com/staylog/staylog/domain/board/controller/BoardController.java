@@ -39,8 +39,8 @@ public class BoardController {
     private final MessageUtil messageUtil;
 
     // 게시판 카테고리별 목록 조회
-    @GetMapping("/boards")
-    public ResponseEntity<SuccessResponse<BoardListResponse>> boardList(@ModelAttribute BoardListRequest boardListRequest) {
+    @PostMapping("/boardList")
+    public ResponseEntity<SuccessResponse<BoardListResponse>> boardList(@RequestBody BoardListRequest boardListRequest) {
 
         BoardListResponse response = boardService.getByBoardType(boardListRequest);
         String message = messageUtil.getMessage(SuccessCode.BOARD_LIST_FETCHED.getMessageKey());
@@ -83,7 +83,7 @@ public class BoardController {
     }
 
     // 게시판 삭제
-    @DeleteMapping("/boards")
+    @DeleteMapping("/boards/{boardId}")
     public ResponseEntity<SuccessResponse<Void>> boardDelete(long boardId) {
 
         boardService.delete(boardId);

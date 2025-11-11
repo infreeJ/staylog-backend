@@ -45,13 +45,3 @@ public class HomeServiceImpl implements HomeService {
 		return homeMapper.selectAccommodationMain(regionCode, sort, offset, limit);
 	}
 }
-
-
-
-
-
-
-
-
-
-

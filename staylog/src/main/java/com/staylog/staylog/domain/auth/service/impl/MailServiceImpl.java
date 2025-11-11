@@ -45,6 +45,7 @@ public class MailServiceImpl implements MailService {
 
         // users 테이블에서 이메일 중복 확인
         if(userMapper.findByEmail(email) != null) {
+            log.warn("중복된 이메일. email: {}", email);
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
 
@@ -90,19 +91,27 @@ public class MailServiceImpl implements MailService {
         EmailVerificationDto storedVerification = emailMapper.findVerificationByEmail(email);
 
         if (storedVerification == null || !"N".equals(storedVerification.getIsVerified())) {
+            log.warn("유효하지 않은 이메일 인증. email: {}, code: {}", email, code);
             return false; // 인증 요청 기록이 없거나 이미 인증된 상태
         }
         if (storedVerification.getExpiresAt().isBefore(LocalDateTime.now())) {
+            log.warn("만료된 이메일 인증. email: {}, code: {}", email, code);
             return false; // 만료된 경우
         }
         if (!storedVerification.getVerificationCode().equals(code)) {
+            log.warn("이메일 인증 코드 불일치. email: {}, code: {}", email, code);
             return false; // 인증 코드가 일치하지 않는 경우
         }
 
         // 인증 성공
         storedVerification.setIsVerified("Y");
         // isVerified 상태만 'Y'로 업데이트
+        int isSuccess = 
         emailMapper.saveOrUpdateVerification(storedVerification);
+        if(isSuccess == 0) {
+            log.error("인증 정보 변경 실패. email: {}, code: {}", email, code);
+            throw new BusinessException(ErrorCode.EMAIL_VERIFIED_FAILED);
+        }
         return true;
     }
 
@@ -141,6 +150,7 @@ public class MailServiceImpl implements MailService {
      */
     @Scheduled(cron = "0 0 4 * * *") // 매일 새벽 4시
     public void deleteExpiredEmail() {
+        log.info("만료된 이메일 인증 데이터 삭제 스케줄러 실행");
         emailMapper.deleteExpiredEmail(LocalDateTime.now());
     }
 }

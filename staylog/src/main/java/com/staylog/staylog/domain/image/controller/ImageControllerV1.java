@@ -22,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1")
 @RequiredArgsConstructor
-public class ImageController {
+public class ImageControllerV1 {
 
     private final ImageService imageService;
     private final MessageUtil messageUtil;

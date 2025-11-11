@@ -1,6 +1,9 @@
 package com.staylog.staylog.domain.notification.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.staylog.staylog.domain.image.dto.ImageDto;
+import com.staylog.staylog.domain.image.mapper.ImageMapper;
 import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.request.NotificationSelectRequest;
 import com.staylog.staylog.domain.notification.dto.request.ReadAllRequest;
@@ -8,18 +11,13 @@ import com.staylog.staylog.domain.notification.dto.request.ReadRequest;
 import com.staylog.staylog.domain.notification.dto.response.*;
 import com.staylog.staylog.domain.notification.mapper.NotificationMapper;
 import com.staylog.staylog.domain.notification.service.NotificationService;
-import com.staylog.staylog.domain.notification.service.SseService;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.event.NotificationCreatedAllEvent;
 import com.staylog.staylog.global.event.NotificationCreatedEvent;
 import com.staylog.staylog.global.exception.BusinessException;
-import com.staylog.staylog.global.exception.custom.InfrastructureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.TransientDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +32,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationMapper notificationMapper;
     private final ObjectMapper objectMapper;
-    private final SseService sseService;
     private final ApplicationEventPublisher eventPublisher;
+    private final ImageMapper imageMapper;
 
 
     /**
@@ -53,26 +51,14 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void saveNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse) {
 
-        try {
-            // DB 저장
-            int success = notificationMapper.notiSave(notificationRequest);
-            if (success == 0) {
-                log.error("알림 DB 저장 0건, 로직 확인 필요. request: {}", notificationRequest); // TODO: 너무 긴 로그 -> 수정필요
-                throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
-            }
-        } catch (TransientDataAccessException e) { // @Retryable이 가로채서 재시도
-            log.warn("일시적인 DB 오류 발생", e);
-            throw new InfrastructureException(ErrorCode.TEMPORARY_SERVER_ERROR);
-        } catch (DataIntegrityViolationException e) {
-            log.error("알림 저장 데이터 무결성 오류", e);
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
-        } catch (DataAccessException e) {
-            log.error("알 수 없는 DB 오류 발생", e);
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+        // DB 저장
+        int success = notificationMapper.notiSave(notificationRequest);
+        if (success == 0) {
+            log.error("알림 DB 저장 0건, 로직 확인 필요. userId: {}", notificationRequest.getUserId());
+            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED); // 재시도가 필요없는 코드 수준의 에러
         }
 
         log.info("알림 데이터 저장 완료. notiId: {}", notificationRequest.getNotiId());
-
 
         // 클라이언트에게 SSE로 푸시하기위한 객체 구성
         NotificationResponse notificationResponse = NotificationResponse.builder()
@@ -107,25 +93,14 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional
     public void saveAllNotification(NotificationRequest notificationRequest, DetailsResponse detailsResponse) {
 
-        try {
-            // Users 테이블에서 userId를 매핑하여 모든 사용자에게 알림 저장
-            int success = notificationMapper.notiSaveBatchFromUsers(notificationRequest);
-            if(success == 0) {
-                log.error("알림 DB 저장 0건, 로직 확인 필요. request: {}", notificationRequest); // TODO: 너무 긴 로그 -> 수정필요
-                throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
-            }
-        } catch (TransientDataAccessException e) { // @Retryable이 가로채서 재시도
-            log.warn("일시적인 DB 오류 발생", e);
-            throw new InfrastructureException(ErrorCode.TEMPORARY_SERVER_ERROR);
-        } catch (DataIntegrityViolationException e) {
-            log.error("알림 저장 데이터 무결성 오류", e);
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
-        } catch (DataAccessException e) {
-            log.error("알 수 없는 DB 오류 발생", e);
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+        // Users 테이블에서 userId를 매핑하여 모든 사용자에게 알림 저장
+        int isSuccess = notificationMapper.notiSaveBatchFromUsers(notificationRequest);
+        if (isSuccess == 0) {
+            log.error("알림 DB 저장 0건, 로직 확인 필요. batchId: {}", notificationRequest.getBatchId());
+            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED); // 재시도가 필요없는 코드 수준의 에러
         }
 
-        log.info("알림 데이터 일괄 저장 완료. batchId: {}", notificationRequest.getBatchId());
+        log.info("알림 데이터 일괄 저장 완료. batchId: {}, isSuccess: {}", notificationRequest.getBatchId(), isSuccess);
 
         // 클라이언트에게 SSE로 푸시하기위한 객체 구성
         NotificationResponse notificationResponse = NotificationResponse.builder()
@@ -158,9 +133,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (notiListFromDb == null || notiListFromDb.isEmpty()) {
             log.warn("알림 데이터 조회 실패: 알림이 없거나, 알림 정보를 찾을 수 없습니다. - userId={}", userId);
-//            throw new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND);
-            return Collections.emptyList(); // 프론트의 catch를 실행시키지 않도록 빈 List를 반환
+            return Collections.emptyList(); // 프론트의 catch를 실행시키지 않도록 throw 대신 빈 List를 반환
         }
+        log.info("알림 데이터 조회 완료. userId: {}, length: {}", userId, notiListFromDb.size());
 
         // map으로 순환하며 프론트에서 바로 사용할 수 있는 JSON으로 가공
         return notiListFromDb.stream().map((notiData) -> {
@@ -172,6 +147,7 @@ public class NotificationServiceImpl implements NotificationService {
                         notiData.getDetails(),
                         DetailsResponse.class
                 );
+
             } catch (Exception e) {
                 log.error("목록 조회용 JSON 역직렬화 실패: {}", notiData.getDetails(), e);
                 detailsObject = null; // (혹은 new DetailsResponse() 빈 객체)
@@ -197,12 +173,13 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     public void deleteNotification(long notiId) {
-        int isSuccess = notificationMapper.deleteByNotiId(notiId);
 
+        int isSuccess = notificationMapper.deleteByNotiId(notiId);
         if (isSuccess == 0) {
-            log.warn("알림 데이터 삭제 실패: 알림 정보를 찾을 수 없습니다. - notiId={}", notiId);
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+            log.error("알림 데이터 삭제 실패: 알림 정보를 찾을 수 없습니다. - notiId={}", notiId);
+            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED); // 재시도가 필요없는 코드 수준의 에러
         }
+        log.info("알림 데이터 삭제 완료. notiId: {}", notiId);
     }
 
 
@@ -214,9 +191,11 @@ public class NotificationServiceImpl implements NotificationService {
      */
     public void deleteNotificationAll(long userId) {
         try {
-            notificationMapper.deleteAllByUserId(userId);
+            int isSuccess = notificationMapper.deleteAllByUserId(userId);
+            log.info("알림 데이터 전체 삭제 완료. userId: {}, isSuccess={}", userId, isSuccess);
         } catch (BusinessException e) {
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+            log.error("알림 데이터 전체 삭제 실패: 알림 정보를 찾을 수 없습니다. - userId={}", userId);
+            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED); // 재시도가 필요없는 코드 수준의 에러
         }
     }
 
@@ -232,9 +211,10 @@ public class NotificationServiceImpl implements NotificationService {
         int isSuccess = notificationMapper.readOne(readRequest);
 
         if (isSuccess == 0) {
-            log.warn("알림 데이터 읽음 처리 실패: 알림 정보를 찾을 수 없습니다. - notiId={}", readRequest);
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+            log.warn("알림 데이터 읽음 처리 실패: 알림 정보를 찾을 수 없습니다. - notiId={}", readRequest.getNotiId());
+            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED); // 재시도가 필요없는 코드 수준의 에러
         }
+        log.info("알림 데이터 읽음 처리 완료. notiId={}", readRequest.getNotiId());
     }
 
     /**
@@ -248,9 +228,10 @@ public class NotificationServiceImpl implements NotificationService {
         int isSuccess = notificationMapper.readAll(readAllRequest);
 
         if (isSuccess == 0) {
-            log.warn("알림 데이터 읽음 처리 실패: 알림 정보를 찾을 수 없습니다. - userId={}", readAllRequest);
+            log.error("알림 데이터 전체 읽음 처리 실패: 알림 정보를 찾을 수 없습니다. - userId={}", readAllRequest.getUserId());
             throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
         }
+        log.info("전체 알림 데이터 읽음 처리 완료. userId={}, isSuccess={}", readAllRequest.getUserId(), isSuccess);
     }
 
 
@@ -262,7 +243,68 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     public int unreadCount(long userId) {
-        return notificationMapper.unreadCount(userId);
+        int unreadCount;
+        try {
+            unreadCount = notificationMapper.unreadCount(userId);
+        } catch (Exception e) {
+            log.error("알림 데이터 unreadCount 조회 실패: 유저 정보를 찾을 수 없습니다. - userId={}", userId);
+            throw new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND);
+        }
+        log.info("unreadCount 조회 완료. userId={}, unreadCount={}", userId, unreadCount);
+        return unreadCount;
+    }
+
+
+
+
+
+    /**
+     * 알림 데이터를 DB에 저장하기 위한 JSON 직렬화
+     * @author 이준혁
+     * @param detailsResponse 알림 데이터
+     * @return detailsObject 직렬화된 문자열
+     */
+    @Override
+    public String detailsToJsonString(DetailsResponse detailsResponse) {
+        try { // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성
+            String detailsObject = objectMapper.writeValueAsString(detailsResponse);
+            log.info("알림 데이터 직렬화 완료");
+            return detailsObject;
+        } catch (JsonProcessingException e) {
+            log.error("알림 데이터 직렬화 중 오류 발생");
+            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
+        }
+    }
+
+
+    /**
+     * 대표 이미지 1장 가져오는 메서드
+     * @author 이준혁
+     * @param targetType 이미지의 타겟 타입
+     * @param targetId 이미지의 타겟 PK
+     * @return 이미지 URL
+     */
+    @Override
+    public String getImageUrl(String targetType, long targetId) {
+        ImageDto imageDto = ImageDto.builder()
+                .targetType(targetType)
+                .targetId(targetId)
+                .build();
+        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
+
+        if(imageUrl != null) {
+            log.info("이미지 조회 완료. imageUrl: {}", imageUrl);
+            return imageUrl;
+        } else {
+            // 이미지가 없을 경우 기본 이미지로 출력
+            log.info("이미지 조회 실패 / 기본 이미지로 출력. targetType: {}, targetId: {}", targetType, targetId);
+            ImageDto defaultImageDto = ImageDto.builder()
+                    .targetType("IMG_FROM_ICON")
+                    .targetId(3)
+                    .build();
+            return imageMapper.getMainImgByTargetTypeAndId(defaultImageDto);
+        }
+
     }
 
 

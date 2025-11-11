@@ -1,7 +1,5 @@
 package com.staylog.staylog.domain.accommodation.service.impl;
 
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -12,6 +10,7 @@ import com.staylog.staylog.domain.accommodation.dto.response.RoomListResponse;
 import com.staylog.staylog.domain.accommodation.mapper.AccommodationMapper;
 import com.staylog.staylog.domain.accommodation.mapper.RoomMapper;
 import com.staylog.staylog.domain.accommodation.service.AccommodationService;
+import com.staylog.staylog.domain.image.assembler.ImageAssembler;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.exception.BusinessException;
 
@@ -26,6 +25,7 @@ public class AccommodationServiceImpl implements AccommodationService {
 	// 의존 주입
     private final AccommodationMapper acMapper;
     private final RoomMapper rmMapper;
+    private final ImageAssembler imageAssembler;
 	
     @Override
 	public AccommodationDetailResponse getAcDetail(Long accommodationId) {
@@ -44,23 +44,7 @@ public class AccommodationServiceImpl implements AccommodationService {
         if (roomList == null) {
             log.warn("객실 목록 조회 실패 : 숙소 번호 = {} 의 객실 목록을 찾을 수 없습니다", accommodationId);
             throw new BusinessException(ErrorCode.ROOM_LIST_NOT_FOUND);
-        }
-        
-        for (RoomListResponse room : roomList) {
-        	
-            // 오늘 날짜
-            LocalDate today = LocalDate.now();
-            // 90일 상한 정책 (from ~ to 포함, +89일)
-            LocalDate after3Months = today.plusDays(89);
-            
-            // 예약 불가일 조회
-            List<String> blockedDates = rmMapper.SelectBlockedDates(
-                room.getRoomId(),
-                today,
-                after3Months
-            );
-            room.setDisabledDates(blockedDates);
-        }
+        }        
         
         accommodation.setRooms(roomList);
         
@@ -79,17 +63,20 @@ public class AccommodationServiceImpl implements AccommodationService {
         
         accommodation.setReviews(reviewList);
         
-        // TODO: 숙소 이미지, 객실 이미지 로직 추가 필요
-        
         return accommodation;
 	}
 
 	@Override
 	public List<ReviewResponse> getAcRvList(Long accommodationId) {
 		List<ReviewResponse> reviewList = acMapper.selectReviewList(accommodationId);
+		
 		if(reviewList == null) {
 			throw new BusinessException(ErrorCode.ACCOMMODATION_REVIEW_LIST_NOT_FOUND);
 	    }
+		
+		imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getUserId, ReviewResponse::setProfileUrl, "PROFILE");
+		imageAssembler.assembleMainImageUrl(reviewList, ReviewResponse::getBoardId, ReviewResponse::setContentUrl, "BOARD_REVIEW_CONTENT");
+	    
 	    return reviewList;
 	}
 }

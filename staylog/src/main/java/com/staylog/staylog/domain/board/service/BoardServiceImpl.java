@@ -6,6 +6,7 @@ import com.staylog.staylog.domain.board.dto.BookingDto;
 import com.staylog.staylog.domain.board.dto.request.BoardListRequest;
 import com.staylog.staylog.domain.board.dto.response.BoardListResponse;
 import com.staylog.staylog.domain.board.mapper.BoardMapper;
+import com.staylog.staylog.domain.image.assembler.ImageAssembler;
 import com.staylog.staylog.global.common.dto.PageRequest;
 import com.staylog.staylog.global.common.response.PageResponse;
 import com.staylog.staylog.global.event.ReviewCreatedEvent;
@@ -22,11 +23,16 @@ public class BoardServiceImpl implements BoardService {
 
     private final BoardMapper boardMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final ImageAssembler imageAssembler;
 
 
     @Override
     public BoardListResponse getByBoardType(BoardListRequest boardListRequest) {
 
+        String boardType = boardListRequest.getBoardType();
+        if (boardType == null) {
+            boardType = "BOARD_JOURNAL"; // 기본값
+        }
 
 
         // 전체 게시글 수
@@ -44,7 +50,9 @@ public class BoardServiceImpl implements BoardService {
 
         // 게시글 목록
         List<BoardDto> boardList = boardMapper.getByBoardType(boardListRequest);
-
+        
+        imageAssembler.assembleMainImageUrl(boardList, BoardDto::getBoardId, BoardDto::setImageUrl, board -> board.getBoardType());
+        
         // 4️⃣ BoardListResponse로 묶어서 반환
         BoardListResponse boardListResponse = new BoardListResponse();
         boardListResponse.setBoardList(boardList);

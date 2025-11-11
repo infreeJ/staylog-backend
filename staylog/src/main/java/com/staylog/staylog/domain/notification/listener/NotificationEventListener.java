@@ -1,14 +1,10 @@
 package com.staylog.staylog.domain.notification.listener;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.staylog.staylog.domain.board.dto.CommentsDto;
 import com.staylog.staylog.domain.board.mapper.BoardMapper;
 import com.staylog.staylog.domain.board.mapper.CommentsMapper;
 import com.staylog.staylog.domain.booking.entity.AccommodationIdAndName;
 import com.staylog.staylog.domain.booking.mapper.BookingMapper;
-import com.staylog.staylog.domain.image.dto.ImageDto;
-import com.staylog.staylog.domain.image.mapper.ImageMapper;
 import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
 import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.service.NotificationService;
@@ -16,16 +12,13 @@ import com.staylog.staylog.domain.payment.entity.Payment;
 import com.staylog.staylog.domain.payment.mapper.PaymentMapper;
 import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.annotation.CommonRetryable;
-import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.event.*;
-import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
-import com.staylog.staylog.global.event.CouponCreatedEvent;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -42,9 +35,7 @@ public class NotificationEventListener {
     private final BoardMapper boardMapper;
     private final PaymentMapper paymentMapper;
     private final BookingMapper bookingMapper;
-    private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
-    private final ImageMapper imageMapper;
 
 
 
@@ -54,14 +45,15 @@ public class NotificationEventListener {
      * @param event 쿠폰 발급 이벤트 객체
      * @author 이준혁
      */
-    @Async
+    @Async("asyncTaskExecutor")
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleCouponIssuanceNotification(CouponCreatedEvent event) {
         long recipientId = event.getUserId(); // 수신자 PK
+        log.info("handleCouponIssuanceNotification 리스너 실행. recipientId: {}, couponId: {}", recipientId, event.getCouponId());
 
         // 이미지 가져오기
-        String imageUrl = getImageUrl("IMG_FROM_ICON", 2);
+        String imageUrl = notificationService.getImageUrl("IMG_FROM_ICON", 2);
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -73,7 +65,7 @@ public class NotificationEventListener {
                 .build();
 
         // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성 메서드
-        String detailsObject = detailsToJsonString(detailsResponse);
+        String detailsObject = notificationService.detailsToJsonString(detailsResponse);
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -93,13 +85,14 @@ public class NotificationEventListener {
      * @param event 쿠폰 발급 이벤트 객체
      * @author 이준혁
      */
-    @Async
+    @Async("asyncTaskExecutor")
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleCouponAllIssuanceNotification(CouponCreatedAllEvent event) {
+        log.info("handleCouponAllIssuanceNotification 리스너 실행.");
 
         // 이미지 가져오기
-        String imageUrl = getImageUrl("IMG_FROM_ICON", 2);
+        String imageUrl = notificationService.getImageUrl("IMG_FROM_ICON", 2);
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -111,7 +104,7 @@ public class NotificationEventListener {
                 .build();
 
         // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성 메서드
-        String detailsObject = detailsToJsonString(detailsResponse);
+        String detailsObject = notificationService.detailsToJsonString(detailsResponse);
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -133,13 +126,14 @@ public class NotificationEventListener {
      * @param event 결제 승인 이벤트 객체
      * @author 이준혁
      */
-    @Async
+    @Async("asyncTaskExecutor")
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handlePaymentConfirmNotification(PaymentConfirmEvent event) {
         Payment payment = paymentMapper.findPaymentById(event.getPaymentId());
-
         long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
+
+        log.info("handlePaymentConfirmNotification 리스너 실행. recipientId: {}, paymentId: {}", recipientId, event.getPaymentId());
         AccommodationIdAndName accommodationInfo = bookingMapper.findAccommodationIdAndNameByBookingId(event.getBookingId()); // 숙소명
 
 //        ImageResponse imageResponse = imageService.getImagesByTarget(
@@ -148,7 +142,7 @@ public class NotificationEventListener {
 //        String imageUrl = imageResponse.getImages().get(0).getImageUrl(); // 숙소 메인이미지
 
         // 이미지 가져오기
-        String imageUrl = getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
+        String imageUrl = notificationService.getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
 
         OffsetDateTime approvedAt = payment.getApprovedAt(); // 결제 승인 시간
 
@@ -162,7 +156,7 @@ public class NotificationEventListener {
                 .build();
 
         // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성 메서드
-        String detailsObject = detailsToJsonString(detailsResponse);
+        String detailsObject = notificationService.detailsToJsonString(detailsResponse);
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -184,16 +178,17 @@ public class NotificationEventListener {
      * @param event 결제 취소 이벤트 객체
      * @author 이준혁
      */
-    @Async
+    @Async("asyncTaskExecutor")
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleRefundConfirmNotification(RefundConfirmEvent event) {
-
         long recipientId = bookingMapper.findUserIdByBookingId(event.getBookingId()); // 수신자(예약자) PK
+        log.info("handleRefundConfirmNotification 리스너 실행. recipientId: {}, refundId: {}", recipientId, event.getRefundId());
+
         AccommodationIdAndName accommodationInfo = bookingMapper.findAccommodationIdAndNameByBookingId(event.getBookingId()); // 숙소명
 
         // 이미지 가져오기
-        String imageUrl = getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
+        String imageUrl = notificationService.getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -205,7 +200,7 @@ public class NotificationEventListener {
                 .build();
 
         // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성 메서드
-        String detailsObject = detailsToJsonString(detailsResponse);
+        String detailsObject = notificationService.detailsToJsonString(detailsResponse);
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -227,16 +222,18 @@ public class NotificationEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
-    @Async
+    @Async("asyncTaskExecutor")
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleReviewCreationNotification(ReviewCreatedEvent event) {
         long recipientId = (long) 7;  // TODO: 원래 Admin에게 보내야하지만 개발 환경이라 infreeJ 아이디로 수취
+        log.info("handleReviewCreationNotification 리스너 실행. recipientId: {}, boardId: {}", recipientId, event.getBoardId());
+
         String nickname = userMapper.findNicknameByUserId(event.getUserId());
         AccommodationIdAndName accommodationInfo = boardMapper.getAccommodationNameAndIdByBoardId(event.getBoardId());
 
         // 이미지 가져오기
-        String imageUrl = getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
+        String imageUrl = notificationService.getImageUrl("IMG_FROM_ACCOMMODATION", accommodationInfo.getAccommodationId());
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
@@ -248,7 +245,7 @@ public class NotificationEventListener {
                 .build();
 
         // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성 메서드
-        String detailsObject = detailsToJsonString(detailsResponse);
+        String detailsObject = notificationService.detailsToJsonString(detailsResponse);
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -270,18 +267,22 @@ public class NotificationEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
-    @Async
+    @Async("asyncTaskExecutor")
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleCommentCreationNotification(CommentCreatedEvent event) {
+        long recipientId = boardMapper.getUserIdByBoardId(event.getBoardId()); // 댓글이 작성된 게시글 작성자의 PK
+        log.info("handleCommentCreationNotification 리스너 실행. recipientId: {}, commentId: {}", recipientId, event.getCommentId());
 
         String nickname = userMapper.findNicknameByUserId(event.getUserId()); // 댓글 작성자 닉네임
         CommentsDto commentsDto = commentsMapper.getOneByCommentId(event.getCommentId()); // 댓글 데이터
-        long recipientId = boardMapper.getUserIdByBoardId(event.getBoardId()); // 댓글이 작성된 게시글 작성자의 PK
+
+        // 이미지 가져오기
+        String imageUrl = notificationService.getImageUrl("IMG_FROM_PROFILE", event.getUserId());
 
         // 알림 카드에 출력할 데이터 구성
         DetailsResponse detailsResponse = DetailsResponse.builder()
-                .imageUrl("https://picsum.photos/id/10/200/300") // TODO: 이미지 삽입 필요
+                .imageUrl("/images/" + imageUrl)
                 .date(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                 .title(nickname) // 댓글 작성자 닉네임
                 .message(commentsDto.getContent())
@@ -289,7 +290,7 @@ public class NotificationEventListener {
                 .build();
 
         // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성 메서드
-        String detailsObject = detailsToJsonString(detailsResponse);
+        String detailsObject = notificationService.detailsToJsonString(detailsResponse);
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -311,15 +312,16 @@ public class NotificationEventListener {
      * @param event 이벤트 객체
      * @author 이준혁
      */
-    @Async
+    @Async("asyncTaskExecutor")
     @TransactionalEventListener
     @CommonRetryable // 실패시 재시도
     public void handleSignupNotification(SignupEvent event) {
+        long recipientId = event.getUserId();
+        log.info("handleSignupNotification 리스너 실행. recipientId: {}", recipientId);
 
         // 이미지 가져오기
-        String imageUrl = getImageUrl("IMG_FROM_ICON", 1);
+        String imageUrl = notificationService.getImageUrl("IMG_FROM_ICON", 1);
 
-        long recipientId = event.getUserId();
         String nickname = userMapper.findNicknameByUserId(recipientId);
 
         // 알림 카드에 출력할 데이터 구성
@@ -332,7 +334,7 @@ public class NotificationEventListener {
                 .build();
 
         // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성 메서드
-        String detailsObject = detailsToJsonString(detailsResponse);
+        String detailsObject = notificationService.detailsToJsonString(detailsResponse);
 
         // INSERT의 parameterType 객체 구성
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -346,51 +348,6 @@ public class NotificationEventListener {
         notificationService.saveNotification(notificationRequest, detailsResponse);
     }
 
-
-    /**
-     * 알림 데이터를 DB에 저장하기 위한 JSON 직렬화
-     * @author 이준혁
-     * @param detailsResponse 알림 데이터
-     * @return detailsObject 직렬화된 문자열
-     */
-    private String detailsToJsonString(DetailsResponse detailsResponse) {
-        try { // 알림 데이터를 DB에 저장하기 위한 JSON 형태의 String 문자열 구성
-            String detailsObject = objectMapper.writeValueAsString(detailsResponse);
-            log.info("알림 데이터 직렬화 완료");
-            return detailsObject;
-        } catch (JsonProcessingException e) {
-            log.error("알림 데이터 직렬화 중 오류 발생");
-            throw new BusinessException(ErrorCode.NOTIFICATION_FAILED);
-        }
-    }
-
-
-    /**
-     * 대표 이미지 1장 가져오는 메서드
-     * @author 이준혁
-     * @param targetType 이미지의 타겟 타입
-     * @param targetId 이미지의 타겟 PK
-     * @return 이미지 URL
-     */
-    private String getImageUrl(String targetType, long targetId) {
-        ImageDto imageDto = ImageDto.builder()
-                .targetType(targetType)
-                .targetId(targetId)
-                .build();
-        String imageUrl = imageMapper.getMainImgByTargetTypeAndId(imageDto);
-        
-        if(imageUrl != null) {
-            return imageUrl;
-        } else {
-            // 이미지가 없을 경우 기본 이미지로 출력
-            ImageDto defaultImageDto = ImageDto.builder()
-                    .targetType("IMG_FROM_ICON")
-                    .targetId(3)
-                    .build();
-            return imageMapper.getMainImgByTargetTypeAndId(defaultImageDto);
-        }
-
-    }
 
 
     /**

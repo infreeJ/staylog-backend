@@ -1,6 +1,5 @@
 package com.staylog.staylog.domain.notification.service.impl;
 
-import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
 import com.staylog.staylog.domain.notification.dto.response.NotificationResponse;
 import com.staylog.staylog.domain.notification.dto.response.NotificationUserMapping;
 import com.staylog.staylog.domain.notification.mapper.NotificationMapper;
@@ -12,13 +11,15 @@ import com.staylog.staylog.global.event.NotificationCreatedEvent;
 import com.staylog.staylog.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,7 @@ public class SseServiceImpl implements SseService {
      */
     @Override
     public SseEmitter subscribe(Long userId) {
+        log.info("SSE 연결 시작. userId: {}", userId);
 
         // SseEmitter를 생성하고 Map에 저장
         SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
@@ -61,11 +63,11 @@ public class SseServiceImpl implements SseService {
             emitter.send(SseEmitter.event()
                     .name("connect")
                     .data("Connected! (userId: " + userId + ")"));
+            log.info("SSE 연결 성공. userId: {}, eventName: {}", userId, "connect");
         } catch (IOException e) {
             log.warn("알림 채널 구독 실패 - userId={}", userId);
             emitter.completeWithError(e);
         }
-
         return emitter;
     }
 
@@ -83,6 +85,7 @@ public class SseServiceImpl implements SseService {
     @CommonRetryable // 실패시 재시도
     public void sendNotification(NotificationCreatedEvent event) {
         long userId = event.getUserId();
+        log.info("알림 발송 이벤트 확인 userId: {}", userId);
 
         // Map에서 해당 유저의 emitter를 꺼내기
         SseEmitter emitter = emitters.get(userId);
@@ -92,12 +95,12 @@ public class SseServiceImpl implements SseService {
                 emitter.send(SseEmitter.event()
                         .name("new-notification")
                         .data(event.getNotificationResponse()));
+                log.info("알림 푸시 완료. userId: {}, eventName: {}", userId, "new-notification");
             } catch (IOException e) {
                 // 클라이언트 연결이 끊겼을 경우 제거
                 emitters.remove(userId);
                 log.warn("유효하지 않은 Emitter - userId={}", userId);
-                // 여기서 throw를 던지면 롤백 발생하므로 X
-                // TODO: 이벤트 리스너로 분리해서 이제 throw를 던져도 될 듯(확인 필요)
+                // 클라이언트가 창을 닫는 등 심각하지 않은 예외 -> throw없이 emitter만 제거
                 // throw new BusinessException(ErrorCode.NOTIFICATION_EMITTER_NOT_FOUND);
             }
         }
@@ -175,12 +178,16 @@ public class SseServiceImpl implements SseService {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
                             .data(notificationResponse));
+
                 } catch (IOException e) {
                     emitters.remove(userId);
                     log.warn("Broadcast 중 유효하지 않은 Emitter 발견 - userId={}", userId);
+                    // 클라이언트가 창을 닫는 등 심각하지 않은 예외 -> throw없이 emitter만 제거
+                    // throw new BusinessException(ErrorCode.NOTIFICATION_EMITTER_NOT_FOUND);
                 }
             }
         }
+        log.info("일괄 알림 푸시 완료. eventName: {}", "new-notification");
     }
 
 
@@ -198,26 +205,44 @@ public class SseServiceImpl implements SseService {
      * @author 이준혁
      * 20초마다 주석(comment)를 전송하여 타임아웃을 방지
      */
+    @Async("asyncTaskExecutor")
     @Scheduled(fixedRate = 20000) // 20초
     public void sendHeartbeat() {
         emitters.forEach((userId, emitter) -> {
             try {
                 emitter.send(SseEmitter.event().comment("keep-alive"));
-                System.out.println("SSE의 심장이 도키도키..");
+                log.debug("SSE의 심장이 도키도키...(Heartbeat) userId: {}", userId);
             } catch (IOException e) {
                 emitters.remove(userId);
-                System.out.println("Heartbeat 전송 실패로 SSE 연결 종료");
-                throw new RuntimeException(e);
+                log.warn("Heartbeat 전송 실패로 SSE 연결 종료. userId: {}", userId);
+                // throw를 던지지 않고 해당 유저만 조용히 처리
+                // throw new RuntimeException(e);
             }
         });
     }
+
+
+
+    /**
+     * 애플리케이션 종료 시 연결된 SSE Emitter 연결을 정리하는 메서드
+     * @author 이준혁
+     */
+    @EventListener(ContextClosedEvent.class)
+    public void handleContextClosedEvent() {
+        log.info("Spring Context Closed: 모든 SSE Emitter 연결을 종료합니다.");
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.complete();
+            } catch (Exception e) {
+                log.warn("SSE Emitter 종료 중 오류 발생. userId: {}", userId, e);
+            }
+        });
+        emitters.clear();
+        log.info("모든 SSE Emitter 연결 종료 완료.");
+    }
+
+
 }
-
-
-
-
-
-
 
 
 

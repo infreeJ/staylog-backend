@@ -8,4 +8,5 @@ import com.staylog.staylog.domain.home.dto.response.HomeAccommodationListRespons
 public interface HomeService {
 	
 	List<HomeAccommodationListResponse> homeAccommodationList(HomeAccommodationListRequest req);
+	
 }

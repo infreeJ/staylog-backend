@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.staylog.staylog.external.toss.config.TossPaymentsConfig;
 import com.staylog.staylog.external.toss.dto.request.TossCancelRequest;
 import com.staylog.staylog.external.toss.dto.request.TossConfirmRequest;
+import com.staylog.staylog.external.toss.dto.request.TossVirtualAccountRequest;
 import com.staylog.staylog.external.toss.dto.response.TossErrorResponse;
 import com.staylog.staylog.external.toss.dto.response.TossPaymentResponse;
+import com.staylog.staylog.external.toss.dto.response.TossVirtualAccountResponse;
 import com.staylog.staylog.global.exception.custom.payment.TossApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -119,6 +121,53 @@ public class TossPaymentClient {
             return response.getBody();
 
         } catch (HttpStatusCodeException e) {
+            throw parseTossError(e);
+        }
+    }
+
+    /**
+     * 가상계좌 발급
+     * API: POST /v1/virtual-accounts
+     */
+    public TossVirtualAccountResponse issueVirtualAccount(TossVirtualAccountRequest request) {
+        String url = "https://api.tosspayments.com/v2/virtual-accounts";
+
+        HttpHeaders headers = createHeaders();
+
+        // 멱등키 추가 (가상계좌 중복 발급 방지)
+        headers.set("Idempotency-Key", "VA_" + request.getOrderId());
+
+        HttpEntity<TossVirtualAccountRequest> entity = new HttpEntity<>(request, headers);
+
+        try {
+            log.info("토스 가상계좌 발급 요청: orderId={}, amount={}, customerName={}, orderName={}, validHours={}",
+                     request.getOrderId(), request.getAmount(), request.getCustomerName(),
+                     request.getOrderName(), request.getValidHours());
+
+            // 디버깅: 요청 본문 JSON 직렬화 확인
+            try {
+                String jsonBody = objectMapper.writeValueAsString(request);
+                log.info("요청 JSON: {}", jsonBody);
+            } catch (Exception e) {
+                log.warn("JSON 직렬화 실패", e);
+            }
+
+            ResponseEntity<TossVirtualAccountResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                entity,
+                TossVirtualAccountResponse.class
+            );
+
+            TossVirtualAccountResponse result = response.getBody();
+            log.info("토스 가상계좌 발급 성공: orderId={}, bank={}, accountNumber={}, dueDate={}",
+                     result.getOrderId(), result.getBank(), result.getAccountNumber(), result.getDueDate());
+
+            return result;
+
+        } catch (HttpStatusCodeException e) {
+            log.error("토스 가상계좌 발급 실패: statusCode={}, body={}",
+                      e.getStatusCode(), e.getResponseBodyAsString());
             throw parseTossError(e);
         }
     }
