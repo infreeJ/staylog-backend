@@ -38,6 +38,8 @@ public class NotificationController {
     public ResponseEntity<SuccessResponse<List<NotificationResponse>>> getNotificationList(@PathVariable long userId) {
 
         List<NotificationResponse> notiList = notificationService.getNotificationList(userId);
+        log.info("목록 조회용 DetailsResponse 역직렬화 완료. userId: {}", userId);
+
         String message = messageUtil.getMessage(SuccessCode.NOTIFICATION_LIST_FIND.getMessageKey());
         String code = SuccessCode.NOTIFICATION_LIST_FIND.name();
         return ResponseEntity.ok(SuccessResponse.of(code, message, notiList));

@@ -44,6 +44,7 @@ public class CouponServiceImpl implements CouponService {
             log.warn("사용 가능한 쿠폰 데이터 조회 실패: 쿠폰이 없거나 잘못된 유저 데이터 - userId={}", userId);
             throw new BusinessException(ErrorCode.COUPON_NOT_FOUND);
         }
+        log.info("사용 가능 쿠폰 조회 완료. userId: {}", userId);
         return list;
     }
 
@@ -63,6 +64,7 @@ public class CouponServiceImpl implements CouponService {
             log.warn("사용된 쿠폰 데이터 조회 실패: 쿠폰이 없거나 잘못된 유저 데이터 - userId={}", userId);
             throw new BusinessException(ErrorCode.COUPON_NOT_FOUND);
         }
+        log.info("사용 불가 쿠폰 조회 완료. userId: {}", userId);
         return list;
     }
 
@@ -84,6 +86,7 @@ public class CouponServiceImpl implements CouponService {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponRequest={}", couponRequest);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+        log.info("쿠폰 발급 완료. userId: {} couponId: {}", couponRequest.getUserId(), couponRequest.getCouponId());
 
         // =========== 쿠폰 발급 이벤트 발행(알림 전송) ==============
         CouponCreatedEvent event = new CouponCreatedEvent(couponRequest.getCouponId(), couponRequest.getUserId(), couponRequest.getName(), couponRequest.getDiscount());
@@ -105,6 +108,7 @@ public class CouponServiceImpl implements CouponService {
             log.warn("쿠폰 생성 실패: 잘못된 요청입니다. - couponBatchRequest={}", couponBatchRequest);
             throw new BusinessException(ErrorCode.COUPON_FAILED_USED);
         }
+        log.info("쿠폰 일괄 발급 완료");
 
         // =========== 쿠폰 발급 이벤트 발행(알림 전송) ==============
         CouponCreatedAllEvent event = new CouponCreatedAllEvent(couponBatchRequest.getName(), couponBatchRequest.getDiscount());
@@ -125,6 +129,7 @@ public class CouponServiceImpl implements CouponService {
             log.warn("쿠폰 삭제 실패: 쿠폰 정보를 찾을 수 없습니다. - couponId={}", couponId);
             throw new BusinessException(ErrorCode.COUPON_FAILED_DELETED);
         }
+        log.info("쿠폰 발급 완료. couponId: {}", couponId);
     }
 
 

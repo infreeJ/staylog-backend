@@ -82,4 +82,21 @@ public interface NotificationService {
      * @return 안읽은 알림 수
      */
     public int unreadCount(long userId);
+
+    /**
+     * 알림 데이터를 DB에 저장하기 위한 JSON 직렬화
+     * @author 이준혁
+     * @param detailsResponse 알림 데이터
+     * @return detailsObject 직렬화된 문자열
+     */
+    public String detailsToJsonString(DetailsResponse detailsResponse);
+
+    /**
+     * 대표 이미지 1장 가져오는 메서드
+     * @author 이준혁
+     * @param targetType 이미지의 타겟 타입
+     * @param targetId 이미지의 타겟 PK
+     * @return 이미지 URL
+     */
+    public String getImageUrl(String targetType, long targetId);
 }
