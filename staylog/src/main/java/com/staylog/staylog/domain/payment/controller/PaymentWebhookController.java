@@ -45,13 +45,13 @@ public class PaymentWebhookController {
             // 1. payload JSON 파싱
             JsonNode rootNode = objectMapper.readTree(payload);
 
-            // 2. 이벤트 타입 확인
-            String eventType = rootNode.path("eventType").asText();
-            log.info("이벤트 타입: {}", eventType);
+            // 2. status 확인
+            String status = rootNode.path("status").asText();
+            log.info("입금 상태: {}", status);
 
-            if (!"VirtualAccount.Deposit".equalsIgnoreCase(eventType)) {
-                log.info("처리 불필요한 이벤트: {}", eventType);
-                return ResponseEntity.ok("Ignored");
+            if (!"DONE".equalsIgnoreCase(status)) {
+                log.info("처리 불필요한 이벤트: {}", status);
+                return ResponseEntity.ok("OK");
             }
 
             // 3. secret 검증
