@@ -3,7 +3,6 @@ package com.staylog.staylog.external.toss.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -11,7 +10,6 @@ import java.util.Base64;
 /**
  * 토스 페이먼츠 설정
  */
-
 @ConfigurationProperties(prefix = "toss.payments")
 @Getter
 @Setter
@@ -30,6 +28,6 @@ public class TossPaymentsConfig {
      */
     public String getEncodedSecretKey() {
         return Base64.getEncoder()
-            .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
+                .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
     }
 }
