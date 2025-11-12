@@ -63,7 +63,7 @@
         <choose>
         	<!-- 다가올 예약-->
             <when test="status == 'upcoming'">
-                AND r.status = 'RES_CONFIRMED'
+                AND r.status IN('RES_CONFIRMED', 'RES_PENDING')
                 AND r.check_in &gt; SYSDATE
             </when>
             <!-- 이용 완료 -->
