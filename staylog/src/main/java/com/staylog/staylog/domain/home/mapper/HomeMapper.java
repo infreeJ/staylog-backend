@@ -17,32 +17,4 @@ public interface HomeMapper {
 			@Param("limit") int limit //한번에 몇개 가져올 지
 			
 			);
-	
-	//최신순
-	List<HomeAccommodationListResponse> selectAccommodationByLatest(
-			@Param("regionCode") String regionCode,
-			@Param("offset") int offset,
-			@Param("limit") int limit
-	);
-	
-	//최저가순
-	List<HomeAccommodationListResponse> selectAccommodationByPrice(
-			@Param("regionCode") String regionCode,
-			@Param("offset") int offset,
-			@Param("limit") int limit
-	);
-	
-	//별점순
-	List<HomeAccommodationListResponse> selectAccommodationByRating(
-			@Param("regionCode") String regionCode,
-			@Param("offset") int offset,
-			@Param("limit") int limit
-	);
-	
-	//리뷰많은 순
-		List<HomeAccommodationListResponse> selectAccommodationByReview(
-				@Param("regionCode") String regionCode,
-				@Param("offset") int offset,
-				@Param("limit") int limit
-		);
 }

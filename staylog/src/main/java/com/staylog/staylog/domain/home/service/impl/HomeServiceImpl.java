@@ -28,28 +28,20 @@ public class HomeServiceImpl implements HomeService {
 	@Override
 	public List<HomeAccommodationListResponse> homeAccommodationList(HomeAccommodationListRequest dto) {
 		
-		//기본값 검증
+		//기본갑 검증
 		//0부터 시작, 음수 들어오면 0으로
 		int offset = Math.max(dto.getOffset(),0);
 		//limit이 0이거나 음수이면 기본 20으로 		
 		int limit = dto.getLimit() > 0 ? dto.getLimit() : 20;
+		
 		String sort = dto.getSort();
+		
 		String regionCode = dto.getRegionCode();
 		
-		if (!ALLOWED_SORT.contains(sort)) sort = "rating"; // 기본값
+		if(!ALLOWED_SORT.contains(sort)) {
+			sort = null;
+		}
  				
-	    switch (sort) {
-        case "rating":
-            return homeMapper.selectAccommodationByRating(regionCode, offset, limit);
-        case "review":
-            return homeMapper.selectAccommodationByReview(regionCode, offset, limit);
-        case "price":
-            return homeMapper.selectAccommodationByPrice(regionCode, offset, limit);
-        case "latest":
-            return homeMapper.selectAccommodationByLatest(regionCode, offset, limit);
-        default:
-            return homeMapper.selectAccommodationByRating(regionCode, offset, limit);
-    }
+		return homeMapper.selectAccommodationMain(regionCode, sort, offset, limit);
 	}
-
 }

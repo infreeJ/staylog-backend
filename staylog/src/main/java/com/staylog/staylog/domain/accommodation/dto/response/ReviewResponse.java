@@ -18,12 +18,13 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ReviewResponse {
 	private Long boardId;
+	private Long userId;
 	private String nickname;
-	private String profileImage;
+	private String contentUrl;
+	private String profileUrl;
 	private Double rating;
 	private int reviewCount;
 	private String title;
 	private String content;
-	private ImageData images;
 	private Timestamp createdAt;
 }

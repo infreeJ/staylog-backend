@@ -3,135 +3,67 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.staylog.staylog.domain.home.mapper.HomeMapper">
-
-  <resultMap id="HomeListMap" type="com.staylog.staylog.domain.home.dto.response.HomeAccommodationListResponse">
-    <id     property="accommodationId" column="ACCOMMODATION_ID"/>
-    <result property="name"            column="NAME"/>
-    <result property="regionCode"      column="REGION_CODE"/>
-    <result property="acType"          column="AC_TYPE"/>
-    <result property="ratingAvg"       column="RATING_AVG"/>
-    <result property="reviewCnt"       column="REVIEW_CNT"/>
-    <result property="minPrice"        column="MIN_PRICE"/>
-    <result property="address"         column="ADDRESS"/>
-    <result property="createdAt"       column="CREATED_AT"/>
-    <result property="regionName"      column="REGION_NAME"/>
-  </resultMap>
-  
-	 <!-- 공통: 먼저 숙소만 필터링 -->
-	  <sql id="BaseAccomCte">
-	    WITH AC AS (
-	      SELECT ac.ACCOMMODATION_ID, ac.NAME, ac.REGION_CODE, ac.AC_TYPE,
-	             ac.ADDRESS, ac.CREATED_AT
-	      FROM ACCOMMODATION ac
-	      WHERE ac.DELETED_YN = 'N'
-	      <if test="regionCode != null and regionCode != ''">
-	        AND ac.REGION_CODE = #{regionCode}
-	      </if>
-	    )
-	  </sql>
-  
-	  <!-- 평점순: 리뷰 집계만 필요 -->
-	  <select id="selectAccommodationByRating" resultMap="HomeListMap">
-	    <include refid="BaseAccomCte"/>
-	    SELECT * FROM (
-	      SELECT t.*, ROWNUM rn FROM (
-	        SELECT
-	          ac.ACCOMMODATION_ID, ac.NAME, ac.REGION_CODE, ac.AC_TYPE,
-	          NVL(m.rating_avg, 0) AS RATING_AVG,
-	          NVL(m.review_cnt, 0) AS REVIEW_CNT,
-	          NULL                AS MIN_PRICE,   -- 불필요하면 안 땡긴다
-	          ac.ADDRESS, ac.CREATED_AT,
-	          cc.CODE_NAME        AS REGION_NAME
-	        FROM AC ac
-	        LEFT JOIN (
-	          SELECT accommodation_id,
-	                 ROUND(AVG(rating), 1) AS rating_avg,
-	                 COUNT(*)              AS review_cnt
-	          FROM BOARD
-	          WHERE board_type = 'BOARD_REVIEW'
-	          GROUP BY accommodation_id
-	        ) m ON m.accommodation_id = ac.accommodation_id
-	        LEFT JOIN COMMON_CODE cc ON ac.REGION_CODE = cc.CODE_ID
-	        ORDER BY NVL(m.rating_avg, 0) DESC, ac.CREATED_AT DESC, ac.ACCOMMODATION_ID ASC
-	      ) t
-	      WHERE ROWNUM &lt;= #{offset} + #{limit}
-	    )
-	    WHERE rn &gt; #{offset}
-	  </select>
-	
-	  <!-- 리뷰많은순: 리뷰 카운트만 필요 -->
-	  <select id="selectAccommodationByReview" resultMap="HomeListMap">
-	    <include refid="BaseAccomCte"/>
-	    SELECT * FROM (
-	      SELECT t.*, ROWNUM rn FROM (
-	        SELECT
-	          ac.ACCOMMODATION_ID, ac.NAME, ac.REGION_CODE, ac.AC_TYPE,
-	          0                    AS RATING_AVG,
-	          NVL(m.review_cnt, 0) AS REVIEW_CNT,
-	          NULL                 AS MIN_PRICE,
-	          ac.ADDRESS, ac.CREATED_AT,
-	          cc.CODE_NAME         AS REGION_NAME
-	        FROM AC ac
-	        LEFT JOIN (
-	          SELECT accommodation_id,
-	                 COUNT(*) AS review_cnt
-	          FROM BOARD
-	          WHERE board_type = 'BOARD_REVIEW'
-	          GROUP BY accommodation_id
-	        ) m ON m.accommodation_id = ac.accommodation_id
-	        LEFT JOIN COMMON_CODE cc ON ac.REGION_CODE = cc.CODE_ID
-	        ORDER BY NVL(m.review_cnt, 0) DESC, ac.CREATED_AT DESC, ac.ACCOMMODATION_ID ASC
-	      ) t
-	      WHERE ROWNUM &lt;= #{offset} + #{limit}
-	    )
-	    WHERE rn &gt; #{offset}
-	  </select>
-	
-	  <!-- 가격순: ROOM만 집계 -->
-	  <select id="selectAccommodationByPrice" resultMap="HomeListMap">
-	    <include refid="BaseAccomCte"/>
-	    SELECT * FROM (
-	      SELECT t.*, ROWNUM rn FROM (
-	        SELECT
-	          ac.ACCOMMODATION_ID, ac.NAME, ac.REGION_CODE, ac.AC_TYPE,
-	          0 AS RATING_AVG,
-	          0 AS REVIEW_CNT,
-	          NVL(mp.min_price, 0) AS MIN_PRICE,
-	          ac.ADDRESS, ac.CREATED_AT,
-	          cc.CODE_NAME          AS REGION_NAME
-	        FROM AC ac
-	        LEFT JOIN (
-	          SELECT accommodation_id, MIN(price) AS min_price
-	          FROM ROOM
-	          WHERE DELETED_YN = 'N'
-	          GROUP BY accommodation_id
-	        ) mp ON mp.accommodation_id = ac.accommodation_id
-	        LEFT JOIN COMMON_CODE cc ON ac.REGION_CODE = cc.CODE_ID
-	        ORDER BY NVL(mp.min_price, 0) ASC, ac.ACCOMMODATION_ID ASC
-	      ) t
-	      WHERE ROWNUM &lt;= #{offset} + #{limit}
-	    )
-	    WHERE rn &gt; #{offset}
-	  </select>
-	
-	  <!-- 최신순: 아무 집계도 필요 없음 -->
-	  <select id="selectAccommodationByLatest" resultMap="HomeListMap">
-	    <include refid="BaseAccomCte"/>
-	    SELECT * FROM (
-	      SELECT t.*, ROWNUM rn FROM (
-	        SELECT
-	          ac.ACCOMMODATION_ID, ac.NAME, ac.REGION_CODE, ac.AC_TYPE,
-	          0 AS RATING_AVG, 0 AS REVIEW_CNT, NULL AS MIN_PRICE,
-	          ac.ADDRESS, ac.CREATED_AT,
-	          cc.CODE_NAME AS REGION_NAME
-	        FROM AC ac
-	        LEFT JOIN COMMON_CODE cc ON ac.REGION_CODE = cc.CODE_ID
-	        ORDER BY ac.CREATED_AT DESC, ac.ACCOMMODATION_ID ASC
-	      ) t
-	      WHERE ROWNUM &lt;= #{offset} + #{limit}
-	    )
-	    WHERE rn &gt; #{offset}
-	  </select>
-
+		
+		<select id="selectAccommodationMain"
+		        parameterType="map"
+		        resultType="com.staylog.staylog.domain.home.dto.response.HomeAccommodationListResponse">
+		
+		  SELECT *
+		  FROM ( SELECT t.*, ROWNUM rn
+		    FROM (
+		      SELECT
+		        ac.accommodation_id,
+		        ac.name,
+		        ac.region_code,
+		        ac.ac_type,
+		        NVL(m.rating_avg, 0)  AS ratingAvg,
+		        NVL(m.review_cnt, 0)  AS reviewCnt,
+		        NVL(mp.min_price, 0)  AS minPrice,
+		        ac.address,
+		        ac.created_at AS createdAt,
+		        cc.code_name AS regionName
+		      FROM ACCOMMODATION ac
+		      LEFT JOIN (
+		        SELECT accommodation_id,
+		               ROUND(AVG(rating), 1) AS rating_avg,
+		               COUNT(*)              AS review_cnt
+		        FROM BOARD
+		        WHERE board_type = 'BOARD_REVIEW'
+		        GROUP BY accommodation_id
+		      ) m ON m.accommodation_id = ac.accommodation_id
+		      LEFT JOIN (
+		        SELECT accommodation_id, MIN(price) AS min_price
+		        FROM ROOM
+		        GROUP BY accommodation_id
+		      ) mp ON mp.accommodation_id = ac.accommodation_id
+		      LEFT JOIN COMMON_CODE cc
+       			 ON ac.region_code = cc.CODE_ID
+		      WHERE ac.deleted_yn = 'N'
+		      <if test="regionCode != null and regionCode != ''">
+		        AND ac.region_code = #{regionCode}
+		      </if>
+		
+		      <choose>
+		        <when test="sort == 'rating'">
+		          ORDER BY NVL(m.rating_avg, 0) DESC, ac.created_at DESC, ac.accommodation_id ASC
+		        </when>
+		        <when test="sort == 'review'">
+		          ORDER BY NVL(m.review_cnt, 0) DESC, ac.created_at DESC, ac.accommodation_id ASC
+		        </when>
+		        <when test="sort == 'price'">
+		          ORDER BY NVL(mp.min_price, 0) ASC, ac.accommodation_id ASC
+		        </when>
+		        <when test="sort == 'latest'">
+		          ORDER BY ac.created_at DESC, ac.accommodation_id ASC
+		        </when>
+		        <otherwise>
+		          ORDER BY NVL(m.rating_avg, 0) DESC, ac.created_at DESC, ac.accommodation_id ASC
+		        </otherwise>
+		      </choose>
+		    ) t
+		    WHERE ROWNUM &lt;= #{offset} + #{limit}
+		  )
+		  WHERE rn &gt; #{offset}
+		</select>
 
 </mapper>

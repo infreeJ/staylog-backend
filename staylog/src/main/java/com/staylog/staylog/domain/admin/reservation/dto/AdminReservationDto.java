@@ -3,6 +3,7 @@ package com.staylog.staylog.domain.admin.reservation.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * 관리자 예약목록 응답 객체
@@ -31,7 +32,7 @@ public class AdminReservationDto {
     private String statusName;       // 예약 상태명
     private String statusColor;      // 상태 색상
     private LocalDateTime createdAt; // 예약일
-    private LocalDateTime updatedAt;
-
-
+    private String paymentMethod; // 결제수단
+    private LocalDateTime paidAt; // 결제시간
 }
+

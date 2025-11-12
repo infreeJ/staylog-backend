@@ -1,23 +1,14 @@
 package com.staylog.staylog.domain.board.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.staylog.staylog.domain.board.mapper.BoardMapper;
-import com.staylog.staylog.domain.notification.dto.request.NotificationRequest;
-import com.staylog.staylog.domain.notification.dto.response.DetailsResponse;
-import com.staylog.staylog.domain.notification.service.NotificationService;
-import com.staylog.staylog.domain.user.dto.UserDto;
-import com.staylog.staylog.domain.user.mapper.UserMapper;
 import com.staylog.staylog.global.event.CommentCreatedEvent;
-import com.staylog.staylog.global.security.jwt.JwtTokenProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.staylog.staylog.domain.board.dto.CommentsDto;
 import com.staylog.staylog.domain.board.mapper.CommentsMapper;
+import com.staylog.staylog.domain.image.assembler.ImageAssembler;
 import com.staylog.staylog.global.common.code.ErrorCode;
 import com.staylog.staylog.global.exception.BusinessException;
 
@@ -30,8 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class CommentsServiceImpl implements CommentsService {
 
+    private final ImageAssembler imageAssembler;
+
     private final CommentsMapper commentsMapper;
     private final ApplicationEventPublisher eventPublisher;
+
 
     // 댓글 목록 조회
     @Override
@@ -44,7 +38,8 @@ public class CommentsServiceImpl implements CommentsService {
             log.warn("댓글 목록이 없습니다 : boardId={}", boardId);
             throw new BusinessException(ErrorCode.COMMENTS_NOT_FOUND);
         }
-
+        imageAssembler.assembleMainImageUrl(comments, CommentsDto::getUserId, CommentsDto::setProfileUrl, "PROFILE");
+        
         log.info("댓글 목록 조회 성공 - {}개", comments.size());
         return comments;
     }
