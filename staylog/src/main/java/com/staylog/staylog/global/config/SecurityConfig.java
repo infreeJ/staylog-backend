@@ -102,6 +102,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/v1/boards/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/v1/boards/booking/*").authenticated()
                         .requestMatchers("/form/review").authenticated()
+
+                        // 403 발생하던 경로들 추가
+                        .requestMatchers("/v1/images/**").permitAll()
+                        .requestMatchers("/v1/accommodations/*").permitAll()
+                        .requestMatchers("/v1/home").permitAll()
+
                         // Mypage
                         .requestMatchers("/v1/mypage/**").authenticated()
                         // Profile
